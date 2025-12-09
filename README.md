@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vaultr
 
-## Getting Started
+Vaultr is a Next.js (App Router) web application for securely managing passwords and secrets. This repository contains the frontend and API routes (serverless) built with Next.js, TypeScript, and React.
 
-First, run the development server:
+## Features
+
+- Next.js App Router structure
+- TypeScript-first codebase
+- Serverless API routes under `app/api` and `api/`
+- Basic auth flow scaffolding in `app/(auth)`
+
+## Tech Stack
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Node (npm)
+
+## Prerequisites
+
+- Node.js 18+ (or the version specified in `engines` if present)
+- npm (or your preferred package manager). This project uses `package-lock.json` for reproducible installs — keep it committed.
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create environment variables. Copy the example and edit values:
+
+```bash
+cp .env.example .env.local
+# then edit `.env.local`
+```
+
+## Available Scripts
+
+- `npm run dev` — run the Next.js development server (localhost:3000)
+- `npm run build` — build the production app
+- `npm run start` — start the production server after build
+- `npm run lint` — run linters (if configured)
+- `npm test` — run tests (if configured)
+
+Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `.env.local` (ignored by git) — runtime secrets
+- `.env.example` — committed example values for developers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Keep sensitive values out of the repository. The `.gitignore` is configured to ignore `*.env*` while allowing `!.env.example`.
 
-## Learn More
+## Repository Notes
 
-To learn more about Next.js, take a look at the following resources:
+- `next-env.d.ts` should be tracked in the repo (it is no longer ignored).
+- Commit the appropriate lockfile for your package manager (`package-lock.json` for npm). Do not commit multiple lockfile types.
+- `.gitkeep` files may be present to ensure empty folders (for example `app/api/passwords/.gitkeep`). Replace with real files when ready or a short `README.md` explaining the folder purpose.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure (high level)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `app/` — Next.js App Router pages and layouts
+- `app/(auth)/` — auth-related routes and UI
+- `app/(main)/dashboard/` — main app routes
+- `api/` — Next-style API routes (edge/serverless)
+- `components/` — React components
+- `lib/` — shared libraries and helpers
+- `schemas/` — validation schemas (zod, etc.)
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions welcome. Create a branch, make changes, and open a pull request. Please include a clear description and tests for new features when applicable.
