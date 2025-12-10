@@ -57,8 +57,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Success — redirect to home (replace with dashboard route when ready)
-      router.replace('/');
+        // Success — redirect to dashboard
+      router.replace('/dashboard');
     } catch (err) {
       setGeneralError('Unable to sign in. Please try again.');
     } finally {

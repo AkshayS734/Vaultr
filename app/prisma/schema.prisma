@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // If you run `prisma migrate dev` against a Neon branch or when using shadow
+  // databases, you can set `SHADOW_DATABASE_URL` in your environment to allow
+  // Prisma to create a temporary shadow database. Example:
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum AuditEvent {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  VAULT_CREATE
+  VAULT_UPDATE
+  VAULT_DELETE
+  PASSWORD_SHARE
+  PASSWORD_UNSHARE
+  PASSWORD_UPDATE
+  RECOVERY_REQUEST
+  RECOVERY_COMPLETE
+  OTHER
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  emailNormalized String    @unique // store lowercase normalized email for uniqueness
+  authSalt        String
+  authHash        String
+  isEmailVerified Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  lastLoginAt     DateTime?
+  deletedAt       DateTime? // soft-delete marker
+
+  // relations
+  vault     Vault?     @relation("UserToVault")
+  sessions  Session[]
+  auditLogs AuditLog[]
+
+  @@index([emailNormalized])
+}
+
+model Vault {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  user       User      @relation("UserToVault", fields: [userId], references: [id], onDelete: Cascade)
+  items      Item[]
+  blob       Bytes // encrypted vault JSON (client-side encrypted)
+  kdfParams  Json
+  cipherMeta Json
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? // soft-delete marker
+
+  @@index([userId])
+}
+
+model Item {
+  id        String    @id @default(uuid())
+  vaultId   String
+  vault     Vault     @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  // If storing any sensitive metadata, make sure the client encrypts it before sending.
+  // For strict zero-knowledge, consider storing title/meta as Bytes (encrypted) instead of plaintext.
+  title     String?
+  meta      Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft-delete marker
+
+  @@index([vaultId])
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  userAgent        String?
+  ip               String?
+  lastUsedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id        String     @id @default(uuid())
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType AuditEvent
+  meta      Json?
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+}

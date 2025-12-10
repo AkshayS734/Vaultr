@@ -54,3 +54,19 @@ yarn-error.log*
 *.tsbuildinfo
 
 # NOTE: `next-env.d.ts` should be tracked by the repo (keep it committed)
+
+# Docker / runtime
+/docker-compose.override.yml
+/docker-compose.*.yml
+/docker/
+
+# Redis persistence files (if running Redis locally)
+dump.rdb
+appendonly.aof
+redis.conf
+redis-data/
+*.rdb
+*.aof
+
+# Local OS/Editor temp
+.DS_Store

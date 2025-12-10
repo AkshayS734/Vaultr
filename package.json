@@ -6,12 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prisma:generate": "prisma generate --schema=app/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=app/prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema=app/prisma/schema.prisma"
   },
   "dependencies": {
+    "argon2": "^0.44.0",
+    "cookie": "^1.1.1",
+    "jsonwebtoken": "^9.0.3",
+    "ioredis": "^5.3.2",
     "next": "16.0.8",
     "react": "19.2.1",
     "react-dom": "19.2.1"
+  ,
+    "@prisma/client": "^5.13.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -22,5 +31,7 @@
     "eslint-config-next": "16.0.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+    ,
+    "prisma": "^5.13.0"
   }
 }
