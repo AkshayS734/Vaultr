@@ -23,40 +23,34 @@ export async function GET(req: Request) {
           console.warn('logout: error verifying/deleting session', e)
         }
       }
-    } else if (refresh) {
-      const sessions = await prisma.session.findMany({})
-      for (const s of sessions) {
-        try {
-          if (await argon2.verify(s.refreshTokenHash, refresh)) {
-            await prisma.session.delete({ where: { id: s.id } })
-            break
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
     }
 
     const clearRefresh = cookie.serialize('refreshToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
     const clearSession = cookie.serialize('sessionId', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
 
-    return NextResponse.redirect(new URL('/', req.url), { headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const response = NextResponse.redirect(new URL('/', req.url))
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   } catch (err) {
     console.error('logout route error', err)
     const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
     const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0 })
-    return NextResponse.redirect(new URL('/', req.url), { headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const response = NextResponse.redirect(new URL('/', req.url))
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   }
 }

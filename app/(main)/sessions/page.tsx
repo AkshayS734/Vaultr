@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { prisma } from '../../../lib/prisma'
 
 export default async function SessionsPage() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const sessionId = cookieStore.get('sessionId')?.value
   if (!sessionId) {
     return (

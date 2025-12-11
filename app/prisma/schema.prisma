@@ -30,7 +30,6 @@ model User {
   id              String    @id @default(uuid())
   email           String    @unique
   emailNormalized String    @unique // store lowercase normalized email for uniqueness
-  authSalt        String
   authHash        String
   isEmailVerified Boolean   @default(false)
   createdAt       DateTime  @default(now())
@@ -89,6 +88,7 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([refreshTokenHash])
 }
 
 model AuditLog {

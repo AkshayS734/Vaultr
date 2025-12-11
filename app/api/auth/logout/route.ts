@@ -11,62 +11,53 @@ export async function POST(req: Request) {
     const sessionId = cookies.sessionId
 
     if (sessionId) {
-      // try to verify refresh token matches the session before deleting
-      const s = await prisma.session.findUnique({ where: { id: sessionId } })
-      if (s) {
-        try {
-          if (refresh && (await argon2.verify(s.refreshTokenHash, refresh))) {
+      // Delete session by ID (simple case)
+      try {
+        // Verify that the refresh token matches before deletion (security check)
+        const session = await prisma.session.findUnique({ where: { id: sessionId } })
+        if (session && refresh) {
+          const tokenMatches = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
+          if (tokenMatches) {
             await prisma.session.delete({ where: { id: sessionId } })
           } else {
-            // If no refresh or verification fails, still delete session by id
+            // Token mismatch - still delete the session but don't trust the token
             await prisma.session.delete({ where: { id: sessionId } })
           }
-        } catch (e) {
-          // deletion error
-          console.warn('logout: error verifying/deleting session', e)
+        } else if (session) {
+          // No refresh token provided, but session exists - delete it
+          await prisma.session.delete({ where: { id: sessionId } })
         }
-      }
-    } else if (refresh) {
-      // fallback: try to find session by verifying refresh token across sessions
-      const sessions = await prisma.session.findMany({})
-      for (const s of sessions) {
-        try {
-          if (await argon2.verify(s.refreshTokenHash, refresh)) {
-            await prisma.session.delete({ where: { id: s.id } })
-            break
-          }
-        } catch (e) {
-          // ignore verify errors and continue
-        }
+      } catch (e) {
+        console.warn('logout: error deleting session', e)
       }
     }
 
     const clearRefresh = cookie.serialize('refreshToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
     const clearSession = cookie.serialize('sessionId', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
 
-    return NextResponse.json({ ok: true }, { status: 200, headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const response = NextResponse.json({ ok: true }, { status: 200 })
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   } catch (err) {
     console.error('logout error', err)
     const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
     const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0 })
-    return NextResponse.json({ error: 'Logout failed' }, { status: 500, headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const response = NextResponse.json({ error: 'Logout failed' }, { status: 500 })
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   }
-}
-
-export function GET() {
-  // prefer POST, but support GET for convenience
-  const clear = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
-  return NextResponse.json({ ok: true }, { status: 200, headers: { 'Set-Cookie': clear } })
 }
