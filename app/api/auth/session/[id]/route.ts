@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
 import cookie from 'cookie'
+import { logAuditEvent } from '../../../../../lib/audit'
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -20,6 +21,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     if (target.userId !== current.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     await prisma.session.delete({ where: { id } })
+
+    // Log the session deletion
+    await logAuditEvent('SESSION_DELETE', current.userId, { sessionId: id, targetUserId: target.userId })
 
     // If deleting current session, clear cookies
     if (id === sessionId) {

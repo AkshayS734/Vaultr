@@ -59,16 +59,65 @@ export function truncate(str: string | null | undefined, maxLength: number): str
 }
 
 /**
- * Validate email format
+ * Validate email format and length
+ * RFC 5322 compliant with additional checks
  */
 export function isValidEmail(email: unknown): boolean {
   if (typeof email !== 'string') return false
-  // RFC 5322 simplified regex
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) return false
-  // Additional checks
-  if (email.length > 254) return false
-  const [localPart] = email.split('@')
-  if (localPart.length > 64) return false
-  return true
+  
+  // Length checks (RFC 5322)
+  if (email.length < 3 || email.length > 254) return false
+  
+  const parts = email.split('@')
+  if (parts.length !== 2) return false
+  
+  const [localPart, domain] = parts
+  
+  // Local part validation
+  if (localPart.length < 1 || localPart.length > 64) return false
+  if (localPart.startsWith('.') || localPart.endsWith('.')) return false
+  if (localPart.includes('..')) return false
+  
+  // Domain validation
+  if (domain.length < 3 || domain.length > 255) return false
+  if (!domain.includes('.')) return false
+  if (domain.startsWith('.') || domain.endsWith('.')) return false
+  if (domain.startsWith('-') || domain.endsWith('-')) return false
+  
+  // Check for valid characters
+  const validEmailRegex = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+  
+  return validEmailRegex.test(email)
+}
+
+/**
+ * Validate password strength and length
+ */
+export function isValidPassword(password: unknown): { valid: boolean; reason?: string } {
+  if (typeof password !== 'string') {
+    return { valid: false, reason: 'Password must be a string' }
+  }
+  
+  if (password.length < 8) {
+    return { valid: false, reason: 'Password must be at least 8 characters' }
+  }
+  
+  if (password.length > 128) {
+    return { valid: false, reason: 'Password must be at most 128 characters' }
+  }
+  
+  // Check for at least one uppercase, one lowercase, one number
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one uppercase letter' }
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one lowercase letter' }
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, reason: 'Password must contain at least one number' }
+  }
+  
+  return { valid: true }
 }

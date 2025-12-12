@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import cookie from 'cookie'
 import argon2 from 'argon2'
 import { prisma } from '../../../../lib/prisma'
+import { logAuditEvent } from '../../../../lib/audit'
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +20,8 @@ export async function POST(req: Request) {
           const tokenMatches = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
           if (tokenMatches) {
             await prisma.session.delete({ where: { id: sessionId } })
+            // Log the logout
+            await logAuditEvent('LOGOUT', session.userId, { sessionId })
           } else {
             // Token mismatch - still delete the session but don't trust the token
             await prisma.session.delete({ where: { id: sessionId } })
@@ -26,6 +29,7 @@ export async function POST(req: Request) {
         } else if (session) {
           // No refresh token provided, but session exists - delete it
           await prisma.session.delete({ where: { id: sessionId } })
+          await logAuditEvent('LOGOUT', session.userId, { sessionId })
         }
       } catch (e) {
         console.warn('logout: error deleting session', e)

@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { prisma } from '../../../../lib/prisma'
 import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, truncate, isValidEmail } from '../../../../lib/utils'
+import { getClientIp, truncate, isValidEmail, isValidPassword } from '../../../../lib/utils'
+import { logAuditEvent } from '../../../../lib/audit'
 
 // Rate limit: 5 failed attempts per 15 minutes
 const LOGIN_MAX = 5
@@ -33,22 +34,31 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { email, password } = body || {}
 
-    if (!isValidEmail(email) || typeof password !== 'string' || password.length === 0) {
+    if (!isValidEmail(email)) {
+      await logAuditEvent('LOGIN_FAILED', null, { email, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Invalid email format' })
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
     }
 
-    if (password.length > 128) {
+    if (typeof password !== 'string') {
+      await logAuditEvent('LOGIN_FAILED', null, { email, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Missing password' })
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
+    }
+
+    if (password.length === 0 || password.length > 128) {
+      await logAuditEvent('LOGIN_FAILED', null, { email, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Invalid password length' })
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
     }
 
     const normalized = String(email).trim().toLowerCase()
     const user = await prisma.user.findUnique({ where: { emailNormalized: normalized } })
     if (!user) {
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'User not found' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     const verified = await argon2.verify(user.authHash, password)
     if (!verified) {
+      await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Invalid password' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
@@ -74,6 +84,7 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
+      console.error('JWT_SECRET not configured')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
@@ -94,6 +105,9 @@ export async function POST(req: Request) {
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
+
+    // Log successful login
+    await logAuditEvent('LOGIN_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
 
     const response = NextResponse.json({ accessToken }, { status: 200 })
     response.headers.append('Set-Cookie', refreshCookie)

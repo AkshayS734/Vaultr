@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { prisma } from '../../../../lib/prisma'
 import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, truncate, isValidEmail } from '../../../../lib/utils'
+import { getClientIp, truncate, isValidEmail, isValidPassword } from '../../../../lib/utils'
+import { logAuditEvent } from '../../../../lib/audit'
 
 // Rate limit: 5 signup attempts per hour
 const SIGNUP_MAX = 5
@@ -33,24 +34,26 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { email, password } = body || {}
 
-    if (!isValidEmail(email) || typeof password !== 'string') {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
+    if (!isValidEmail(email)) {
+      await logAuditEvent('LOGIN_FAILED', null, { email, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Signup: Invalid email' })
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
-    if (password.length < 8 || password.length > 128) {
-      return NextResponse.json({ error: 'Password must be between 8 and 128 characters' }, { status: 400 })
+    const passwordValidation = isValidPassword(password)
+    if (!passwordValidation.valid) {
+      return NextResponse.json({ error: passwordValidation.reason || 'Invalid password' }, { status: 400 })
     }
 
-    // Prevent duplicate accounts
-    const existing = await prisma.user.findUnique({ where: { email } })
+    // Prevent duplicate accounts using normalized email
+    const normalized = String(email).trim().toLowerCase()
+    const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized } })
     if (existing) {
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Signup: Account exists' })
       return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
     }
 
     // Hash password with argon2
     const hash = await argon2.hash(password)
-
-    const normalized = String(email).trim().toLowerCase()
 
     const user = await prisma.user.create({
       data: {
@@ -83,6 +86,7 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
+      console.error('JWT_SECRET not configured')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
@@ -103,6 +107,9 @@ export async function POST(req: Request) {
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
+
+    // Log successful signup
+    await logAuditEvent('SIGNUP_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
 
     const response = NextResponse.json({ accessToken }, { status: 201 })
     response.headers.append('Set-Cookie', refreshCookie)
