@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       console.warn('rateLimit check failed, allowing request', e)
     }
 
-    const session = await prisma.session.findUnique({ where: { id: sessionId } })
+    const session = await prisma.session.findUnique({ where: { id: sessionId }, select: { userId: true, refreshTokenHash: true, expiresAt: true } })
     if (!session) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
     }

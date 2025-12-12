@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+import { truncate } from './utils'
 import { AuditEvent, Prisma } from '@prisma/client'
 
 export type AuditEventType = AuditEvent
@@ -23,20 +24,23 @@ export async function logAuditEvent(
   meta?: AuditLogMeta
 ): Promise<void> {
   try {
-    const metaData: Prisma.JsonValue = {}
-    if (meta) {
-      Object.entries(meta).forEach(([key, value]) => {
-        if (value !== undefined) {
-          (metaData as Record<string, unknown>)[key] = value
-        }
-      })
-    }
+      const safeMeta = (() => {
+        if (!meta || typeof meta !== 'object') return meta
+        const m = meta as Record<string, unknown>
+        const ua = typeof m.userAgent === 'string' ? truncate(m.userAgent, 256) : undefined
+        const ip = typeof m.ip === 'string' ? truncate(m.ip, 64) : undefined
+        return {
+          ...m,
+          ...(ua ? { userAgent: ua } : {}),
+          ...(ip ? { ip } : {}),
+        } as Prisma.JsonObject
+      })()
     
     await prisma.auditLog.create({
       data: {
         userId,
         eventType,
-        meta: metaData,
+          meta: safeMeta,
       },
     })
   } catch (error) {

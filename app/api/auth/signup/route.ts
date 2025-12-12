@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { prisma } from '../../../../lib/prisma'
 import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, truncate, isValidEmail, isValidPassword } from '../../../../lib/utils'
+import { getClientIp, truncate, readLimitedJson } from '../../../../lib/utils'
+import { signupSchema } from '@/schemas/auth'
 import { logAuditEvent } from '../../../../lib/audit'
 
 // Rate limit: 5 signup attempts per hour
@@ -31,22 +32,25 @@ export async function POST(req: Request) {
       console.warn('Rate limit check failed, allowing request', e)
     }
 
-    const body = await req.json()
-    const { email, password } = body || {}
-
-    if (!isValidEmail(email)) {
-      await logAuditEvent('LOGIN_FAILED', null, { email, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Signup: Invalid email' })
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    try {
+      const raw = await readLimitedJson(req, 64 * 1024)
+      const parsed = signupSchema.safeParse(raw)
+      if (!parsed.success) {
+        return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      }
+      var { email, password } = parsed.data
+    } catch (e) {
+      if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+      }
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
-    const passwordValidation = isValidPassword(password)
-    if (!passwordValidation.valid) {
-      return NextResponse.json({ error: passwordValidation.reason || 'Invalid password' }, { status: 400 })
-    }
+    // Zod already validated email/password
 
     // Prevent duplicate accounts using normalized email
     const normalized = String(email).trim().toLowerCase()
-    const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized } })
+    const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })
     if (existing) {
       await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Signup: Account exists' })
       return NextResponse.json({ error: 'Account already exists' }, { status: 409 })

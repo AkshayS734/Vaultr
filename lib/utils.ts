@@ -58,6 +58,26 @@ export function truncate(str: string | null | undefined, maxLength: number): str
   return str
 }
 
+// Read and parse JSON from Request with a byte-size limit
+export async function readLimitedJson<T = unknown>(
+  request: Request,
+  maxBytes: number
+): Promise<T> {
+  const lenHeader = request.headers.get("content-length");
+  if (lenHeader) {
+    const contentLength = parseInt(lenHeader, 10);
+    if (!Number.isNaN(contentLength) && contentLength > maxBytes) {
+      throw new Error("PAYLOAD_TOO_LARGE");
+    }
+  }
+  const text = await request.text();
+  const byteLength = Buffer.byteLength(text, "utf8");
+  if (byteLength > maxBytes) {
+    throw new Error("PAYLOAD_TOO_LARGE");
+  }
+  return JSON.parse(text) as T;
+}
+
 /**
  * Validate email format and length
  * RFC 5322 compliant with additional checks

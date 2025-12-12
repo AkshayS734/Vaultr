@@ -1,6 +1,20 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/logout', { method: 'POST' })
+      router.push('/')
+    } catch (err) {
+      console.error('Logout failed', err)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="mx-auto max-w-5xl">
@@ -8,7 +22,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           <nav className="space-x-3">
             <Link href="/" className="text-sm text-gray-600 dark:text-gray-300 hover:underline">Home</Link>
-            <Link href="/logout" className="text-sm text-red-600 hover:underline">Logout</Link>
+            <button onClick={handleLogout} className="text-sm text-red-600 hover:underline">Logout</button>
           </nav>
         </header>
 
