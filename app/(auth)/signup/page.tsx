@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Match Zod schemas from @/schemas/auth
 function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPassword(password: string) {
+  return password.length >= 8 && password.length <= 128;
 }
 
 function passwordStrength(pw: string) {
@@ -34,8 +39,8 @@ export default function SignupPage() {
       setEmailError(null);
     }
 
-    if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters");
+    if (!isValidPassword(password)) {
+      setPasswordError("Password must be 8-128 characters");
       ok = false;
     } else {
       setPasswordError(null);

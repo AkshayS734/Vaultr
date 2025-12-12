@@ -53,13 +53,13 @@ export async function POST(req: Request) {
     const normalized = String(email).trim().toLowerCase()
     const user = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true, email: true, authHash: true } })
     if (!user) {
-      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'User not found' })
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'User not found' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     const verified = await argon2.verify(user.authHash, password)
     if (!verified) {
-      await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Invalid password' })
+      await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Invalid password' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     const refreshTokenHash = await argon2.hash(refreshToken)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    const userAgent = truncate(req.headers.get('user-agent'), 500)
+    const userAgent = truncate(req.headers.get('user-agent'), 256)
 
     const createdSession = await prisma.session.create({
       data: {

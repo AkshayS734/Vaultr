@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       // Delete session by ID (simple case)
       try {
         // Verify that the refresh token matches before deletion (security check)
-        const session = await prisma.session.findUnique({ where: { id: sessionId } })
+        const session = await prisma.session.findUnique({ where: { id: sessionId }, select: { refreshTokenHash: true, userId: true } })
         if (session && refresh) {
           const tokenMatches = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
           if (tokenMatches) {

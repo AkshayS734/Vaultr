@@ -12,10 +12,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     if (!sessionId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const current = await prisma.session.findUnique({ where: { id: sessionId } })
+    const current = await prisma.session.findUnique({ where: { id: sessionId }, select: { userId: true } })
     if (!current) return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
 
-    const target = await prisma.session.findUnique({ where: { id } })
+    const target = await prisma.session.findUnique({ where: { id }, select: { userId: true } })
     if (!target) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
 
     if (target.userId !== current.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

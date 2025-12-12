@@ -16,7 +16,7 @@ export default async function SessionsPage() {
     )
   }
 
-  const session = await prisma.session.findUnique({ where: { id: sessionId } })
+  const session = await prisma.session.findUnique({ where: { id: sessionId }, select: { userId: true } })
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">

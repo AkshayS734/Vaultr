@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const sessionId = cookies.sessionId
 
     if (sessionId) {
-      const s = await prisma.session.findUnique({ where: { id: sessionId } })
+      const s = await prisma.session.findUnique({ where: { id: sessionId }, select: { refreshTokenHash: true } })
       if (s) {
         try {
           if (refresh && (await argon2.verify(s.refreshTokenHash, refresh))) {

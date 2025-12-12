@@ -38,7 +38,9 @@ export async function POST(req: Request) {
       if (!parsed.success) {
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
       }
-      var { email, password } = parsed.data
+      const { email: parsedEmail, password: parsedPassword } = parsed.data
+      var email = parsedEmail
+      var password = parsedPassword
     } catch (e) {
       if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
         return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
     const normalized = String(email).trim().toLowerCase()
     const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })
     if (existing) {
-      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 500), reason: 'Signup: Account exists' })
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Signup: Account exists' })
       return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
     }
 
@@ -73,7 +75,7 @@ export async function POST(req: Request) {
     const refreshTokenHash = await argon2.hash(refreshToken)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    const userAgent = truncate(req.headers.get('user-agent'), 500)
+    const userAgent = truncate(req.headers.get('user-agent'), 256)
 
     const createdSession = await prisma.session.create({
       data: {
