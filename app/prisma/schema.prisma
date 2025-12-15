@@ -48,31 +48,29 @@ model User {
 }
 
 model Vault {
-  id         String    @id @default(uuid())
-  userId     String    @unique
-  user       User      @relation("UserToVault", fields: [userId], references: [id], onDelete: Cascade)
-  items      Item[]
-  blob       Bytes // encrypted vault JSON (client-side encrypted)
-  kdfParams  Json
-  cipherMeta Json
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime? // soft-delete marker
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation("UserToVault", fields: [userId], references: [id], onDelete: Cascade)
+  items             Item[]
+  encryptedVaultKey String    // Base64 encoded encrypted vault key
+  salt              String    // Base64 encoded salt for KEK derivation
+  kdfParams         Json      // { algorithm: "PBKDF2", iterations: 100000, ... }
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime? // soft-delete marker
 
   @@index([userId])
 }
 
 model Item {
-  id        String    @id @default(uuid())
-  vaultId   String
-  vault     Vault     @relation(fields: [vaultId], references: [id], onDelete: Cascade)
-  // If storing any sensitive metadata, make sure the client encrypts it before sending.
-  // For strict zero-knowledge, consider storing title/meta as Bytes (encrypted) instead of plaintext.
-  title     String?
-  meta      Json?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // soft-delete marker
+  id            String    @id @default(uuid())
+  vaultId       String
+  vault         Vault     @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  encryptedData String    // Base64 encoded encrypted JSON blob { title, username, password, ... }
+  iv            String    // Base64 encoded IV
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // soft-delete marker
 
   @@index([vaultId])
 }

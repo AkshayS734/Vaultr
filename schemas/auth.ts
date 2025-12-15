@@ -18,6 +18,9 @@ export const loginSchema = z.object({
 export const signupSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+  encryptedVaultKey: z.string(),
+  salt: z.string(),
+  kdfParams: z.record(z.unknown()),
 });
 
 export const refreshSchema = z.object({

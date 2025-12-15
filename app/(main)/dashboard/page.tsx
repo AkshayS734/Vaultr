@@ -1,51 +1,122 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useVault } from "@/components/VaultProvider";
+import { base64ToArrayBuffer } from "@/lib/crypto";
+
+interface PasswordItem {
+  id: string;
+  title: string;
+  username?: string;
+  // ... other fields
+}
 
 export default function DashboardPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const { vaultKey, isUnlocked } = useVault();
+  const [items, setItems] = useState<PasswordItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleLogout = async () => {
     try {
-      await fetch('/logout', { method: 'POST' })
-      router.push('/')
+      await fetch("/logout", { method: "POST" });
+      router.push("/");
     } catch (err) {
-      console.error('Logout failed', err)
+      console.error("Logout failed", err);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (!isUnlocked) return; // VaultProvider will redirect
+
+    async function fetchItems() {
+      try {
+        const res = await fetch("/api/passwords");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const encryptedItems = await res.json();
+
+        const decryptedItems = await Promise.all(
+          encryptedItems.map(async (item: any) => {
+            try {
+              const iv = new Uint8Array(base64ToArrayBuffer(item.iv));
+              const encryptedData = base64ToArrayBuffer(item.encryptedData);
+
+              const decryptedBuffer = await window.crypto.subtle.decrypt(
+                { name: "AES-GCM", iv },
+                vaultKey!,
+                encryptedData
+              );
+
+              const decoder = new TextDecoder();
+              const jsonStr = decoder.decode(decryptedBuffer);
+              const data = JSON.parse(jsonStr);
+              return { id: item.id, ...data };
+            } catch (e) {
+              console.error("Failed to decrypt item", item.id, e);
+              return { id: item.id, title: "Error decrypting" };
+            }
+          })
+        );
+
+        setItems(decryptedItems);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchItems();
+  }, [isUnlocked, vaultKey]);
+
+  if (!isUnlocked) return null; // Or loading spinner
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="mx-auto max-w-5xl">
         <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Dashboard
+          </h1>
           <nav className="space-x-3">
-            <Link href="/" className="text-sm text-gray-600 dark:text-gray-300 hover:underline">Home</Link>
-            <button onClick={handleLogout} className="text-sm text-red-600 hover:underline">Logout</button>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-red-600 hover:underline"
+            >
+              Logout
+            </button>
           </nav>
         </header>
 
-        <section className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Vaults</h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Create and manage your encrypted vaults.</p>
-            <div className="mt-4">
-              <Link href="/vaults/new" className="inline-block rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">New Vault</Link>
+        <section className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Your Passwords</h2>
+                <Link href="/passwords/new" className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    Add Password
+                </Link>
             </div>
-          </div>
-
-          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">View recent logins and changes to your vaults.</p>
-          </div>
-
-          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Account</h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Manage your account settings, security, and keys.</p>
-          </div>
+            
+            {loading ? (
+                <p>Loading...</p>
+            ) : items.length === 0 ? (
+                <p className="text-gray-500">No passwords found.</p>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {items.map(item => (
+                        <div key={item.id} className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+                            <h3 className="font-bold text-lg">{item.title}</h3>
+                            <p className="text-sm text-gray-500">{item.username}</p>
+                            <Link href={`/passwords/${item.id}`} className="text-blue-600 text-sm hover:underline mt-2 inline-block">
+                                View Details
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
         </section>
       </div>
     </div>
-  )
+  );
 }

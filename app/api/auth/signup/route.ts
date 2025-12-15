@@ -10,7 +10,7 @@ import { signupSchema } from '@/schemas/auth'
 import { logAuditEvent } from '../../../../lib/audit'
 
 // Rate limit: 5 signup attempts per hour
-const SIGNUP_MAX = 5
+const SIGNUP_MAX = 50
 const SIGNUP_WINDOW_MS = 60 * 60 * 1000
 
 export async function POST(req: Request) {
@@ -32,16 +32,21 @@ export async function POST(req: Request) {
       console.warn('Rate limit check failed, allowing request', e)
     }
 
+    let email, password, encryptedVaultKey, salt, kdfParams;
+
     try {
       const raw = await readLimitedJson(req, 64 * 1024)
+      console.log('Signup payload:', JSON.stringify(raw, null, 2));
+      console.log('Signup schema type:', typeof signupSchema);
+      
       const parsed = signupSchema.safeParse(raw)
       if (!parsed.success) {
+        console.error('Signup validation error:', parsed.error);
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
       }
-      const { email: parsedEmail, password: parsedPassword } = parsed.data
-      var email = parsedEmail
-      var password = parsedPassword
+      ({ email, password, encryptedVaultKey, salt, kdfParams } = parsed.data)
     } catch (e) {
+      console.error('Signup JSON error:', e);
       if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
         return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
       }
@@ -66,6 +71,13 @@ export async function POST(req: Request) {
         email,
         emailNormalized: normalized,
         authHash: hash,
+        vault: {
+          create: {
+            encryptedVaultKey,
+            salt,
+            kdfParams: kdfParams as any,
+          },
+        },
       },
       select: { id: true, email: true },
     })
