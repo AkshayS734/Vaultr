@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generateVaultKey, deriveKeyFromPassword, encryptVaultKey, arrayBufferToBase64 } from "@/lib/crypto";
+import { generateVaultKey, deriveKeyFromPasswordScrypt, encryptVaultKey, arrayBufferToBase64, generateKdfParamsScrypt } from "@/lib/crypto";
 
 // Match Zod schemas from @/schemas/auth
 function isValidEmail(email: string) {
@@ -87,24 +87,21 @@ export default function SignupPage() {
 
     setIsSubmitting(true);
     try {
-      // Generate Salt
+      // Generate Salt (16 bytes random)
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       const saltBase64 = arrayBufferToBase64(salt.buffer);
 
-      // Generate Vault Key
+      // Generate Vault Key (random 256-bit AES key)
       const vaultKey = await generateVaultKey();
 
-      // Derive KEK
-      const kek = await deriveKeyFromPassword(masterPassword, salt);
+      // Derive KEK using scrypt (current default, memory-hard ~64 MiB)
+      const kek = await deriveKeyFromPasswordScrypt(masterPassword, salt);
 
-      // Encrypt Vault Key
+      // Encrypt Vault Key with KEK
       const encryptedVaultKey = await encryptVaultKey(vaultKey, kek);
 
-      const kdfParams = {
-        algorithm: "PBKDF2",
-        iterations: 100000,
-        hash: "SHA-256",
-      };
+      // Generate KDF parameters (includes version identifier for backward compatibility)
+      const kdfParams = generateKdfParamsScrypt();
 
       const res = await fetch('/api/auth/signup', {
         method: 'POST',

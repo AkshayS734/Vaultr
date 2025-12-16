@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/components/VaultProvider";
-import { deriveKeyFromPassword, base64ToArrayBuffer } from "@/lib/crypto";
+import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/lib/crypto";
 
 export default function UnlockPage() {
   const [masterPassword, setMasterPassword] = useState("");
@@ -36,31 +36,14 @@ export default function UnlockPage() {
       const data = await res.json();
       const { encryptedVaultKey, salt, kdfParams } = data;
 
-      // 2. Derive KEK
-      const saltBuffer = base64ToArrayBuffer(salt);
-      const kek = await deriveKeyFromPassword(masterPassword, new Uint8Array(saltBuffer));
+      // 2. Derive KEK using appropriate algorithm (auto-detects v1=PBKDF2 or v2=Argon2id)
+      const kek = await deriveKeyFromPasswordAuto(masterPassword, salt, kdfParams);
 
-      // 3. Decrypt Vault Key
-      const encryptedBuffer = base64ToArrayBuffer(encryptedVaultKey);
-      const iv = new Uint8Array(encryptedBuffer.slice(0, 12));
-      const dataBuffer = new Uint8Array(encryptedBuffer.slice(12));
+      // 3. Decrypt Vault Key (simplified using new helper function)
+      const vaultKey = await decryptVaultKey(encryptedVaultKey, kek);
 
-      const vaultKey = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv },
-        kek,
-        dataBuffer
-      );
-
-      // 4. Import Vault Key
-      const importedVaultKey = await window.crypto.subtle.importKey(
-        "raw",
-        vaultKey,
-        { name: "AES-GCM" },
-        true,
-        ["encrypt", "decrypt"]
-      );
-
-      setVaultKey(importedVaultKey);
+      // 4. Store decrypted key in vault context
+      setVaultKey(vaultKey);
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
