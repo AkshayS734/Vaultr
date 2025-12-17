@@ -11,6 +11,13 @@ const requiredEnvVars = [
 const optionalEnvVars = [
   'REDIS_URL',
   'NODE_ENV',
+  'NEXT_PUBLIC_BASE_URL', // For email verification links
+  'SMTP_HOST',            // Email server configuration
+  'SMTP_PORT',
+  'SMTP_USER',
+  'SMTP_PASS',
+  'SMTP_FROM',
+  'SMTP_SECURE',
 ]
 
 export function validateEnvironment(): void {
@@ -58,4 +65,19 @@ export function isProduction(): boolean {
  */
 export function hasRedis(): boolean {
   return !!process.env.REDIS_URL
+}
+
+/**
+ * Check if email is configured
+ */
+export function hasEmail(): boolean {
+  if (process.env.NODE_ENV !== 'production') {
+    return true // In development, we log emails instead of sending
+  }
+  return !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  )
 }

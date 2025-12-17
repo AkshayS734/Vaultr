@@ -51,7 +51,10 @@ export async function POST(req: Request) {
   // Zod already validated email/password
 
     const normalized = String(email).trim().toLowerCase()
-    const user = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true, email: true, authHash: true } })
+    const user = await prisma.user.findUnique({ 
+      where: { emailNormalized: normalized }, 
+      select: { id: true, email: true, authHash: true, isEmailVerified: true } 
+    })
     if (!user) {
       await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'User not found' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
@@ -61,6 +64,20 @@ export async function POST(req: Request) {
     if (!verified) {
       await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Invalid password' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+
+    // Check if email is verified (for password manager security)
+    if (!user.isEmailVerified) {
+      await logAuditEvent('LOGIN_FAILED', user.id, { 
+        email: normalized, 
+        ip, 
+        userAgent: truncate(req.headers.get('user-agent'), 256), 
+        reason: 'Email not verified' 
+      })
+      return NextResponse.json({ 
+        error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+        code: 'EMAIL_NOT_VERIFIED'
+      }, { status: 403 })
     }
 
     // Create refresh token + session

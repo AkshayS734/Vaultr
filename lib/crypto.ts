@@ -524,3 +524,67 @@ export async function decryptItem(
   const jsonStr = decoder.decode(decryptedBuffer);
   return JSON.parse(jsonStr);
 }
+
+// ============================================================================
+// EMAIL VERIFICATION TOKEN UTILITIES (Server-side only)
+// ============================================================================
+
+/**
+ * Generate a cryptographically secure random token for email verification
+ * Returns 32 bytes (256 bits) as hex string (64 characters)
+ * 
+ * SECURITY:
+ * - Uses crypto.randomBytes for CSPRNG
+ * - 256 bits of entropy prevents brute force
+ * - One-time use, expires in 24 hours
+ */
+export function generateVerificationToken(): string {
+  // Server-side only check
+  if (typeof window !== 'undefined') {
+    throw new Error('generateVerificationToken must only be called server-side')
+  }
+  
+  const crypto = require('crypto')
+  return crypto.randomBytes(32).toString('hex')
+}
+
+/**
+ * Hash a verification token using SHA-256
+ * Store the hash in the database, never the plain token
+ * 
+ * @param token - Plain verification token
+ * @returns SHA-256 hash as hex string
+ */
+export function hashVerificationToken(token: string): string {
+  // Server-side only check
+  if (typeof window !== 'undefined') {
+    throw new Error('hashVerificationToken must only be called server-side')
+  }
+  
+  const crypto = require('crypto')
+  return crypto.createHash('sha256').update(token).digest('hex')
+}
+
+/**
+ * Verify a token against its hash using constant-time comparison
+ * Prevents timing attacks
+ * 
+ * @param token - Plain token to verify
+ * @param hash - Stored hash to compare against
+ * @returns True if token matches hash
+ */
+export function verifyTokenHash(token: string, hash: string): boolean {
+  // Server-side only check
+  if (typeof window !== 'undefined') {
+    throw new Error('verifyTokenHash must only be called server-side')
+  }
+  
+  const crypto = require('crypto')
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+  
+  // Use constant-time comparison to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(tokenHash, 'hex'),
+    Buffer.from(hash, 'hex')
+  )
+}

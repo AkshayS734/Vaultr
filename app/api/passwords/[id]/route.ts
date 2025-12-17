@@ -1,27 +1,21 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import cookie from 'cookie'
+import { requireAuth } from '@/lib/auth-utils'
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const cookieHeader = req.headers.get('cookie') || ''
-    const cookies = cookie.parse(cookieHeader || '')
-    const sessionId = cookies.sessionId
-
-    if (!sessionId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-    const session = await prisma.session.findUnique({ 
-      where: { id: sessionId }, 
-      select: { userId: true, expiresAt: true } 
-    })
-
-    if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+    
+    // Verify authentication and email verification
+    const auth = await requireAuth(req, true)
+    if (!auth.success) {
+      return auth.response
     }
 
+    const { user } = auth
+
     const vault = await prisma.vault.findUnique({
-      where: { userId: session.userId },
+      where: { userId: user.id },
       select: { id: true }
     })
 
@@ -48,23 +42,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const cookieHeader = req.headers.get('cookie') || ''
-    const cookies = cookie.parse(cookieHeader || '')
-    const sessionId = cookies.sessionId
-
-    if (!sessionId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-    const session = await prisma.session.findUnique({ 
-      where: { id: sessionId }, 
-      select: { userId: true, expiresAt: true } 
-    })
-
-    if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+    
+    // Verify authentication and email verification
+    const auth = await requireAuth(req, true)
+    if (!auth.success) {
+      return auth.response
     }
 
+    const { user } = auth
+
     const vault = await prisma.vault.findUnique({
-      where: { userId: session.userId },
+      where: { userId: user.id },
       select: { id: true }
     })
 
@@ -94,23 +82,17 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const cookieHeader = req.headers.get('cookie') || ''
-    const cookies = cookie.parse(cookieHeader || '')
-    const sessionId = cookies.sessionId
-
-    if (!sessionId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-    const session = await prisma.session.findUnique({ 
-      where: { id: sessionId }, 
-      select: { userId: true, expiresAt: true } 
-    })
-
-    if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+    
+    // Verify authentication and email verification
+    const auth = await requireAuth(req, true)
+    if (!auth.success) {
+      return auth.response
     }
 
+    const { user } = auth
+
     const vault = await prisma.vault.findUnique({
-      where: { userId: session.userId },
+      where: { userId: user.id },
       select: { id: true }
     })
 

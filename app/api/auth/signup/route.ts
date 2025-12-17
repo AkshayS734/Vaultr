@@ -8,6 +8,8 @@ import { rateLimit } from '../../../../lib/redis'
 import { getClientIp, truncate, readLimitedJson } from '../../../../lib/utils'
 import { signupSchema } from '@/schemas/auth'
 import { logAuditEvent } from '../../../../lib/audit'
+import { generateVerificationToken, hashVerificationToken } from '../../../../lib/crypto'
+import { sendVerificationEmail } from '../../../../lib/email'
 
 // Rate limit: 5 signup attempts per hour
 const SIGNUP_MAX = 50
@@ -128,6 +130,43 @@ export async function POST(req: Request) {
 
     // Log successful signup
     await logAuditEvent('SIGNUP_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
+
+    // Generate and send email verification token
+    try {
+      const verificationToken = generateVerificationToken()
+      const tokenHash = hashVerificationToken(verificationToken)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+      // Delete any existing verification tokens for this user
+      await prisma.verificationToken.deleteMany({
+        where: { userId: user.id }
+      })
+
+      // Create new verification token
+      await prisma.verificationToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+        },
+      })
+
+      // Send verification email (don't block on this)
+      sendVerificationEmail(user.email, verificationToken)
+        .then((sent) => {
+          if (sent) {
+            logAuditEvent('EMAIL_VERIFICATION_SENT', user.id, { email: normalized })
+          } else {
+            console.error('Failed to send verification email to', user.email)
+          }
+        })
+        .catch((err) => {
+          console.error('Error sending verification email:', err)
+        })
+    } catch (emailError) {
+      // Don't fail signup if email fails
+      console.error('Email verification setup failed:', emailError)
+    }
 
     const response = NextResponse.json({ accessToken }, { status: 201 })
     response.headers.append('Set-Cookie', refreshCookie)

@@ -25,6 +25,9 @@ enum AuditEvent {
   PASSWORD_UPDATE
   RECOVERY_REQUEST
   RECOVERY_COMPLETE
+  EMAIL_VERIFICATION_SENT
+  EMAIL_VERIFIED
+  EMAIL_VERIFICATION_FAILED
   OTHER
 }
 
@@ -40,9 +43,10 @@ model User {
   deletedAt       DateTime? // soft-delete marker
 
   // relations
-  vault     Vault?     @relation("UserToVault")
-  sessions  Session[]
-  auditLogs AuditLog[]
+  vault              Vault?              @relation("UserToVault")
+  sessions           Session[]
+  auditLogs          AuditLog[]
+  verificationTokens VerificationToken[]
 
   @@index([emailNormalized])
 }
@@ -102,4 +106,17 @@ model AuditLog {
   @@index([userId])
   @@index([eventType])
   @@index([createdAt])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 hash of the actual token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenHash])
 }
