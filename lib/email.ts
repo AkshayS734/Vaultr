@@ -83,7 +83,7 @@ export async function sendVerificationEmail(
   token: string
 ): Promise<boolean> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-  const verificationLink = `${baseUrl}/api/auth/verify-email?token=${token}`
+  const verificationLink = `${baseUrl}/verify-email?token=${token}`
   
   const html = `
     <!DOCTYPE html>
