@@ -25,7 +25,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     const item = await prisma.item.findUnique({
       where: { id },
-      select: { id: true, vaultId: true, encryptedData: true, iv: true, createdAt: true, updatedAt: true }
+      select: { 
+        id: true, 
+        vaultId: true, 
+        secretType: true,
+        encryptedData: true, 
+        iv: true,
+        metadata: true,
+        createdAt: true, 
+        updatedAt: true 
+      }
     })
 
     if (!item || item.vaultId !== vault.id) {
@@ -101,10 +110,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const body = await req.json()
-    const { encryptedData, iv } = body
+    const { encryptedData, iv, metadata, secretType } = body
 
     if (!encryptedData || !iv) {
       return NextResponse.json({ error: 'Missing encrypted data' }, { status: 400 })
+    }
+
+    // Validate that metadata doesn't contain sensitive data
+    if (metadata) {
+      const { validateMetadataSafety } = await import('@/lib/secret-utils')
+      try {
+        validateMetadataSafety(metadata)
+      } catch (validationError) {
+        console.error('Metadata validation failed:', validationError)
+        return NextResponse.json({ 
+          error: 'Invalid metadata: contains sensitive data' 
+        }, { status: 400 })
+      }
     }
 
     // Verify item belongs to vault
@@ -117,12 +139,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
+    const updateData: any = {
+      encryptedData,
+      iv,
+    }
+    
+    if (metadata !== undefined) {
+      updateData.metadata = metadata
+    }
+    
+    if (secretType) {
+      updateData.secretType = secretType
+    }
+
     const updated = await prisma.item.update({
       where: { id },
-      data: {
-        encryptedData,
-        iv
-      }
+      data: updateData
     })
 
     return NextResponse.json(updated)

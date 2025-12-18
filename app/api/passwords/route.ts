@@ -23,7 +23,15 @@ export async function GET(req: Request) {
 
     const items = await prisma.item.findMany({
       where: { vaultId: vault.id },
-      select: { id: true, encryptedData: true, iv: true, createdAt: true, updatedAt: true }
+      select: { 
+        id: true, 
+        secretType: true,
+        encryptedData: true, 
+        iv: true,
+        metadata: true,
+        createdAt: true, 
+        updatedAt: true 
+      }
     })
 
     return NextResponse.json(items)
@@ -53,17 +61,32 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { encryptedData, iv } = body
+    const { encryptedData, iv, metadata, secretType } = body
 
     if (!encryptedData || !iv) {
       return NextResponse.json({ error: 'Missing encrypted data' }, { status: 400 })
     }
 
+    // Validate that metadata doesn't contain sensitive data
+    if (metadata) {
+      const { validateMetadataSafety } = await import('@/lib/secret-utils')
+      try {
+        validateMetadataSafety(metadata)
+      } catch (validationError) {
+        console.error('Metadata validation failed:', validationError)
+        return NextResponse.json({ 
+          error: 'Invalid metadata: contains sensitive data' 
+        }, { status: 400 })
+      }
+    }
+
     const item = await prisma.item.create({
       data: {
         vaultId: vault.id,
+        secretType: secretType || 'PASSWORD', // Default to PASSWORD for backward compatibility
         encryptedData,
-        iv
+        iv,
+        metadata: metadata || null,
       }
     })
 

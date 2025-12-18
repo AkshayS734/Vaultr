@@ -11,6 +11,12 @@ datasource db {
   // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+enum SecretType {
+  PASSWORD
+  API_KEY
+  ENV_VARS
+}
+
 enum AuditEvent {
   LOGIN_SUCCESS
   LOGIN_FAILED
@@ -71,16 +77,19 @@ model Vault {
 }
 
 model Item {
-  id            String    @id @default(uuid())
+  id            String     @id @default(uuid())
   vaultId       String
-  vault         Vault     @relation(fields: [vaultId], references: [id], onDelete: Cascade)
-  encryptedData String    // Base64 encoded encrypted JSON blob { title, username, password, ... }
-  iv            String    // Base64 encoded IV
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime? // soft-delete marker
+  vault         Vault      @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  secretType    SecretType @default(PASSWORD) // Type of secret stored
+  encryptedData String     // Base64 encoded encrypted JSON blob with ALL sensitive values
+  iv            String     // Base64 encoded IV
+  metadata      Json?      // ONLY non-sensitive fields (masked values, descriptions)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?  // soft-delete marker
 
   @@index([vaultId])
+  @@index([secretType])
 }
 
 model Session {
