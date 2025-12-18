@@ -16,6 +16,7 @@ function isValidPassword(password: string) {
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -52,26 +53,35 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  // Load rate limiting data from localStorage
+  // Load remember me data and rate limiting data from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(`resend_lock_${email}`);
-    if (stored) {
-      const data = JSON.parse(stored);
-      const now = Date.now();
-      
-      if (data.lockUntil > now) {
-        setLockUntil(data.lockUntil);
-        setResendAttempts(data.attempts || 0);
-      } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
-        // Reset after 24 hours past lock expiry
-        localStorage.removeItem(`resend_lock_${email}`);
-        setResendAttempts(0);
-        setLockUntil(null);
-      } else {
-        setResendAttempts(data.attempts || 0);
+    const remembered = localStorage.getItem("remembered_email");
+    if (remembered) {
+      setEmail(remembered);
+      setRememberMe(true);
+    }
+
+    // Load rate limiting data
+    const storedEmail = remembered || email;
+    if (storedEmail) {
+      const stored = localStorage.getItem(`resend_lock_${storedEmail}`);
+      if (stored) {
+        const data = JSON.parse(stored);
+        const now = Date.now();
+        
+        if (data.lockUntil > now) {
+          setLockUntil(data.lockUntil);
+          setResendAttempts(data.attempts || 0);
+        } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(`resend_lock_${storedEmail}`);
+          setResendAttempts(0);
+          setLockUntil(null);
+        } else {
+          setResendAttempts(data.attempts || 0);
+        }
       }
     }
-  }, [email]);
+  }, []);
 
   // Countdown timer
   useEffect(() => {
@@ -186,6 +196,13 @@ export default function LoginPage() {
         return;
       }
 
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem("remembered_email", email);
+      } else {
+        localStorage.removeItem("remembered_email");
+      }
+
       // Success — redirect to dashboard
       router.replace('/dashboard');
     } catch (err) {
@@ -252,10 +269,16 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <label className="inline-flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <input type="checkbox" className="mr-2" /> Remember me
+              <input 
+                type="checkbox" 
+                className="mr-2 rounded" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              /> 
+              Remember me
             </label>
-            <Link href="/" className="text-sm text-blue-600 hover:underline">
-              Forgot?
+            <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+              Forgot password?
             </Link>
           </div>
 

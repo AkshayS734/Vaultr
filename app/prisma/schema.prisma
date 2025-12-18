@@ -28,6 +28,9 @@ enum AuditEvent {
   EMAIL_VERIFICATION_SENT
   EMAIL_VERIFIED
   EMAIL_VERIFICATION_FAILED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+  PASSWORD_RESET_FAILED
   OTHER
 }
 
@@ -47,6 +50,7 @@ model User {
   sessions           Session[]
   auditLogs          AuditLog[]
   verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([emailNormalized])
 }
@@ -109,6 +113,19 @@ model AuditLog {
 }
 
 model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 hash of the actual token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenHash])
+}
+
+model PasswordResetToken {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

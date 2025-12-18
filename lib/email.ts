@@ -209,3 +209,82 @@ If you have any questions, feel free to reach out to our support team.
     text,
   })
 }
+
+/**
+ * Send password reset email to user
+ */
+export async function sendPasswordResetEmail(
+  email: string,
+  token: string
+): Promise<boolean> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const resetLink = `${baseUrl}/reset-password?token=${token}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .button { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            background-color: #0070f3; 
+            color: #ffffff; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            margin: 20px 0;
+          }
+          .footer { margin-top: 40px; font-size: 12px; color: #666; }
+          .warning { background-color: #fff3cd; padding: 12px; border-radius: 5px; margin: 20px 0; color: #856404; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>Reset Your Password</h2>
+          <p>We received a request to reset your password. Click the link below to create a new password.</p>
+          
+          <a href="${resetLink}" class="button">Reset Password</a>
+          
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; color: #0070f3;">${resetLink}</p>
+          
+          <p><strong>This link will expire in 24 hours.</strong></p>
+          
+          <div class="warning">
+            <p><strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email. Your account is safe.</p>
+          </div>
+          
+          <div class="footer">
+            <p>For security reasons, never share this link with anyone.</p>
+            <p>If you have any questions, contact our support team.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  const text = `
+Reset Your Password
+
+We received a request to reset your password. Click the link below to create a new password.
+
+${resetLink}
+
+This link will expire in 24 hours.
+
+⚠️ Security Notice: If you didn't request this password reset, please ignore this email. Your account is safe.
+
+For security reasons, never share this link with anyone.
+If you have any questions, contact our support team.
+  `.trim()
+
+  return sendEmail({
+    to: email,
+    subject: 'Reset Your Vaultr Password',
+    html,
+    text,
+  })
+}
