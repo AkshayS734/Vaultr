@@ -17,14 +17,13 @@ interface EmailOptions {
  * Supports both SMTP and development mode (ethereal email)
  */
 function createTransporter() {
-  const isDev = process.env.NODE_ENV !== 'production'
-  
-  // In production, use SMTP credentials from env
-  if (!isDev) {
+  const useSMTP = process.env.EMAIL_MODE === 'smtp'
+
+  if (useSMTP) {
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -32,7 +31,7 @@ function createTransporter() {
     })
   }
 
-  // In development, log email to console (no actual sending)
+  // Console / dev mode
   return nodemailer.createTransport({
     streamTransport: true,
     newline: 'unix',
@@ -46,7 +45,7 @@ function createTransporter() {
 async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
     const transporter = createTransporter()
-    const isDev = process.env.NODE_ENV !== 'production'
+    const isConsole = process.env.EMAIL_MODE !== 'smtp'
     
     const mailOptions = {
       from: process.env.SMTP_FROM || 'noreply@vaultr.app',
@@ -59,7 +58,7 @@ async function sendEmail(options: EmailOptions): Promise<boolean> {
     const info = await transporter.sendMail(mailOptions)
     
     // In development, log the email content
-    if (isDev) {
+    if (isConsole) {
       console.log('📧 Email would be sent in production:')
       console.log('To:', options.to)
       console.log('Subject:', options.subject)
@@ -68,7 +67,7 @@ async function sendEmail(options: EmailOptions): Promise<boolean> {
     } else {
       console.log('Email sent:', info.messageId)
     }
-    
+    console.log("EMAIL_MODE:", process.env.EMAIL_MODE)
     return true
   } catch (error) {
     console.error('Failed to send email:', error)
