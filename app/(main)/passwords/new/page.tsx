@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/components/VaultProvider";
-import { arrayBufferToBase64 } from "@/lib/crypto";
+import { encryptItem } from "@/lib/crypto";
 
 export default function NewPasswordPage() {
   const router = useRouter();
@@ -37,18 +37,11 @@ export default function NewPasswordPage() {
 
       // 2. Encrypt payload
       const enc = new TextEncoder();
-      const encodedPayload = enc.encode(payload);
-      const iv = window.crypto.getRandomValues(new Uint8Array(12));
-      
-      const encryptedBuffer = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        vaultKey,
-        encodedPayload
+      // 3. Encrypt using centralized function
+      const { encryptedData, iv: ivBase64 } = await encryptItem(
+        { title, username, password, website, notes },
+        vaultKey
       );
-
-      // 3. Convert to Base64 for transport
-      const encryptedData = arrayBufferToBase64(encryptedBuffer);
-      const ivBase64 = arrayBufferToBase64(iv.buffer);
 
       // 4. Send to backend
       const res = await fetch("/api/passwords", {

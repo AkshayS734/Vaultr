@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useVault } from "@/components/VaultProvider";
-import { base64ToArrayBuffer } from "@/lib/crypto";
+import { decryptItem } from "@/lib/crypto";
 
 interface PasswordItem {
   id: string;
@@ -40,18 +40,11 @@ export default function DashboardPage() {
         const decryptedItems = await Promise.all(
           encryptedItems.map(async (item: any) => {
             try {
-              const iv = new Uint8Array(base64ToArrayBuffer(item.iv));
-              const encryptedData = base64ToArrayBuffer(item.encryptedData);
-
-              const decryptedBuffer = await window.crypto.subtle.decrypt(
-                { name: "AES-GCM", iv },
-                vaultKey!,
-                encryptedData
-              );
-
-              const decoder = new TextDecoder();
-              const jsonStr = decoder.decode(decryptedBuffer);
-              const data = JSON.parse(jsonStr);
+              // Validate that required fields exist
+              if (!item.encryptedData || !item.iv) {
+                throw new Error('Missing encryptedData or iv');
+              }
+              const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
               return { id: item.id, ...data };
             } catch (e) {
               console.error("Failed to decrypt item", item.id, e);

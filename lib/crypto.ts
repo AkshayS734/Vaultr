@@ -450,13 +450,22 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 export function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binary_string = window.atob(base64);
-  const len = binary_string.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary_string.charCodeAt(i);
+  try {
+    // Trim whitespace and validate base64
+    const trimmed = String(base64).trim();
+    if (!trimmed) {
+      throw new Error('Empty Base64 string');
+    }
+    const binary_string = window.atob(trimmed);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+  } catch (err) {
+    throw new Error(`Failed to decode Base64: ${err instanceof Error ? err.message : String(err)}`);
   }
-  return bytes.buffer;
 }
 
 // ============================================================================

@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/components/VaultProvider";
-import { arrayBufferToBase64, base64ToArrayBuffer } from "@/lib/crypto";
+import { encryptItem, decryptItem } from "@/lib/crypto";
 
 export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -33,19 +33,13 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
         
         const item = await res.json();
         
-        // Decrypt
-        const iv = new Uint8Array(base64ToArrayBuffer(item.iv));
-        const encryptedData = base64ToArrayBuffer(item.encryptedData);
-
-        const decryptedBuffer = await window.crypto.subtle.decrypt(
-          { name: "AES-GCM", iv },
-          vaultKey!,
-          encryptedData
-        );
-
-        const decoder = new TextDecoder();
-        const jsonStr = decoder.decode(decryptedBuffer);
-        const data = JSON.parse(jsonStr);
+        // Validate required fields
+        if (!item.encryptedData || !item.iv) {
+          throw new Error("Missing encrypted data");
+        }
+        
+        // Decrypt using centralized function with correct parameters
+        const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
 
         setTitle(data.title || "");
         setUsername(data.username || "");
@@ -74,26 +68,11 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
     try {
       if (!vaultKey) throw new Error("Vault is locked");
 
-      const payload = JSON.stringify({
-        title,
-        username,
-        password,
-        website,
-        notes,
-      });
-
-      const enc = new TextEncoder();
-      const encodedPayload = enc.encode(payload);
-      const iv = window.crypto.getRandomValues(new Uint8Array(12));
-      
-      const encryptedBuffer = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        vaultKey,
-        encodedPayload
+      // Encrypt using centralized function
+      const { encryptedData, iv: ivBase64 } = await encryptItem(
+        { title, username, password, website, notes },
+        vaultKey
       );
-
-      const encryptedData = arrayBufferToBase64(encryptedBuffer);
-      const ivBase64 = arrayBufferToBase64(iv.buffer);
 
       const res = await fetch(`/api/passwords/${id}`, {
         method: "PUT",
