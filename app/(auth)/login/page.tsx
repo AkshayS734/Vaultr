@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 // Match Zod schemas from @/schemas/auth
@@ -16,10 +16,21 @@ function isValidPassword(password: string) {
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Email verification state
+  const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  
+  // Rate limiting state
+  const [resendAttempts, setResendAttempts] = useState(0);
+  const [lockUntil, setLockUntil] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState(0);
 
   function validate() {
     let ok = true;
@@ -42,6 +53,122 @@ export default function LoginPage() {
 
   const router = useRouter();
 
+  // Load remember me data and rate limiting data from localStorage
+  useEffect(() => {
+    const remembered = localStorage.getItem("remembered_email");
+    if (remembered) {
+      setEmail(remembered);
+      setRememberMe(true);
+    }
+
+    // Load rate limiting data
+    const storedEmail = remembered || email;
+    if (storedEmail) {
+      const stored = localStorage.getItem(`resend_lock_${storedEmail}`);
+      if (stored) {
+        const data = JSON.parse(stored);
+        const now = Date.now();
+        
+        if (data.lockUntil > now) {
+          setLockUntil(data.lockUntil);
+          setResendAttempts(data.attempts || 0);
+        } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(`resend_lock_${storedEmail}`);
+          setResendAttempts(0);
+          setLockUntil(null);
+        } else {
+          setResendAttempts(data.attempts || 0);
+        }
+      }
+    }
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (!lockUntil) {
+      setCountdown(0);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000));
+      setCountdown(remaining);
+      
+      if (remaining === 0) {
+        setLockUntil(null);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [lockUntil]);
+
+  function formatCountdown(seconds: number): string {
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${mins}m`;
+    } else if (seconds >= 60) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}m ${secs}s`;
+    }
+    return `${seconds}s`;
+  }
+
+  async function handleResendVerification() {
+    // Check if locked (already at max attempts or time-locked)
+    if (resendAttempts >= 3 || (lockUntil && lockUntil > Date.now())) {
+      return;
+    }
+
+    setIsResending(true);
+    setResendMessage(null);
+    
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        setResendMessage('Verification email sent! Please check your inbox.');
+        
+        // Calculate new lock time with progressive delays: 30s, 60s, 120s
+        const newAttempts = resendAttempts + 1;
+        const lockDuration = 30000 * Math.pow(2, newAttempts - 1);
+        
+        const newLockUntil = Date.now() + lockDuration;
+        setLockUntil(newLockUntil);
+        setResendAttempts(newAttempts);
+        
+        // Save to localStorage
+        localStorage.setItem(`resend_lock_${email}`, JSON.stringify({
+          attempts: newAttempts,
+          lockUntil: newLockUntil,
+        }));
+      } else if (res.status === 429) {
+        // Backend rate limit reached (all 3 attempts used)
+        setResendMessage('Too many resend attempts. You can try again in 1 hour.');
+        setResendAttempts(3); // Mark as maxed out
+        localStorage.setItem(`resend_lock_${email}`, JSON.stringify({
+          attempts: 3,
+          lockUntil: Date.now() + 1000, // Lock immediately
+        }));
+      } else {
+        setResendMessage(data?.error || 'Failed to resend email. Please try again.');
+      }
+    } catch (err) {
+      setResendMessage('Failed to resend email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setGeneralError(null);
@@ -58,11 +185,25 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setGeneralError(data?.error || 'Unable to sign in');
+        // Check if error is due to unverified email
+        if (res.status === 403 && data?.code === 'EMAIL_NOT_VERIFIED') {
+          setIsEmailNotVerified(true);
+          setGeneralError(data?.error || 'Please verify your email address');
+        } else {
+          setIsEmailNotVerified(false);
+          setGeneralError(data?.error || 'Unable to sign in');
+        }
         return;
       }
 
-        // Success — redirect to dashboard
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem("remembered_email", email);
+      } else {
+        localStorage.removeItem("remembered_email");
+      }
+
+      // Success — redirect to dashboard
       router.replace('/dashboard');
     } catch (err) {
       setGeneralError('Unable to sign in. Please try again.');
@@ -128,14 +269,58 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <label className="inline-flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <input type="checkbox" className="mr-2" /> Remember me
+              <input 
+                type="checkbox" 
+                className="mr-2 rounded" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              /> 
+              Remember me
             </label>
-            <Link href="/" className="text-sm text-blue-600 hover:underline">
-              Forgot?
+            <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+              Forgot password?
             </Link>
           </div>
 
-          {generalError && <p className="text-sm text-red-600">{generalError}</p>}
+          {generalError && (
+            <div className="space-y-3">
+              <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
+                <p className="text-sm text-red-800 dark:text-red-200">{generalError}</p>
+              </div>
+              
+              {isEmailNotVerified && (
+                <div>
+                  {resendMessage && (
+                    <div className={`mb-3 p-3 rounded-md ${
+                      resendMessage.includes('sent') 
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
+                        : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200'
+                    }`}>
+                      <p className="text-sm">{resendMessage}</p>
+                    </div>
+                  )}
+                  
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending || countdown > 0}
+                    className={`w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium ${
+                      isResending || countdown > 0
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                  >
+                    {isResending 
+                      ? 'Sending...' 
+                      : countdown > 0 
+                        ? `Wait ${formatCountdown(countdown)}` 
+                        : 'Resend Verification Email'
+                    }
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"
