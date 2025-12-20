@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useVault } from "@/components/VaultProvider";
 import { decryptItem } from "@/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/lib/secret-utils";
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { vaultKey, isUnlocked } = useVault();
   const [items, setItems] = useState<PasswordItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchInProgressRef = useRef(false);
 
   const handleLogout = async () => {
     try {
@@ -31,7 +32,9 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!isUnlocked) return; // VaultProvider will redirect
+    if (!isUnlocked || fetchInProgressRef.current) return;
+
+    fetchInProgressRef.current = true;
 
     async function fetchItems() {
       try {
@@ -78,6 +81,7 @@ export default function DashboardPage() {
         console.error(err);
       } finally {
         setLoading(false);
+        fetchInProgressRef.current = false;
       }
     }
 
