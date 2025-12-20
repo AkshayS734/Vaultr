@@ -33,13 +33,14 @@ export const PasswordEncryptedPayloadSchema = z.object({
 
 /**
  * Password metadata (ONLY non-sensitive data)
- * SECURITY: No full passwords allowed
+ * SECURITY CRITICAL: No full passwords or partial secrets allowed
+ * Only non-reversible derived information (length, counts, flags)
  */
 export const PasswordMetadataSchema = z.object({
   type: z.literal('PASSWORD'),
   title: z.string().min(1),
   username: z.string().optional().default(''),
-  passwordMask: z.string().regex(/^\*{3,}.*$|^$/, 'Password mask must be masked (***...)'),
+  passwordLength: z.number().int().min(0), // Safe: only length, no real characters
   website: z.string().optional().default(''),
   hasNotes: z.boolean(),
 }).strict(); // strict mode prevents additional fields
@@ -62,13 +63,14 @@ export const ApiKeyEncryptedPayloadSchema = z.object({
 
 /**
  * API Key metadata (ONLY non-sensitive data)
- * SECURITY: No full API keys allowed
+ * SECURITY CRITICAL: No full API keys or partial secrets allowed
+ * Only non-reversible derived information (length, counts, flags)
  */
 export const ApiKeyMetadataSchema = z.object({
   type: z.literal('API_KEY'),
   title: z.string().min(1),
   serviceName: z.string().min(1),
-  apiKeyMask: z.string().regex(/^\*{3,}.*$|^$/, 'API key mask must be masked (***...)'),
+  apiKeyLength: z.number().int().min(0), // Safe: only length, no real characters
   environment: z.string().optional().default('production'),
   hasNotes: z.boolean(),
 }).strict();
@@ -171,34 +173,71 @@ export const UpdateSecretRequestSchema = z.object({
 
 /**
  * Validate that metadata does NOT contain forbidden sensitive fields
- * This is a runtime safety check beyond Zod validation
+ * SECURITY CRITICAL: Runtime safety check beyond Zod validation
+ * 
+ * Detects and rejects:
+ * - Forbidden field names (password, apiKey, secret, token, etc.)
+ * - Partial secret patterns (e.g., "***word" that reveals real characters)
+ * - Any nested secret data
  */
 export function validateMetadataSecurity(metadata: unknown): void {
   if (!metadata || typeof metadata !== 'object') {
     return;
   }
 
-  const forbiddenPatterns = [
-    /password(?!mask)/i,
-    /apikey(?!mask)/i,
-    /^value$/i,
-    /^secret$/i,
-    /^token$/i,
-    /credential/i,
-  ];
+  // Forbidden field names (exact match to avoid false positives like passwordLength)
+  const forbiddenKeys = new Set([
+    'password',
+    'apikey',
+    'api_key',
+    'value',
+    'secret',
+    'token',
+    'credential',
+    'mask',
+    'apikeyMask',
+    'apiKeyMask',
+    'passwordMask',
+  ]);
+
+  // Allowed field names for metadata
+  const allowedKeys = new Set([
+    'type',
+    'title',
+    'username',
+    'website',
+    'serviceName',
+    'environment',
+    'description',
+    'variableCount',
+    'variableKeys',
+    'hasNotes',
+    'passwordLength',
+    'apiKeyLength',
+  ]);
 
   const checkObject = (obj: Record<string, unknown>, path = ''): void => {
     if (!obj || typeof obj !== 'object') return;
 
     for (const [key, value] of Object.entries(obj)) {
       const fullPath = path ? `${path}.${key}` : key;
+      const lowerKey = key.toLowerCase();
 
-      // Check if key matches forbidden patterns
-      for (const pattern of forbiddenPatterns) {
-        if (pattern.test(key)) {
+      // Check if key is explicitly forbidden (exact match)
+      if (forbiddenKeys.has(lowerKey)) {
+        throw new Error(
+          `SECURITY VIOLATION: Metadata field "${fullPath}" is forbidden. ` +
+          `Full secrets must ONLY be in encryptedData, never in metadata.`
+        );
+      }
+
+      // Check string values for partial secret patterns
+      if (typeof value === 'string' && value.length > 0) {
+        // Detect patterns like "***word" that expose real characters
+        if (/^\*+[^*]+$/.test(value)) {
           throw new Error(
-            `Security violation: Metadata field "${fullPath}" matches forbidden pattern. ` +
-            `Full secrets must ONLY be in encryptedData, never in metadata.`
+            `SECURITY VIOLATION: Metadata field "${fullPath}" contains a partial secret ` +
+            `pattern ("${value}") that reveals real characters. This is strictly forbidden.`
           );
         }
       }
@@ -216,9 +255,24 @@ export function validateMetadataSecurity(metadata: unknown): void {
         }
       }
 
-      // Recursively check nested objects
+      // Recursively check nested objects and arrays
       if (typeof value === 'object' && value !== null) {
-        checkObject(value as Record<string, unknown>, fullPath);
+        if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            if (typeof item === 'object' && item !== null) {
+              checkObject(item as Record<string, unknown>, `${fullPath}[${index}]`);
+            }
+            // Also check string array items for secret patterns
+            if (typeof item === 'string' && /^\*+[^*]+$/.test(item)) {
+              throw new Error(
+                `SECURITY VIOLATION: Array item at "${fullPath}[${index}]" contains ` +
+                `a partial secret pattern that reveals real characters.`
+              );
+            }
+          });
+        } else {
+          checkObject(value as Record<string, unknown>, fullPath);
+        }
       }
     }
   };

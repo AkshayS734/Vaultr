@@ -12,7 +12,6 @@ interface PasswordItem {
   secretType: string;
   title: string;
   username?: string;
-  passwordMask?: string;
   metadata?: any;
 }
 
@@ -60,7 +59,6 @@ export default function DashboardPage() {
                 secretType: item.secretType || 'PASSWORD',
                 title: metadata.title || data.title || 'Untitled',
                 username: metadata.username || data.username,
-                passwordMask: metadata.passwordMask,
                 metadata
               };
             } catch (e) {
@@ -171,11 +169,9 @@ export default function DashboardPage() {
                               <p className="text-sm text-gray-500 dark:text-gray-400">{item.metadata.variableCount} variable{item.metadata.variableCount !== 1 ? 's' : ''}</p>
                             )}
                             
-                            {item.passwordMask && (
-                              <p className="text-sm text-gray-400 dark:text-gray-500 font-mono mt-1">{item.passwordMask}</p>
-                            )}
-                            {item.metadata?.apiKeyMask && (
-                              <p className="text-sm text-gray-400 dark:text-gray-500 font-mono mt-1">{item.metadata.apiKeyMask}</p>
+                            {/* Generic secure indicator - NO real secret fragments */}
+                            {(item.secretType === 'PASSWORD' || item.secretType === 'API_KEY') && (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 font-mono mt-1">••••••••</p>
                             )}
                             
                             <Link href={detailLink} className="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-3 inline-block">

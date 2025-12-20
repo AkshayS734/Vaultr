@@ -1,15 +1,59 @@
 /**
  * Secret Management Utilities
+ * ============================
  * 
- * SECURITY ARCHITECTURE:
- * - encryptedData: Contains ALL sensitive values, fully encrypted
- * - metadata: Contains ONLY non-sensitive, masked, or descriptive fields
+ * CRITICAL SECURITY ARCHITECTURE:
+ * -------------------------------
+ * This module enforces strict encryption boundaries to prevent secret leakage.
+ * A database leak of Item.metadata alone MUST reveal ZERO usable secret information.
  * 
- * STRICT RULES:
- * 1. NEVER store full or partial secrets in metadata
- * 2. Only last 4 characters for masking (consistent standard)
- * 3. Search and filtering operate ONLY on metadata and never on secrets
- * 4. No logging, indexing, or partial encryption of secrets
+ * ENCRYPTION BOUNDARY RULES:
+ * 
+ * 1. encryptedData (Encrypted, Sensitive):
+ *    - Contains ALL sensitive values: passwords, API keys, env var values, notes
+ *    - Always encrypted with vault key before storage
+ *    - Never logged, indexed, or transmitted unencrypted
+ *    - Structure: JSON blob with complete secret information
+ * 
+ * 2. metadata (Unencrypted, Public):
+ *    - Contains ONLY non-sensitive UI information
+ *    - Can be safely logged, indexed, and exposed in listings
+ *    - MUST NOT contain:
+ *      ✗ Real secret values (passwords, API keys, tokens)
+ *      ✗ Partial secrets or fragments (e.g., "***word" reveals last 4 chars)
+ *      ✗ Masks with real characters
+ *      ✗ Environment variable values
+ *    - MAY contain:
+ *      ✓ Titles / labels
+ *      ✓ Usernames (if not sensitive)
+ *      ✓ Service names
+ *      ✓ Environment names (e.g., "production")
+ *      ✓ Counts (e.g., number of env vars)
+ *      ✓ Boolean flags (e.g., hasNotes)
+ *      ✓ Non-reversible derived info (e.g., secret length)
+ *      ✓ ENV_VARS: Variable KEYS only (never values)
+ * 
+ * FORBIDDEN PATTERNS:
+ * - maskSecret('myPassword') → "***word"   EXPOSES REAL CHARACTERS
+ * - metadata.apiKeyMask = "***local"   EXPOSES REAL CHARACTERS
+ * - metadata.envVars = [{key: "API_KEY", value: "secret"}]   EXPOSES VALUES
+ * 
+ * SAFE PATTERNS:
+ * - metadata.passwordLength = 12 ✓ Non-reversible
+ * - metadata.variableKeys = ["API_KEY", "DB_URL"] ✓ Keys only, no values
+ * - metadata.hasNotes = true ✓ Boolean flag
+ * - Generic mask: "********" ✓ Reveals nothing
+ * 
+ * VALIDATION:
+ * - All metadata creation uses centralized builders (buildMetadata)
+ * - Runtime validation rejects forbidden fields (validateMetadataSafety)
+ * - Zod schemas enforce structure (schemas/secrets.ts)
+ * - API routes validate before storage
+ * 
+ * SEARCH AND FILTERING:
+ * - Operates ONLY on metadata fields
+ * - Never decrypts or searches within encryptedData
+ * - Client-side filtering requires decryption (post-fetch)
  */
 
 export enum SecretType {
@@ -80,11 +124,12 @@ export interface EnvVarsEncryptedPayload {
 export type EncryptedPayload = PasswordEncryptedPayload | ApiKeyEncryptedPayload | EnvVarsEncryptedPayload;
 
 // Metadata types
+// SECURITY: Metadata must contain ONLY non-sensitive information
 export interface PasswordMetadata {
   type: SecretType.PASSWORD;
   title: string;
   username: string;
-  passwordMask: string;
+  passwordLength: number; // Non-reversible: only length, no real characters
   website: string;
   hasNotes: boolean;
 }
@@ -93,7 +138,7 @@ export interface ApiKeyMetadata {
   type: SecretType.API_KEY;
   title: string;
   serviceName: string;
-  apiKeyMask: string;
+  apiKeyLength: number; // Non-reversible: only length, no real characters
   environment: string;
   hasNotes: boolean;
 }
@@ -185,25 +230,39 @@ export function buildEncryptedPayload(
 // ============================================================================
 
 /**
- * Mask a secret value - show only last 4 characters
- * SECURITY: Never show more than last 4 chars
+ * Create a generic mask for a secret value
+ * SECURITY CRITICAL: NEVER include any real characters from the secret
+ * 
+ * @param value - The secret value to mask
+ * @returns A generic mask string that reveals NO secret information
  */
-export function maskSecret(value: string): string {
+export function createGenericMask(value: string): string {
   if (!value || value.length === 0) return '';
-  if (value.length <= 4) return '****';
-  return '***' + value.slice(-4);
+  // Return a fixed generic mask - reveals NOTHING about the actual secret
+  return '********';
+}
+
+/**
+ * Get the length of a secret value (non-reversible metadata)
+ * 
+ * @param value - The secret value
+ * @returns The length of the secret (safe to store in metadata)
+ */
+export function getSecretLength(value: string): number {
+  return value ? value.length : 0;
 }
 
 /**
  * Build metadata for a PASSWORD secret
- * ONLY non-sensitive, masked, or descriptive fields
+ * SECURITY CRITICAL: Contains ONLY non-sensitive, non-reversible information
+ * NO real secret characters or fragments allowed
  */
 export function buildPasswordMetadata(input: PasswordInput): PasswordMetadata {
   return {
     type: SecretType.PASSWORD,
     title: input.title,
     username: input.username || '',
-    passwordMask: maskSecret(input.password),
+    passwordLength: getSecretLength(input.password), // Safe: only length, no real chars
     website: input.website || '',
     hasNotes: Boolean(input.notes && input.notes.length > 0),
   };
@@ -211,14 +270,15 @@ export function buildPasswordMetadata(input: PasswordInput): PasswordMetadata {
 
 /**
  * Build metadata for an API_KEY secret
- * ONLY non-sensitive, masked, or descriptive fields
+ * SECURITY CRITICAL: Contains ONLY non-sensitive, non-reversible information
+ * NO real secret characters or fragments allowed
  */
 export function buildApiKeyMetadata(input: ApiKeyInput): ApiKeyMetadata {
   return {
     type: SecretType.API_KEY,
     title: input.title,
     serviceName: input.serviceName,
-    apiKeyMask: maskSecret(input.apiKey),
+    apiKeyLength: getSecretLength(input.apiKey), // Safe: only length, no real chars
     environment: input.environment || 'production',
     hasNotes: Boolean(input.notes && input.notes.length > 0),
   };
@@ -226,7 +286,8 @@ export function buildApiKeyMetadata(input: ApiKeyInput): ApiKeyMetadata {
 
 /**
  * Build metadata for ENV_VARS secret
- * ONLY non-sensitive, masked, or descriptive fields
+ * SECURITY CRITICAL: Contains ONLY non-sensitive information
+ * Variable KEYS only (never values), counts, and descriptors
  */
 export function buildEnvVarsMetadata(input: EnvVarsInput): EnvVarsMetadata {
   return {
@@ -234,7 +295,7 @@ export function buildEnvVarsMetadata(input: EnvVarsInput): EnvVarsMetadata {
     title: input.title,
     description: input.description || '',
     variableCount: input.variables.length,
-    variableKeys: input.variables.map(v => v.key), // Keys are not sensitive
+    variableKeys: input.variables.map(v => v.key), // Safe: Keys only, NEVER values
     hasNotes: Boolean(input.notes && input.notes.length > 0),
   };
 }
@@ -268,34 +329,86 @@ export function buildMetadata(
 
 /**
  * Validate that metadata does NOT contain any sensitive data
- * This is a safety check to prevent accidental secret leakage
+ * SECURITY CRITICAL: Runtime safety check to prevent secret leakage
  * 
  * @param metadata - Metadata object to validate
- * @throws Error if metadata contains forbidden fields
+ * @throws Error if metadata contains forbidden fields or secret fragments
  */
 export function validateMetadataSafety(metadata: Record<string, unknown>): void {
-  const forbiddenKeys = ['password', 'apiKey', 'value', 'secret', 'token'];
+  // FORBIDDEN: Exact field names that could contain real secret data
+  const forbiddenKeys = new Set([
+    'password',
+    'apikey',
+    'api_key',
+    'value',
+    'secret',
+    'token',
+    'credential',
+    'mask',
+    'apikeyMask',
+    'apiKeyMask',
+    'passwordMask',
+  ]);
+  
+  // ALLOWED: Safe fields that are explicitly permitted
+  const allowedKeys = new Set([
+    'type',
+    'title',
+    'username',
+    'website',
+    'serviceName',
+    'environment',
+    'description',
+    'variableCount',
+    'variableKeys',
+    'hasNotes',
+    'passwordLength',
+    'apiKeyLength',
+  ]);
   
   const checkObject = (obj: Record<string, unknown>, path = ''): void => {
     if (!obj || typeof obj !== 'object') return;
     
     for (const [key, value] of Object.entries(obj)) {
       const fullPath = path ? `${path}.${key}` : key;
+      const lowerKey = key.toLowerCase();
       
-      // Check for forbidden key names
-      if (forbiddenKeys.some(forbidden => key.toLowerCase().includes(forbidden))) {
-        // Allow masked versions
-        if (!key.toLowerCase().includes('mask')) {
+      // Check if key is explicitly forbidden (exact match)
+      if (forbiddenKeys.has(lowerKey)) {
+        throw new Error(
+          `SECURITY VIOLATION: Metadata field "${fullPath}" is forbidden. ` +
+          `Real secrets or fragments must ONLY exist in encryptedData, never in metadata.`
+        );
+      }
+      
+      // Warn about unexpected keys (not in allowed list and not forbidden)
+      if (!allowedKeys.has(key) && !forbiddenKeys.has(lowerKey)) {
+        console.warn(`Warning: Metadata field "${fullPath}" is not recognized. ` +
+          `Ensure this is not sensitive data.`);
+      }
+      
+      // Validate string values don't look like secrets
+      if (typeof value === 'string' && value.length > 0) {
+        // Check for patterns that look like partial secrets (e.g., "***word")
+        if (/^\*+[^*]+$/.test(value)) {
           throw new Error(
-            `Security violation: Metadata contains forbidden field "${fullPath}". ` +
-            `Sensitive data must ONLY be in encryptedData.`
+            `SECURITY VIOLATION: Metadata field "${fullPath}" contains what appears to be ` +
+            `a partial secret mask ("${value}"). This reveals real secret characters and is forbidden.`
           );
         }
       }
       
-      // Recursively check nested objects
+      // Recursively check nested objects and arrays
       if (typeof value === 'object' && value !== null) {
-        checkObject(value as Record<string, unknown>, fullPath);
+        if (Array.isArray(value)) {
+          value.forEach((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+              checkObject(item as Record<string, unknown>, `${fullPath}[${idx}]`);
+            }
+          });
+        } else {
+          checkObject(value as Record<string, unknown>, fullPath);
+        }
       }
     }
   };
@@ -419,7 +532,7 @@ export function buildMetadataFromDecrypted(
         type: SecretType.PASSWORD,
         title: String(decryptedData.title || ''),
         username: String(decryptedData.username || ''),
-        passwordMask: maskSecret(String(decryptedData.password || '')),
+        passwordLength: getSecretLength(String(decryptedData.password || '')), // Safe: length only
         website: String(decryptedData.website || ''),
         hasNotes: Boolean(decryptedData.notes && typeof decryptedData.notes === 'string' && decryptedData.notes.length > 0),
       };
@@ -429,7 +542,7 @@ export function buildMetadataFromDecrypted(
         type: SecretType.API_KEY,
         title: String(decryptedData.title || ''),
         serviceName: String(decryptedData.serviceName || ''),
-        apiKeyMask: maskSecret(String(decryptedData.apiKey || '')),
+        apiKeyLength: getSecretLength(String(decryptedData.apiKey || '')), // Safe: length only
         environment: String(decryptedData.environment || 'production'),
         hasNotes: Boolean(decryptedData.notes && typeof decryptedData.notes === 'string' && decryptedData.notes.length > 0),
       };

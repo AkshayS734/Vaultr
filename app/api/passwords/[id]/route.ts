@@ -116,15 +116,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Missing encrypted data' }, { status: 400 })
     }
 
-    // Validate that metadata doesn't contain sensitive data
+    // ENCRYPTION BOUNDARY VALIDATION
+    // ================================
+    // CRITICAL: Validate that metadata contains ONLY non-sensitive information
+    // - encryptedData: Contains ALL sensitive values (encrypted)
+    // - metadata: Contains ONLY non-sensitive UI metadata (unencrypted)
+    // - This validation prevents accidental secret leakage into metadata
     if (metadata) {
       const { validateMetadataSafety } = await import('@/lib/secret-utils')
+      const { validateMetadataSecurity } = await import('@/schemas/secrets')
+      
       try {
+        // Runtime validation: Check for forbidden fields and patterns
         validateMetadataSafety(metadata)
+        validateMetadataSecurity(metadata)
       } catch (validationError) {
         console.error('Metadata validation failed:', validationError)
         return NextResponse.json({ 
-          error: 'Invalid metadata: contains sensitive data' 
+          error: 'Invalid metadata: contains sensitive data or forbidden patterns' 
         }, { status: 400 })
       }
     }
