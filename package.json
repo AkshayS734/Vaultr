@@ -13,7 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prisma/client": "^5.13.0",
+    "@prisma/client": "5.22.0",
     "@types/nodemailer": "^7.0.4",
     "argon2": "^0.44.0",
     "cookie": "^1.1.1",
@@ -36,7 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
     "jest": "^30.2.0",
-    "prisma": "^5.13.0",
+    "prisma": "5.22.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",
     "typescript": "^5"
