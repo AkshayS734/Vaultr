@@ -81,7 +81,7 @@ export default function LoginPage() {
         }
       }
     }
-  }, []);
+  }, [email]);
 
   // Countdown timer
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function LoginPage() {
       } else {
         setResendMessage(data?.error || 'Failed to resend email. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setResendMessage('Failed to resend email. Please try again.');
     } finally {
       setIsResending(false);
@@ -205,7 +205,7 @@ export default function LoginPage() {
 
       // Success — redirect to dashboard
       router.replace('/dashboard');
-    } catch (err) {
+    } catch {
       setGeneralError('Unable to sign in. Please try again.');
     } finally {
       setIsSubmitting(false);

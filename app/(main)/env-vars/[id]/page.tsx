@@ -50,12 +50,15 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
         }
         
         // Decrypt using centralized function
-        const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
+        const data = await decryptItem<Record<string, unknown>>(item.encryptedData, item.iv, vaultKey!);
 
-        setTitle(data.title || "");
-        setDescription(data.description || "");
-        setVariables(data.variables || [{ key: "", value: "" }]);
-        setNotes(data.notes || "");
+        setTitle(typeof data.title === 'string' ? data.title : "");
+        setDescription(typeof data.description === 'string' ? data.description : "");
+        setVariables(Array.isArray((data as { variables?: unknown }).variables)
+          ? (data as { variables?: EnvVariable[] }).variables ?? [{ key: "", value: "" }]
+          : [{ key: "", value: "" }]);
+        const notesValue = (data as { notes?: unknown }).notes;
+        setNotes(typeof notesValue === 'string' ? notesValue : "");
       } catch (err) {
         console.error(err);
         setError("Failed to load environment variables");

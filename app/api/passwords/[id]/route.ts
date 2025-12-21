@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { Prisma, SecretType as PrismaSecretType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-utils'
 
@@ -148,7 +149,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    const updateData: any = {
+    const updateData: {
+      encryptedData: string;
+      iv: string;
+      metadata?: Prisma.InputJsonValue;
+      secretType?: PrismaSecretType;
+    } = {
       encryptedData,
       iv,
     }
@@ -158,7 +164,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     
     if (secretType) {
-      updateData.secretType = secretType
+      updateData.secretType = secretType as PrismaSecretType
     }
 
     const updated = await prisma.item.update({

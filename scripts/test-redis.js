@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 function readEnvFile(file) {
   try {
     return fs.readFileSync(file, 'utf8');
-  } catch (e) {
+  } catch {
     return '';
   }
 }

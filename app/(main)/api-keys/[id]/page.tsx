@@ -48,11 +48,17 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
         // Decrypt using centralized function
         const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
 
-        setTitle(data.title || "");
-        setServiceName(data.serviceName || "");
-        setApiKey(data.apiKey || "");
-        setEnvironment(data.environment || "production");
-        setNotes(data.notes || "");
+        // Type narrowing for API key data
+        if (typeof data !== 'object' || data === null) {
+          throw new Error('Invalid decrypted data format');
+        }
+
+        const apiKeyData = data as Record<string, unknown>;
+        setTitle(String(apiKeyData.title || ""));
+        setServiceName(String(apiKeyData.serviceName || ""));
+        setApiKey(String(apiKeyData.apiKey || ""));
+        setEnvironment(String(apiKeyData.environment || "production"));
+        setNotes(String(apiKeyData.notes || ""));
       } catch (err) {
         console.error(err);
         setError("Failed to load API key details");

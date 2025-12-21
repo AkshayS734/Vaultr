@@ -155,6 +155,58 @@ export interface EnvVarsMetadata {
 export type Metadata = PasswordMetadata | ApiKeyMetadata | EnvVarsMetadata;
 
 // ============================================================================
+// TYPE GUARDS
+// ============================================================================
+
+/**
+ * Type guard to check if encrypted payload is a PasswordEncryptedPayload
+ */
+export function isPasswordEncryptedPayload(
+  payload: EncryptedPayload
+): payload is PasswordEncryptedPayload {
+  return payload.type === SecretType.PASSWORD;
+}
+
+/**
+ * Type guard to check if encrypted payload is an ApiKeyEncryptedPayload
+ */
+export function isApiKeyEncryptedPayload(
+  payload: EncryptedPayload
+): payload is ApiKeyEncryptedPayload {
+  return payload.type === SecretType.API_KEY;
+}
+
+/**
+ * Type guard to check if encrypted payload is an EnvVarsEncryptedPayload
+ */
+export function isEnvVarsEncryptedPayload(
+  payload: EncryptedPayload
+): payload is EnvVarsEncryptedPayload {
+  return payload.type === SecretType.ENV_VARS;
+}
+
+/**
+ * Type guard to check if metadata is PasswordMetadata
+ */
+export function isPasswordMetadata(metadata: Metadata): metadata is PasswordMetadata {
+  return metadata.type === SecretType.PASSWORD;
+}
+
+/**
+ * Type guard to check if metadata is ApiKeyMetadata
+ */
+export function isApiKeyMetadata(metadata: Metadata): metadata is ApiKeyMetadata {
+  return metadata.type === SecretType.API_KEY;
+}
+
+/**
+ * Type guard to check if metadata is EnvVarsMetadata
+ */
+export function isEnvVarsMetadata(metadata: Metadata): metadata is EnvVarsMetadata {
+  return metadata.type === SecretType.ENV_VARS;
+}
+
+// ============================================================================
 // ENCRYPTED PAYLOAD BUILDERS (ALL SENSITIVE DATA)
 // ============================================================================
 

@@ -200,22 +200,6 @@ export function validateMetadataSecurity(metadata: unknown): void {
     'passwordMask',
   ]);
 
-  // Allowed field names for metadata
-  const allowedKeys = new Set([
-    'type',
-    'title',
-    'username',
-    'website',
-    'serviceName',
-    'environment',
-    'description',
-    'variableCount',
-    'variableKeys',
-    'hasNotes',
-    'passwordLength',
-    'apiKeyLength',
-  ]);
-
   const checkObject = (obj: Record<string, unknown>, path = ''): void => {
     if (!obj || typeof obj !== 'object') return;
 

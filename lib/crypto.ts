@@ -505,7 +505,7 @@
    * @param vaultKey - Decrypted vault key (CryptoKey)
    * @returns { encryptedData: string, iv: string }
    */
-  export async function encryptItem<T extends Record<string, unknown>>(
+  export async function encryptItem<T extends object>(
     item: T,
     vaultKey: CryptoKey
   ): Promise<{ encryptedData: string; iv: string }> {
@@ -536,7 +536,7 @@
    * @param vaultKey - Decrypted vault key
    * @returns Parsed item object
    */
-  export async function decryptItem<T extends Record<string, unknown>>(
+  export async function decryptItem<T extends object>(
     encryptedData: string,
     iv: string,
     vaultKey: CryptoKey

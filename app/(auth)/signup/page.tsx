@@ -189,7 +189,7 @@ export default function SignupPage() {
       } else {
         setResendMessage(data?.error || 'Failed to resend email. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setResendMessage('Failed to resend email. Please try again.');
     } finally {
       setIsResending(false);

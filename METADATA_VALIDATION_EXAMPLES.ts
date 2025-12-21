@@ -194,6 +194,22 @@ const FORBIDDEN_METADATA_FIELDS = {
   ],
 };
 
+export const METADATA_EXAMPLES = {
+  goodPasswordMetadata,
+  badPasswordMetadata1,
+  badPasswordMetadata2,
+  badPasswordMetadata3,
+  goodApiKeyMetadata,
+  badApiKeyMetadata1,
+  badApiKeyMetadata2,
+  badApiKeyMetadata3,
+  goodEnvVarsMetadata,
+  badEnvVarsMetadata1,
+  badEnvVarsMetadata2,
+  ALLOWED_METADATA_FIELDS,
+  FORBIDDEN_METADATA_FIELDS,
+};
+
 // ============================================================================
 // VALIDATION FLOW
 // ============================================================================

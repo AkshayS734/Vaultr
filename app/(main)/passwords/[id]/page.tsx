@@ -9,8 +9,7 @@ import {
   buildEncryptedPayload, 
   buildMetadata,
   validatePasswordInput,
-  type PasswordInput,
-  detectSecretType
+  type PasswordInput
 } from "@/lib/secret-utils";
 
 export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +26,6 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
   const [password, setPassword] = useState("");
   const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
-  const [secretType, setSecretType] = useState<SecretType>(SecretType.PASSWORD);
   
   // Unwrap params
   const { id } = use(params);
@@ -48,17 +46,13 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
         }
         
         // Decrypt using centralized function with correct parameters
-        const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
+        const data = await decryptItem<Record<string, unknown>>(item.encryptedData, item.iv, vaultKey!);
 
-        // Detect secret type (backward compatibility)
-        const detectedType = detectSecretType(data);
-        setSecretType(detectedType);
-
-        setTitle(data.title || "");
-        setUsername(data.username || "");
-        setPassword(data.password || "");
-        setWebsite(data.website || "");
-        setNotes(data.notes || "");
+        setTitle(typeof data.title === 'string' ? data.title : "");
+        setUsername(typeof data.username === 'string' ? data.username : "");
+        setPassword(typeof data.password === 'string' ? data.password : "");
+        setWebsite(typeof data.website === 'string' ? data.website : "");
+        setNotes(typeof data.notes === 'string' ? data.notes : "");
       } catch (err) {
         console.error(err);
         setError("Failed to load password details");

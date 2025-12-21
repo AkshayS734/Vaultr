@@ -7,12 +7,14 @@ import { useVault } from "@/components/VaultProvider";
 import { decryptItem } from "@/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/lib/secret-utils";
 
+import type { Metadata } from "@/lib/secret-utils";
+
 interface PasswordItem {
   id: string;
   secretType: string;
   title: string;
   username?: string;
-  metadata?: any;
+  metadata?: Metadata | null;
 }
 
 export default function DashboardPage() {
@@ -43,16 +45,22 @@ export default function DashboardPage() {
         const encryptedItems = await res.json();
 
         const decryptedItems = await Promise.all(
-          encryptedItems.map(async (item: any) => {
+          encryptedItems.map(async (item: {
+            id: string;
+            encryptedData?: string;
+            iv?: string;
+            secretType?: string;
+            metadata?: unknown;
+          }) => {
             try {
               // Validate that required fields exist
               if (!item.encryptedData || !item.iv) {
                 throw new Error('Missing encryptedData or iv');
               }
-              const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
+              const data = await decryptItem<Record<string, unknown>>(item.encryptedData, item.iv, vaultKey!);
               
               // Use metadata if available, otherwise build from decrypted data (backward compatibility)
-              let metadata = item.metadata;
+              let metadata = item.metadata as Metadata | null | undefined;
               if (!metadata) {
                 metadata = buildMetadataFromDecrypted(data);
               }
@@ -60,8 +68,8 @@ export default function DashboardPage() {
               return { 
                 id: item.id, 
                 secretType: item.secretType || 'PASSWORD',
-                title: metadata.title || data.title || 'Untitled',
-                username: metadata.username || data.username,
+                title: metadata?.title || (typeof data.title === 'string' ? data.title : 'Untitled'),
+                username: metadata && 'username' in metadata ? metadata.username : (typeof (data as Record<string, unknown>).username === 'string' ? (data as Record<string, unknown>).username : undefined),
                 metadata
               };
             } catch (e) {
@@ -166,10 +174,10 @@ export default function DashboardPage() {
                             {item.username && (
                               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{item.username}</p>
                             )}
-                            {item.secretType === 'API_KEY' && item.metadata?.serviceName && (
+                            {item.secretType === 'API_KEY' && item.metadata && 'serviceName' in item.metadata && (
                               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{item.metadata.serviceName}</p>
                             )}
-                            {item.secretType === 'ENV_VARS' && item.metadata?.variableCount && (
+                            {item.secretType === 'ENV_VARS' && item.metadata && 'variableCount' in item.metadata && (
                               <p className="text-sm text-gray-500 dark:text-gray-400">{item.metadata.variableCount} variable{item.metadata.variableCount !== 1 ? 's' : ''}</p>
                             )}
                             
