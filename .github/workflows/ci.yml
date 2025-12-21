@@ -2,12 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
+      - devr*
   pull_request:
-    branches: [main, develop]
-
+    branches:
+      - main
+      - develop
+      - devr*
+  workflow_dispatch:
 jobs:
-  ci:
+  ci:   
     runs-on: ubuntu-latest
 
     services:
