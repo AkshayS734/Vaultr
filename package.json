@@ -10,7 +10,9 @@
     "prisma:generate": "prisma generate --schema=app/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=app/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=app/prisma/schema.prisma",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "ci": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
