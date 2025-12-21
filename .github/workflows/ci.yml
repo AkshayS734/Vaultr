@@ -56,8 +56,8 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npx prisma generate
-      - run: npx prisma migrate deploy
+      - run: npx prisma generate --schema=app/prisma/schema.prisma
+      - run: npx prisma migrate deploy --schema=app/prisma/schema.prisma
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
