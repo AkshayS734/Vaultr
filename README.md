@@ -1,78 +1,70 @@
 # Vaultr
 
-Vaultr is a Next.js (App Router) web application for securely managing passwords and secrets. This repository contains the frontend and API routes (serverless) built with Next.js, TypeScript, and React.
+Security-first password and secrets manager built on Next.js. Vaultr keeps encryption on the client and stores only encrypted blobs and hashed tokens server-side.
 
-## Features
+## Key Features
+- Client-side encryption for vault keys and items
+- Zero plaintext storage on the backend
+- Explicit vault unlock flow using a master password-derived key
+- Supports passwords, API keys, and environment variables
+- Audit-conscious design (soft deletes, structured data access paths)
 
-- Next.js App Router structure
-- TypeScript-first codebase
-- Serverless API routes under `app/api` and `api/`
-- Basic auth flow scaffolding in `app/(auth)`
+## High-Level Architecture
+- Frontend: Next.js App Router UI handling vault unlock, secret CRUD, and reveal UX
+- Backend: API routes under `app/api` and `api/` for auth, vault, and secret operations
+- Database: PostgreSQL via Prisma ORM and migrations
+- Encryption: Derivation and encryption happen in the browser (scrypt/PBKDF2 → KEK → vault key → AES-GCM for items)
+- Storage: Backend persists encrypted ciphertext and hashed tokens only
+
+## Security Model
+- Master password is never stored or transmitted
+- Key derivation and decryption run entirely on the client
+- Sensitive tokens (e.g., password reset, email verification) are stored hashed
+- Secrets require an explicit reveal action; no automatic exposure in listings
+- Soft-delete protections on user records to avoid silent data resurrection
 
 ## Tech Stack
+- Next.js (App Router) and React with TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL (e.g., Neon)
+- Zod for validation
+- GitHub Actions for CI
 
-- Next.js (App Router)
-- React
-- TypeScript
-- Node (npm)
-
-## Prerequisites
-
-- Node.js 18+ (or the version specified in `engines` if present)
-- npm (or your preferred package manager). This project uses `package-lock.json` for reproducible installs — keep it committed.
-
-## Setup
-
-1. Install dependencies:
-
-```bash
-npm install
-```
-
-2. Create environment variables. Copy the example and edit values:
-
-```bash
-cp .env.example .env.local
-# then edit `.env.local`
-```
-
-## Available Scripts
-
-- `npm run dev` — run the Next.js development server (localhost:3000)
-- `npm run build` — build the production app
-- `npm run start` — start the production server after build
-- `npm run lint` — run linters (if configured)
-- `npm test` — run tests (if configured)
-
-Run the dev server:
-
-```bash
-npm run dev
-```
+## Local Development Setup
+1. Prerequisites: Node.js 18+, npm, and access to a PostgreSQL instance
+2. Configure environment: create `.env.local` with the variables below
+3. Install dependencies: `npm install`
+4. Apply database schema: `npx prisma migrate dev --schema=prisma/schema.prisma`
+5. Run the dev server: `npm run dev` (defaults to http://localhost:3000)
+6. Optional: `npm run ci` to lint, type-check, and build
 
 ## Environment Variables
+- Required
+	- `DATABASE_URL`: PostgreSQL connection string
+	- `JWT_SECRET`: Secret for signing auth tokens
+- Optional
+	- `REDIS_URL`: Enables Redis-backed caching/session flows
+	- `NEXT_PUBLIC_BASE_URL`: Used for absolute links in emails
+	- SMTP settings for outbound email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_SECURE`
+	- `NODE_ENV`: Standard environment flag
 
-- `.env.local` (ignored by git) — runtime secrets
-- `.env.example` — committed example values for developers
+## Project Status
+- MVP under active development; not production-hardened or externally audited yet
 
-Keep sensitive values out of the repository. The `.gitignore` is configured to ignore `*.env*` while allowing `!.env.example`.
+## Folder Structure (brief)
+- `app/` — UI routes and server actions (auth, dashboard, vault flows)
+- `api/` — additional API route handlers
+- `lib/` — crypto, auth, database, email, and utility helpers
+- `prisma/` — Prisma schema and migrations
+- `components/` — shared UI and form components
 
-## Repository Notes
+## Roadmap
+- Offline-capable vault workflows
+- Browser extension for quick fill
+- Mobile clients
+- Third-party security audit and threat modeling refresh
 
-- `next-env.d.ts` should be tracked in the repo (it is no longer ignored).
-- Commit the appropriate lockfile for your package manager (`package-lock.json` for npm). Do not commit multiple lockfile types.
-- `.gitkeep` files may be present to ensure empty folders (for example `app/api/passwords/.gitkeep`). Replace with real files when ready or a short `README.md` explaining the folder purpose.
-
-## Project Structure (high level)
-
-- `app/` — Next.js App Router pages and layouts
-- `app/(auth)/` — auth-related routes and UI
-- `app/(main)/dashboard/` — main app routes
-- `api/` — Next-style API routes (edge/serverless)
-- `components/` — React components
-- `lib/` — shared libraries and helpers
-- `schemas/` — validation schemas (zod, etc.)
-
-## Contributing
-
-Contributions welcome. Create a branch, make changes, and open a pull request. Please include a clear description and tests for new features when applicable.
+## Disclaimer
+- Educational/experimental; no external security audit completed
+- Do not store real secrets in development or before an audit and hardening pass

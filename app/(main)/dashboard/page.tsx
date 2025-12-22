@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { useVault } from "@/components/VaultProvider";
+import { useVault } from "@/app/components/providers/VaultProvider";
 import { decryptItem } from "@/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/lib/secret-utils";
 
@@ -147,19 +147,19 @@ export default function DashboardPage() {
               {showAddMenu && (
                 <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-50 rounded-lg border border-[rgba(141,153,174,0.35)] bg-[rgba(43,45,66,0.9)] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                   <Link 
-                    href="/passwords/new"
+                    href="/secrets/passwords/new"
                     className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     🔑 Password
                   </Link>
                   <Link 
-                    href="/api-keys/new"
+                    href="/secrets/api-keys/new"
                     className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     🔐 API Key
                   </Link>
                   <Link 
-                    href="/env-vars/new"
+                    href="/secrets/env-vars/new"
                     className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     ⚙️ Environment Variables
@@ -268,16 +268,16 @@ export default function DashboardPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
             {filteredItems.map(item => {
               // Determine link based on secret type
-              let detailLink = `/passwords/${item.id}`;
+              let detailLink = `/secrets/passwords/${item.id}`;
               let typeLabel = 'PASSWORD';
               let typeIcon = '🔑';
               
               if (item.secretType === 'API_KEY') {
-                detailLink = `/api-keys/${item.id}`;
+                detailLink = `/secrets/api-keys/${item.id}`;
                 typeLabel = 'API KEY';
                 typeIcon = '🔐';
               } else if (item.secretType === 'ENV_VARS') {
-                detailLink = `/env-vars/${item.id}`;
+                detailLink = `/secrets/env-vars/${item.id}`;
                 typeLabel = 'ENV VARS';
                 typeIcon = '⚙️';
               }
@@ -352,16 +352,16 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-3">
             {filteredItems.map(item => {
               // Determine link based on secret type
-              let detailLink = `/passwords/${item.id}`;
+              let detailLink = `/secrets/passwords/${item.id}`;
               let typeLabel = 'PASSWORD';
               let typeIcon = '🔑';
               
               if (item.secretType === 'API_KEY') {
-                detailLink = `/api-keys/${item.id}`;
+                detailLink = `/secrets/api-keys/${item.id}`;
                 typeLabel = 'API KEY';
                 typeIcon = '🔐';
               } else if (item.secretType === 'ENV_VARS') {
-                detailLink = `/env-vars/${item.id}`;
+                detailLink = `/secrets/env-vars/${item.id}`;
                 typeLabel = 'ENV VARS';
                 typeIcon = '⚙️';
               }

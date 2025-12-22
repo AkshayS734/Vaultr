@@ -2,17 +2,17 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useVault } from "@/components/VaultProvider";
+import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem, decryptItem } from "@/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
-  validatePasswordInput,
-  type PasswordInput
+  validateApiKeyInput,
+  type ApiKeyInput
 } from "@/lib/secret-utils";
 
-export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { vaultKey, isUnlocked } = useVault();
   const [loading, setLoading] = useState(true);
@@ -22,9 +22,9 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
 
   // Form state
   const [title, setTitle] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [website, setWebsite] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [environment, setEnvironment] = useState("production");
   const [notes, setNotes] = useState("");
   
   // Unwrap params
@@ -36,7 +36,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
     async function fetchItem() {
       try {
         const res = await fetch(`/api/passwords/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch password");
+        if (!res.ok) throw new Error("Failed to fetch API key");
         
         const item = await res.json();
         
@@ -45,17 +45,23 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
           throw new Error("Missing encrypted data");
         }
         
-        // Decrypt using centralized function with correct parameters
-        const data = await decryptItem<Record<string, unknown>>(item.encryptedData, item.iv, vaultKey!);
+        // Decrypt using centralized function
+        const data = await decryptItem(item.encryptedData, item.iv, vaultKey!);
 
-        setTitle(typeof data.title === 'string' ? data.title : "");
-        setUsername(typeof data.username === 'string' ? data.username : "");
-        setPassword(typeof data.password === 'string' ? data.password : "");
-        setWebsite(typeof data.website === 'string' ? data.website : "");
-        setNotes(typeof data.notes === 'string' ? data.notes : "");
+        // Type narrowing for API key data
+        if (typeof data !== 'object' || data === null) {
+          throw new Error('Invalid decrypted data format');
+        }
+
+        const apiKeyData = data as Record<string, unknown>;
+        setTitle(String(apiKeyData.title || ""));
+        setServiceName(String(apiKeyData.serviceName || ""));
+        setApiKey(String(apiKeyData.apiKey || ""));
+        setEnvironment(String(apiKeyData.environment || "production"));
+        setNotes(String(apiKeyData.notes || ""));
       } catch (err) {
         console.error(err);
-        setError("Failed to load password details");
+        setError("Failed to load API key details");
       } finally {
         setLoading(false);
       }
@@ -75,23 +81,23 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
     try {
       if (!vaultKey) throw new Error("Vault is locked");
 
-      // Build password input
-      const passwordInput: PasswordInput = {
+      // Build API key input
+      const apiKeyInput: ApiKeyInput = {
         title,
-        username,
-        password,
-        website,
+        serviceName,
+        apiKey,
+        environment,
         notes,
       };
 
       // Validate input
-      validatePasswordInput(passwordInput);
+      validateApiKeyInput(apiKeyInput);
 
       // Build encrypted payload (ALL sensitive data)
-      const encryptedPayload = buildEncryptedPayload(SecretType.PASSWORD, passwordInput);
+      const encryptedPayload = buildEncryptedPayload(SecretType.API_KEY, apiKeyInput);
 
       // Build metadata (ONLY non-sensitive data)
-      const metadata = buildMetadata(SecretType.PASSWORD, passwordInput);
+      const metadata = buildMetadata(SecretType.API_KEY, apiKeyInput);
 
       // Encrypt the payload
       const { encryptedData, iv: ivBase64 } = await encryptItem(
@@ -106,23 +112,23 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
           encryptedData,
           iv: ivBase64,
           metadata,
-          secretType: SecretType.PASSWORD,
+          secretType: SecretType.API_KEY,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update password");
+      if (!res.ok) throw new Error("Failed to update API key");
 
       setIsEditing(false);
     } catch (err) {
       console.error(err);
-      setError("Failed to update password");
+      setError("Failed to update API key");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this password?")) return;
+    if (!confirm("Are you sure you want to delete this API key?")) return;
     
     try {
       const res = await fetch(`/api/passwords/${id}`, {
@@ -133,7 +139,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
       router.push("/dashboard");
     } catch (err) {
       console.error(err);
-      setError("Failed to delete password");
+      setError("Failed to delete API key");
     }
   }
 
@@ -178,7 +184,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
       <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit Password" : title}
+            {isEditing ? "Edit API Key" : title}
           </h1>
           {!isEditing && (
             <div className="space-x-2">
@@ -212,42 +218,32 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/85">Username</label>
-            <div className="flex">
-              <input
-                type="text"
-                disabled={!isEditing}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-              />
-              {!isEditing && username && (
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(username)}
-                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
-                >
-                  Copy
-                </button>
-              )}
-            </div>
+            <label className="block text-sm font-medium text-white/85">Service Name</label>
+            <input
+              type="text"
+              required
+              disabled={!isEditing}
+              value={serviceName}
+              onChange={(e) => setServiceName(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/85">Password</label>
+            <label className="block text-sm font-medium text-white/85">API Key</label>
             <div className="flex">
               <input
                 type={isEditing ? "text" : "password"}
                 required
                 disabled={!isEditing}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
               />
               {!isEditing && (
                 <button
                   type="button"
-                  onClick={() => navigator.clipboard.writeText(password)}
+                  onClick={() => navigator.clipboard.writeText(apiKey)}
                   className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
                 >
                   Copy
@@ -257,26 +253,18 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/85">Website</label>
-            <div className="flex">
-              <input
-                type="url"
-                disabled={!isEditing}
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-              />
-              {!isEditing && website && (
-                <a
-                  href={website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae] hover:underline flex items-center"
-                >
-                  Open
-                </a>
-              )}
-            </div>
+            <label className="block text-sm font-medium text-white/85">Environment</label>
+            <select
+              disabled={!isEditing}
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+            >
+              <option value="production">Production</option>
+              <option value="staging">Staging</option>
+              <option value="development">Development</option>
+              <option value="testing">Testing</option>
+            </select>
           </div>
 
           <div>

@@ -2,27 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useVault } from "@/components/VaultProvider";
+import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem } from "@/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
-  validateEnvVarsInput,
-  type EnvVarsInput 
+  validateApiKeyInput,
+  type ApiKeyInput 
 } from "@/lib/secret-utils";
 
-interface EnvVariable {
-  key: string;
-  value: string;
-}
-
-export default function NewEnvVarsPage() {
+export default function NewApiKeyPage() {
   const router = useRouter();
   const { vaultKey, isUnlocked } = useVault();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [variables, setVariables] = useState<EnvVariable[]>([{ key: "", value: "" }]);
+  const [serviceName, setServiceName] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [environment, setEnvironment] = useState("production");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,20 +34,6 @@ export default function NewEnvVarsPage() {
 
   if (!isUnlocked) return null;
 
-  const addVariable = () => {
-    setVariables([...variables, { key: "", value: "" }]);
-  };
-
-  const removeVariable = (index: number) => {
-    setVariables(variables.filter((_, i) => i !== index));
-  };
-
-  const updateVariable = (index: number, field: "key" | "value", val: string) => {
-    const updated = [...variables];
-    updated[index][field] = val;
-    setVariables(updated);
-  };
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -60,25 +42,23 @@ export default function NewEnvVarsPage() {
     try {
       if (!vaultKey) throw new Error("Vault is locked");
 
-      // Filter out empty variables
-      const filledVariables = variables.filter(v => v.key.trim() !== "");
-
-      // 1. Build environment variables input
-      const envVarsInput: EnvVarsInput = {
+      // 1. Build API key input
+      const apiKeyInput: ApiKeyInput = {
         title,
-        description,
-        variables: filledVariables,
+        serviceName,
+        apiKey,
+        environment,
         notes,
       };
 
       // 2. Validate input
-      validateEnvVarsInput(envVarsInput);
+      validateApiKeyInput(apiKeyInput);
 
       // 3. Build encrypted payload (ALL sensitive data)
-      const encryptedPayload = buildEncryptedPayload(SecretType.ENV_VARS, envVarsInput);
+      const encryptedPayload = buildEncryptedPayload(SecretType.API_KEY, apiKeyInput);
 
       // 4. Build metadata (ONLY non-sensitive data)
-      const metadata = buildMetadata(SecretType.ENV_VARS, envVarsInput);
+      const metadata = buildMetadata(SecretType.API_KEY, apiKeyInput);
 
       // 5. Encrypt the payload
       const { encryptedData, iv: ivBase64 } = await encryptItem(
@@ -94,13 +74,13 @@ export default function NewEnvVarsPage() {
           encryptedData,
           iv: ivBase64,
           metadata,
-          secretType: SecretType.ENV_VARS,
+          secretType: SecretType.API_KEY,
         }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to save environment variables");
+        throw new Error(data.error || "Failed to save API key");
       }
 
       router.push("/dashboard");
@@ -142,7 +122,7 @@ export default function NewEnvVarsPage() {
       {/* Main Content */}
       <div className="mx-auto max-w-2xl px-6 py-12">
       <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <h1 className="text-2xl font-bold text-white mb-6">Add Environment Variables</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Add New API Key</h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -153,62 +133,46 @@ export default function NewEnvVarsPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="e.g. Production Database, Development Config"
+              placeholder="e.g. GitHub API, Stripe API"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/85">Description</label>
+            <label className="block text-sm font-medium text-white/85">Service Name</label>
             <input
               type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              required
+              value={serviceName}
+              onChange={(e) => setServiceName(e.target.value)}
               className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="Brief description of what these variables are for"
+              placeholder="e.g. GitHub, Stripe, SendGrid"
             />
           </div>
 
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-3">
-              <label className="block text-sm font-medium text-white/85">Environment Variables</label>
-              <button
-                type="button"
-                onClick={addVariable}
-                className="text-sm text-[#8d99ae] hover:text-[#8d99ae]/80"
-              >
-                + Add Variable
-              </button>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-white/85">API Key</label>
+            <input
+              type="password"
+              required
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
+              placeholder="Paste your API key here"
+            />
+          </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {variables.map((variable, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Key (e.g. DATABASE_URL)"
-                    value={variable.key}
-                    onChange={(e) => updateVariable(index, "key", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
-                  />
-                  <input
-                    type="password"
-                    placeholder="Value"
-                    value={variable.value}
-                    onChange={(e) => updateVariable(index, "value", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
-                  />
-                  {variables.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeVariable(index)}
-                      className="px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded dark:hover:bg-red-900/20"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-white/85">Environment</label>
+            <select
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
+            >
+              <option value="production">Production</option>
+              <option value="staging">Staging</option>
+              <option value="development">Development</option>
+              <option value="testing">Testing</option>
+            </select>
           </div>
 
           <div>
@@ -237,7 +201,7 @@ export default function NewEnvVarsPage() {
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Saving..." : "Save Environment Variables"}
+              {isSubmitting ? "Saving..." : "Save API Key"}
             </button>
           </div>
         </form>

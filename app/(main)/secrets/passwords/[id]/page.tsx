@@ -2,22 +2,17 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useVault } from "@/components/VaultProvider";
+import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem, decryptItem } from "@/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
-  validateEnvVarsInput,
-  type EnvVarsInput
+  validatePasswordInput,
+  type PasswordInput
 } from "@/lib/secret-utils";
 
-interface EnvVariable {
-  key: string;
-  value: string;
-}
-
-export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { vaultKey, isUnlocked } = useVault();
   const [loading, setLoading] = useState(true);
@@ -27,8 +22,9 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
 
   // Form state
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [variables, setVariables] = useState<EnvVariable[]>([]);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
   
   // Unwrap params
@@ -40,7 +36,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
     async function fetchItem() {
       try {
         const res = await fetch(`/api/passwords/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch environment variables");
+        if (!res.ok) throw new Error("Failed to fetch password");
         
         const item = await res.json();
         
@@ -49,19 +45,17 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           throw new Error("Missing encrypted data");
         }
         
-        // Decrypt using centralized function
+        // Decrypt using centralized function with correct parameters
         const data = await decryptItem<Record<string, unknown>>(item.encryptedData, item.iv, vaultKey!);
 
         setTitle(typeof data.title === 'string' ? data.title : "");
-        setDescription(typeof data.description === 'string' ? data.description : "");
-        setVariables(Array.isArray((data as { variables?: unknown }).variables)
-          ? (data as { variables?: EnvVariable[] }).variables ?? [{ key: "", value: "" }]
-          : [{ key: "", value: "" }]);
-        const notesValue = (data as { notes?: unknown }).notes;
-        setNotes(typeof notesValue === 'string' ? notesValue : "");
+        setUsername(typeof data.username === 'string' ? data.username : "");
+        setPassword(typeof data.password === 'string' ? data.password : "");
+        setWebsite(typeof data.website === 'string' ? data.website : "");
+        setNotes(typeof data.notes === 'string' ? data.notes : "");
       } catch (err) {
         console.error(err);
-        setError("Failed to load environment variables");
+        setError("Failed to load password details");
       } finally {
         setLoading(false);
       }
@@ -73,20 +67,6 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
   if (!isUnlocked) return null;
   if (loading) return <div className="p-8 text-center">Loading...</div>;
 
-  const addVariable = () => {
-    setVariables([...variables, { key: "", value: "" }]);
-  };
-
-  const removeVariable = (index: number) => {
-    setVariables(variables.filter((_, i) => i !== index));
-  };
-
-  const updateVariable = (index: number, field: "key" | "value", val: string) => {
-    const updated = [...variables];
-    updated[index][field] = val;
-    setVariables(updated);
-  };
-
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -95,25 +75,23 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
     try {
       if (!vaultKey) throw new Error("Vault is locked");
 
-      // Filter out empty variables
-      const filledVariables = variables.filter(v => v.key.trim() !== "");
-
-      // Build environment variables input
-      const envVarsInput: EnvVarsInput = {
+      // Build password input
+      const passwordInput: PasswordInput = {
         title,
-        description,
-        variables: filledVariables,
+        username,
+        password,
+        website,
         notes,
       };
 
       // Validate input
-      validateEnvVarsInput(envVarsInput);
+      validatePasswordInput(passwordInput);
 
       // Build encrypted payload (ALL sensitive data)
-      const encryptedPayload = buildEncryptedPayload(SecretType.ENV_VARS, envVarsInput);
+      const encryptedPayload = buildEncryptedPayload(SecretType.PASSWORD, passwordInput);
 
       // Build metadata (ONLY non-sensitive data)
-      const metadata = buildMetadata(SecretType.ENV_VARS, envVarsInput);
+      const metadata = buildMetadata(SecretType.PASSWORD, passwordInput);
 
       // Encrypt the payload
       const { encryptedData, iv: ivBase64 } = await encryptItem(
@@ -128,23 +106,23 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           encryptedData,
           iv: ivBase64,
           metadata,
-          secretType: SecretType.ENV_VARS,
+          secretType: SecretType.PASSWORD,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update environment variables");
+      if (!res.ok) throw new Error("Failed to update password");
 
       setIsEditing(false);
     } catch (err) {
       console.error(err);
-      setError("Failed to update environment variables");
+      setError("Failed to update password");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this environment variable set?")) return;
+    if (!confirm("Are you sure you want to delete this password?")) return;
     
     try {
       const res = await fetch(`/api/passwords/${id}`, {
@@ -155,7 +133,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
       router.push("/dashboard");
     } catch (err) {
       console.error(err);
-      setError("Failed to delete environment variables");
+      setError("Failed to delete password");
     }
   }
 
@@ -200,7 +178,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
       <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit Environment Variables" : title}
+            {isEditing ? "Edit Password" : title}
           </h1>
           {!isEditing && (
             <div className="space-x-2">
@@ -234,70 +212,70 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/85">Description</label>
-            <input
-              type="text"
-              disabled={!isEditing}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            />
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-3">
-              <label className="block text-sm font-medium text-white/85">Environment Variables</label>
-              {isEditing && (
+            <label className="block text-sm font-medium text-white/85">Username</label>
+            <div className="flex">
+              <input
+                type="text"
+                disabled={!isEditing}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+              />
+              {!isEditing && username && (
                 <button
                   type="button"
-                  onClick={addVariable}
-                  className="text-sm text-[#8d99ae] hover:text-[#8d99ae]/80"
+                  onClick={() => navigator.clipboard.writeText(username)}
+                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
                 >
-                  + Add Variable
+                  Copy
                 </button>
               )}
             </div>
+          </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {variables.map((variable, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Key (e.g. DATABASE_URL)"
-                    disabled={!isEditing}
-                    value={variable.key}
-                    onChange={(e) => updateVariable(index, "key", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white text-sm"
-                  />
-                  <input
-                    type={isEditing ? "text" : "password"}
-                    placeholder="Value"
-                    disabled={!isEditing}
-                    value={variable.value}
-                    onChange={(e) => updateVariable(index, "value", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white text-sm"
-                  />
-                  {isEditing && variables.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeVariable(index)}
-                      className="px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded dark:hover:bg-red-900/20"
-                    >
-                      Remove
-                    </button>
-                  )}
-                  {!isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard.writeText(variable.value)}
-                      className="px-2 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
-                      title="Copy value"
-                    >
-                      Copy
-                    </button>
-                  )}
-                </div>
-              ))}
+          <div>
+            <label className="block text-sm font-medium text-white/85">Password</label>
+            <div className="flex">
+              <input
+                type={isEditing ? "text" : "password"}
+                required
+                disabled={!isEditing}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+              />
+              {!isEditing && (
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(password)}
+                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
+                >
+                  Copy
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/85">Website</label>
+            <div className="flex">
+              <input
+                type="url"
+                disabled={!isEditing}
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+              />
+              {!isEditing && website && (
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae] hover:underline flex items-center"
+                >
+                  Open
+                </a>
+              )}
             </div>
           </div>
 
