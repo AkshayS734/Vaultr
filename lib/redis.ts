@@ -7,7 +7,6 @@ export type RateLimitResult = { allowed: boolean; remaining: number; resetAt: nu
 
 // rateLimit key: increments a counter with expiry windowMs
 export async function rateLimit(key: string, windowMs: number, limit: number): Promise<RateLimitResult> {
-  const ttlKey = `${key}:ttl`
   // Use INCR to increment count atomically
   const count = await redis.incr(key)
   if (count === 1) {

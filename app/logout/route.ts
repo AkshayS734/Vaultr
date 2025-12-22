@@ -3,7 +3,7 @@ import cookie from 'cookie'
 import argon2 from 'argon2'
 import { prisma } from '../../lib/prisma'
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
     const cookieHeader = req.headers.get('cookie') || ''
     const cookies = cookie.parse(cookieHeader || '')
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     const sessionId = cookies.sessionId
 
     if (sessionId) {
-      const s = await prisma.session.findUnique({ where: { id: sessionId } })
+      const s = await prisma.session.findUnique({ where: { id: sessionId }, select: { refreshTokenHash: true } })
       if (s) {
         try {
           if (refresh && (await argon2.verify(s.refreshTokenHash, refresh))) {
@@ -23,40 +23,38 @@ export async function GET(req: Request) {
           console.warn('logout: error verifying/deleting session', e)
         }
       }
-    } else if (refresh) {
-      const sessions = await prisma.session.findMany({})
-      for (const s of sessions) {
-        try {
-          if (await argon2.verify(s.refreshTokenHash, refresh)) {
-            await prisma.session.delete({ where: { id: s.id } })
-            break
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
     }
 
     const clearRefresh = cookie.serialize('refreshToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
     const clearSession = cookie.serialize('sessionId', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
     })
 
-    return NextResponse.redirect(new URL('/', req.url), { headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const response = NextResponse.redirect(new URL('/', req.url))
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   } catch (err) {
     console.error('logout route error', err)
-    const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
-    const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0 })
-    return NextResponse.redirect(new URL('/', req.url), { headers: { 'Set-Cookie': [clearRefresh, clearSession] } })
+    const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' })
+    const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' })
+    const response = NextResponse.redirect(new URL('/', req.url))
+    response.headers.append('Set-Cookie', clearRefresh)
+    response.headers.append('Set-Cookie', clearSession)
+    return response
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 })
 }

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { prisma } from '../../../lib/prisma'
 
 export default async function SessionsPage() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const sessionId = cookieStore.get('sessionId')?.value
   if (!sessionId) {
     return (
@@ -16,7 +16,7 @@ export default async function SessionsPage() {
     )
   }
 
-  const session = await prisma.session.findUnique({ where: { id: sessionId } })
+  const session = await prisma.session.findUnique({ where: { id: sessionId }, select: { userId: true } })
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">

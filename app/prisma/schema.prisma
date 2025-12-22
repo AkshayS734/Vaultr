@@ -11,10 +11,18 @@ datasource db {
   // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+enum SecretType {
+  PASSWORD
+  API_KEY
+  ENV_VARS
+}
+
 enum AuditEvent {
   LOGIN_SUCCESS
   LOGIN_FAILED
   LOGOUT
+  SIGNUP_SUCCESS
+  SESSION_DELETE
   VAULT_CREATE
   VAULT_UPDATE
   VAULT_DELETE
@@ -23,6 +31,12 @@ enum AuditEvent {
   PASSWORD_UPDATE
   RECOVERY_REQUEST
   RECOVERY_COMPLETE
+  EMAIL_VERIFICATION_SENT
+  EMAIL_VERIFIED
+  EMAIL_VERIFICATION_FAILED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+  PASSWORD_RESET_FAILED
   OTHER
 }
 
@@ -30,7 +44,6 @@ model User {
   id              String    @id @default(uuid())
   email           String    @unique
   emailNormalized String    @unique // store lowercase normalized email for uniqueness
-  authSalt        String
   authHash        String
   isEmailVerified Boolean   @default(false)
   createdAt       DateTime  @default(now())
@@ -39,41 +52,61 @@ model User {
   deletedAt       DateTime? // soft-delete marker
 
   // relations
-  vault     Vault?     @relation("UserToVault")
-  sessions  Session[]
-  auditLogs AuditLog[]
+  vault              Vault?              @relation("UserToVault")
+  sessions           Session[]
+  auditLogs          AuditLog[]
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([emailNormalized])
 }
 
 model Vault {
-  id         String    @id @default(uuid())
-  userId     String    @unique
-  user       User      @relation("UserToVault", fields: [userId], references: [id], onDelete: Cascade)
-  items      Item[]
-  blob       Bytes // encrypted vault JSON (client-side encrypted)
-  kdfParams  Json
-  cipherMeta Json
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime? // soft-delete marker
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation("UserToVault", fields: [userId], references: [id], onDelete: Cascade)
+  items             Item[]
+  encryptedVaultKey String    // Base64 encoded encrypted vault key
+  salt              String    // Base64 encoded salt for KEK derivation
+  kdfParams         Json      // { algorithm: "PBKDF2", iterations: 100000, ... }
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime? // soft-delete marker
 
   @@index([userId])
 }
 
 model Item {
-  id        String    @id @default(uuid())
-  vaultId   String
-  vault     Vault     @relation(fields: [vaultId], references: [id], onDelete: Cascade)
-  // If storing any sensitive metadata, make sure the client encrypts it before sending.
-  // For strict zero-knowledge, consider storing title/meta as Bytes (encrypted) instead of plaintext.
-  title     String?
-  meta      Json?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // soft-delete marker
+  id            String     @id @default(uuid())
+  vaultId       String
+  vault         Vault      @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  secretType    SecretType @default(PASSWORD) // Type of secret stored
+  
+  // ENCRYPTION BOUNDARY - CRITICAL SECURITY ARCHITECTURE
+  // ======================================================
+  // encryptedData: Contains ALL sensitive information (encrypted)
+  //   - Passwords, API keys, environment variable VALUES, notes
+  //   - Encrypted with vault key using AES-256-GCM
+  //   - Base64 encoded for storage
+  //   - NEVER log, index, or expose this field
+  //
+  // metadata: Contains ONLY non-sensitive UI information (unencrypted)
+  //   - SAFE: Titles, usernames, service names, counts, flags, lengths
+  //   - FORBIDDEN: Real secrets, partial secrets, masks with real chars
+  //   - Used for: UI display, search, filtering (without decryption)
+  //   - Database leak of metadata alone MUST reveal ZERO usable secrets
+  //
+  // Validation: Both runtime (validateMetadataSafety) and Zod schemas
+  encryptedData String     // Base64 encoded encrypted JSON blob with ALL sensitive values
+  iv            String     // Base64 encoded IV
+  metadata      Json?      // ONLY non-sensitive fields (titles, counts, lengths, flags)
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?  // soft-delete marker
 
   @@index([vaultId])
+  @@index([secretType])
 }
 
 model Session {
@@ -89,6 +122,7 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([refreshTokenHash])
 }
 
 model AuditLog {
@@ -102,4 +136,30 @@ model AuditLog {
   @@index([userId])
   @@index([eventType])
   @@index([createdAt])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 hash of the actual token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenHash])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 hash of the actual token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenHash])
 }

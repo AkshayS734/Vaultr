@@ -4,29 +4,80 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { prisma } from '../../../../lib/prisma'
+import { rateLimit } from '../../../../lib/redis'
+import { getClientIp, truncate, readLimitedJson } from '@/lib/utils'
+import { loginSchema } from '@/schemas/auth'
+import { logAuditEvent } from '../../../../lib/audit'
 
-function isValidEmail(email: unknown) {
-  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+// Rate limit: 5 failed attempts per 15 minutes
+const LOGIN_MAX = 5
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { email, password } = body || {}
+    let email: string
+    let password: string
+    const ip = getClientIp(req)
+    const rateLimitKey = `login:${ip || 'unknown'}`
 
-    if (!isValidEmail(email) || typeof password !== 'string') {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
+    // Rate limit by IP
+    try {
+      const rl = await rateLimit(rateLimitKey, LOGIN_WINDOW_MS, LOGIN_MAX)
+      if (!rl.allowed) {
+        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+        return NextResponse.json(
+          { error: 'Too many failed login attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+        )
+      }
+    } catch (e) {
+      console.warn('Rate limit check failed, allowing request', e)
     }
 
+    try {
+      const raw = await readLimitedJson(req, 64 * 1024)
+      const parsed = loginSchema.safeParse(raw)
+      if (!parsed.success) {
+        return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      }
+      ({ email, password } = parsed.data)
+    } catch (e) {
+      if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+      }
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+
+  // Zod already validated email/password
+
     const normalized = String(email).trim().toLowerCase()
-    const user = await prisma.user.findUnique({ where: { emailNormalized: normalized } })
+    const user = await prisma.user.findUnique({ 
+      where: { emailNormalized: normalized }, 
+      select: { id: true, email: true, authHash: true, isEmailVerified: true } 
+    })
     if (!user) {
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'User not found' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     const verified = await argon2.verify(user.authHash, password)
     if (!verified) {
+      await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Invalid password' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+
+    // Check if email is verified (for password manager security)
+    if (!user.isEmailVerified) {
+      await logAuditEvent('LOGIN_FAILED', user.id, { 
+        email: normalized, 
+        ip, 
+        userAgent: truncate(req.headers.get('user-agent'), 256), 
+        reason: 'Email not verified' 
+      })
+      return NextResponse.json({ 
+        error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+        code: 'EMAIL_NOT_VERIFIED'
+      }, { status: 403 })
     }
 
     // Create refresh token + session
@@ -34,8 +85,7 @@ export async function POST(req: Request) {
     const refreshTokenHash = await argon2.hash(refreshToken)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    const userAgent = req.headers.get('user-agent') || null
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null
+    const userAgent = truncate(req.headers.get('user-agent'), 256)
 
     const createdSession = await prisma.session.create({
       data: {
@@ -52,15 +102,16 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
+      console.error('JWT_SECRET not configured')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, jwtSecret, { expiresIn: '15m' })
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, jwtSecret as string, { expiresIn: '15m' })
 
     const refreshCookie = cookie.serialize('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
@@ -68,22 +119,20 @@ export async function POST(req: Request) {
     const sessionCookie = cookie.serialize('sessionId', createdSession.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
 
-    return NextResponse.json({ accessToken }, { status: 200, headers: { 'Set-Cookie': [refreshCookie, sessionCookie] } })
-  } catch (err: any) {
-    console.error('login error', err)
-    const isDev = process.env.NODE_ENV !== 'production'
-    const message = isDev ? (err?.message || String(err)) : 'Invalid request'
-    const payload: any = { error: message }
-    if (isDev && err?.stack) payload.stack = err.stack
-    return NextResponse.json(payload, { status: 500 })
-  }
-}
+    // Log successful login
+    await logAuditEvent('LOGIN_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
 
-export function GET() {
-  return NextResponse.json({ message: 'Auth login endpoint' })
+    const response = NextResponse.json({ accessToken }, { status: 200 })
+    response.headers.append('Set-Cookie', refreshCookie)
+    response.headers.append('Set-Cookie', sessionCookie)
+    return response
+  } catch (err) {
+    console.error('login error', err)
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
 }

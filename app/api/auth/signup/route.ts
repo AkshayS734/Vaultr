@@ -3,43 +3,84 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../../../../lib/prisma'
+import { rateLimit } from '../../../../lib/redis'
+import { getClientIp, truncate, readLimitedJson } from '../../../../lib/utils'
+import { signupSchema } from '@/schemas/auth'
+import { logAuditEvent } from '../../../../lib/audit'
+import { generateVerificationToken, hashVerificationToken } from '../../../../lib/crypto'
+import { sendVerificationEmail } from '../../../../lib/email'
 
-function isValidEmail(email: unknown) {
-  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+// Rate limit: 5 signup attempts per hour
+const SIGNUP_MAX = 50
+const SIGNUP_WINDOW_MS = 60 * 60 * 1000
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { email, password } = body || {}
+    const ip = getClientIp(req)
+    const rateLimitKey = `signup:${ip || 'unknown'}`
 
-    if (!isValidEmail(email) || typeof password !== 'string') {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 })
+    // Rate limit by IP
+    try {
+      const rl = await rateLimit(rateLimitKey, SIGNUP_WINDOW_MS, SIGNUP_MAX)
+      if (!rl.allowed) {
+        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+        return NextResponse.json(
+          { error: 'Too many signup attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+        )
+      }
+    } catch (e) {
+      console.warn('Rate limit check failed, allowing request', e)
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    let email, password, encryptedVaultKey, salt, kdfParams;
+
+    try {
+      const raw = await readLimitedJson(req, 64 * 1024)
+      console.log('Signup payload:', JSON.stringify(raw, null, 2));
+      console.log('Signup schema type:', typeof signupSchema);
+      
+      const parsed = signupSchema.safeParse(raw)
+      if (!parsed.success) {
+        console.error('Signup validation error:', parsed.error);
+        return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      }
+      ({ email, password, encryptedVaultKey, salt, kdfParams } = parsed.data)
+    } catch (e) {
+      console.error('Signup JSON error:', e);
+      if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+      }
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
-    // Prevent duplicate accounts
-    const existing = await prisma.user.findUnique({ where: { email } })
+    // Zod already validated email/password
+
+    // Prevent duplicate accounts using normalized email
+    const normalized = String(email).trim().toLowerCase()
+    const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })
     if (existing) {
+      await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Signup: Account exists' })
       return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
     }
 
     // Hash password with argon2
     const hash = await argon2.hash(password)
-    const salt = crypto.randomBytes(16).toString('hex')
-
-    const normalized = String(email).trim().toLowerCase()
 
     const user = await prisma.user.create({
       data: {
         email,
         emailNormalized: normalized,
-        authSalt: salt,
         authHash: hash,
+        vault: {
+          create: {
+            encryptedVaultKey,
+            salt,
+            kdfParams: kdfParams as Prisma.InputJsonValue,
+          },
+        },
       },
       select: { id: true, email: true },
     })
@@ -49,8 +90,7 @@ export async function POST(req: Request) {
     const refreshTokenHash = await argon2.hash(refreshToken)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    const userAgent = req.headers.get('user-agent') || null
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null
+    const userAgent = truncate(req.headers.get('user-agent'), 256)
 
     const createdSession = await prisma.session.create({
       data: {
@@ -67,15 +107,16 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
+      console.error('JWT_SECRET not configured')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, jwtSecret, { expiresIn: '15m' })
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, jwtSecret as string, { expiresIn: '15m' })
 
     const refreshCookie = cookie.serialize('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
@@ -83,22 +124,57 @@ export async function POST(req: Request) {
     const sessionCookie = cookie.serialize('sessionId', createdSession.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
 
-    return NextResponse.json({ accessToken }, { status: 201, headers: { 'Set-Cookie': [refreshCookie, sessionCookie] } })
-  } catch (err: any) {
-    console.error('signup error', err)
-    const isDev = process.env.NODE_ENV !== 'production'
-    const message = isDev ? (err?.message || String(err)) : 'Invalid request'
-    const payload: any = { error: message }
-    if (isDev && err?.stack) payload.stack = err.stack
-    return NextResponse.json(payload, { status: 500 })
-  }
-}
+    // Log successful signup
+    await logAuditEvent('SIGNUP_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
 
-export function GET() {
-  return NextResponse.json({ message: 'Auth signup endpoint' })
+    // Generate and send email verification token
+    try {
+      const verificationToken = generateVerificationToken()
+      const tokenHash = hashVerificationToken(verificationToken)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+      // Delete any existing verification tokens for this user
+      await prisma.verificationToken.deleteMany({
+        where: { userId: user.id }
+      })
+
+      // Create new verification token
+      await prisma.verificationToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+        },
+      })
+
+      // Send verification email (don't block on this)
+      sendVerificationEmail(user.email, verificationToken)
+        .then((sent) => {
+          if (sent) {
+            logAuditEvent('EMAIL_VERIFICATION_SENT', user.id, { email: normalized })
+          } else {
+            console.error('Failed to send verification email to', user.email)
+          }
+        })
+        .catch((err) => {
+          console.error('Error sending verification email:', err)
+        })
+    } catch (emailError) {
+      // Don't fail signup if email fails
+      console.error('Email verification setup failed:', emailError)
+    }
+
+    const response = NextResponse.json({ accessToken }, { status: 201 })
+    response.headers.append('Set-Cookie', refreshCookie)
+    response.headers.append('Set-Cookie', sessionCookie)
+    return response
+  } catch (err) {
+    console.error('signup error', err)
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
 }

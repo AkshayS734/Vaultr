@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       console.warn('rateLimit check failed, allowing request', e)
     }
 
-    const session = await prisma.session.findUnique({ where: { id: sessionId } })
+    const session = await prisma.session.findUnique({ where: { id: sessionId }, select: { userId: true, refreshTokenHash: true, expiresAt: true } })
     if (!session) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
     }
@@ -47,14 +47,14 @@ export async function POST(req: Request) {
     const now = new Date()
     if (session.expiresAt < now) {
       // session expired
-      try { await prisma.session.delete({ where: { id: sessionId } }) } catch (e) {}
+      try { await prisma.session.delete({ where: { id: sessionId } }) } catch {}
       return NextResponse.json({ error: 'Session expired' }, { status: 401 })
     }
 
     const ok = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
     if (!ok) {
       // possible theft — delete session
-      try { await prisma.session.delete({ where: { id: sessionId } }) } catch (e) {}
+      try { await prisma.session.delete({ where: { id: sessionId } }) } catch {}
       return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 })
     }
 
@@ -69,12 +69,12 @@ export async function POST(req: Request) {
 
     await prisma.session.update({ where: { id: sessionId }, data: { refreshTokenHash: newHash, expiresAt: newExpires, lastUsedAt: new Date() } })
 
-    const accessToken = jwt.sign({ sub: session.userId }, jwtSecret, { expiresIn: process.env.JWT_EXPIRES_IN || '15m' })
+    const accessToken = jwt.sign({ sub: session.userId }, jwtSecret as string, { expiresIn: '15m' })
 
     const refreshCookie = cookie.serialize('refreshToken', newRefresh, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: expiresDays * 24 * 60 * 60,
     })
@@ -82,19 +82,17 @@ export async function POST(req: Request) {
     const sessionCookie = cookie.serialize('sessionId', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: expiresDays * 24 * 60 * 60,
     })
 
-    return NextResponse.json({ accessToken }, { status: 200, headers: { 'Set-Cookie': [refreshCookie, sessionCookie] } })
+    const response = NextResponse.json({ accessToken }, { status: 200 })
+    response.headers.append('Set-Cookie', refreshCookie)
+    response.headers.append('Set-Cookie', sessionCookie)
+    return response
   } catch (err) {
     console.error('refresh error', err)
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
-}
-
-export async function GET(req: Request) {
-  // allow GET for quick testing in browser
-  return POST(req)
 }
