@@ -143,9 +143,45 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
     }
   }
 
+  async function handleLogout() {
+    try {
+      await fetch("/logout", { method: "POST" });
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#2b2d42] py-12 px-4">
-      <div className="mx-auto max-w-2xl bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
+    <div className="min-h-screen bg-[#2b2d42]">
+      {/* Top Navigation Bar */}
+      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back
+          </button>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-2xl px-6 py-12">
+      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-white">
             {isEditing ? "Edit API Key" : title}
@@ -154,13 +190,13 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
             <div className="space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-1 text-sm text-[#8d99ae] hover:bg-[#8d99ae]/20 rounded dark:hover:bg-[#8d99ae]/20"
+                className="rounded-md border border-[rgba(141,153,174,0.3)] px-3 py-1 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
               >
                 Edit
               </button>
               <button
                 onClick={handleDelete}
-                className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded dark:hover:bg-red-900/20"
+                className="rounded-md border border-[rgba(220,53,69,0.3)] px-3 py-1 text-sm font-medium text-[rgba(220,53,69,0.8)] transition-all duration-200 hover:bg-[rgba(220,53,69,0.1)] hover:text-[#dc3545] focus:outline-none focus:ring-2 focus:ring-[rgba(220,53,69,0.4)]"
               >
                 Delete
               </button>
@@ -264,17 +300,10 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
           )}
 
           {!isEditing && (
-            <div className="pt-4">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="text-sm text-[#8d99ae]/60 hover:text-[#8d99ae]"
-              >
-                &larr; Back to Dashboard
-              </button>
-            </div>
+            <></>
           )}
         </form>
+      </div>
       </div>
     </div>
   );

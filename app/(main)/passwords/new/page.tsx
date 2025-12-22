@@ -23,6 +23,15 @@ export default function NewPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  async function handleLogout() {
+    try {
+      await fetch("/logout", { method: "POST" });
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  }
+
   if (!isUnlocked) return null;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -84,8 +93,35 @@ export default function NewPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2b2d42] py-12 px-4">
-      <div className="mx-auto max-w-2xl bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
+    <div className="min-h-screen bg-[#2b2d42]">
+      {/* Top Navigation Bar */}
+      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back
+          </button>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-2xl px-6 py-12">
+      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
         <h1 className="text-2xl font-bold text-white mb-6">Add New Password</h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -161,6 +197,7 @@ export default function NewPasswordPage() {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );
