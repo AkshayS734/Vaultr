@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../../../../lib/prisma'
 import { rateLimit } from '../../../../lib/redis'
 import { getClientIp, truncate, readLimitedJson } from '../../../../lib/utils'
@@ -77,7 +78,7 @@ export async function POST(req: Request) {
           create: {
             encryptedVaultKey,
             salt,
-            kdfParams: kdfParams as any,
+            kdfParams: kdfParams as Prisma.InputJsonValue,
           },
         },
       },

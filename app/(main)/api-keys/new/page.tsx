@@ -8,17 +8,17 @@ import {
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
-  validatePasswordInput,
-  type PasswordInput 
+  validateApiKeyInput,
+  type ApiKeyInput 
 } from "@/lib/secret-utils";
 
-export default function NewPasswordPage() {
+export default function NewApiKeyPage() {
   const router = useRouter();
   const { vaultKey, isUnlocked } = useVault();
   const [title, setTitle] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [website, setWebsite] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [environment, setEnvironment] = useState("production");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,23 +33,23 @@ export default function NewPasswordPage() {
     try {
       if (!vaultKey) throw new Error("Vault is locked");
 
-      // 1. Build password input
-      const passwordInput: PasswordInput = {
+      // 1. Build API key input
+      const apiKeyInput: ApiKeyInput = {
         title,
-        username,
-        password,
-        website,
+        serviceName,
+        apiKey,
+        environment,
         notes,
       };
 
       // 2. Validate input
-      validatePasswordInput(passwordInput);
+      validateApiKeyInput(apiKeyInput);
 
       // 3. Build encrypted payload (ALL sensitive data)
-      const encryptedPayload = buildEncryptedPayload(SecretType.PASSWORD, passwordInput);
+      const encryptedPayload = buildEncryptedPayload(SecretType.API_KEY, apiKeyInput);
 
       // 4. Build metadata (ONLY non-sensitive data)
-      const metadata = buildMetadata(SecretType.PASSWORD, passwordInput);
+      const metadata = buildMetadata(SecretType.API_KEY, apiKeyInput);
 
       // 5. Encrypt the payload
       const { encryptedData, iv: ivBase64 } = await encryptItem(
@@ -65,13 +65,13 @@ export default function NewPasswordPage() {
           encryptedData,
           iv: ivBase64,
           metadata,
-          secretType: SecretType.PASSWORD,
+          secretType: SecretType.API_KEY,
         }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to save password");
+        throw new Error(data.error || "Failed to save API key");
       }
 
       router.push("/dashboard");
@@ -86,7 +86,7 @@ export default function NewPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="mx-auto max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add New Password</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add New API Key</h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -96,40 +96,47 @@ export default function NewPasswordPage() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="e.g. Google, Netflix"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="e.g. GitHub API, Stripe API"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Username / Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Service Name</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+              value={serviceName}
+              onChange={(e) => setServiceName(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="e.g. GitHub, Stripe, SendGrid"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">API Key</label>
             <input
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="Paste your API key here"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Website URL</label>
-            <input
-              type="url"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Environment</label>
+            <select
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="production">Production</option>
+              <option value="staging">Staging</option>
+              <option value="development">Development</option>
+              <option value="testing">Testing</option>
+            </select>
           </div>
 
           <div>
@@ -138,7 +145,8 @@ export default function NewPasswordPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="Add any additional notes..."
             />
           </div>
 
@@ -155,9 +163,9 @@ export default function NewPasswordPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
             >
-              {isSubmitting ? "Saving..." : "Save Password"}
+              {isSubmitting ? "Saving..." : "Save API Key"}
             </button>
           </div>
         </form>

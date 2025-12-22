@@ -189,7 +189,7 @@ export default function SignupPage() {
       } else {
         setResendMessage(data?.error || 'Failed to resend email. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setResendMessage('Failed to resend email. Please try again.');
     } finally {
       setIsResending(false);
@@ -266,7 +266,7 @@ export default function SignupPage() {
                 Verify Your Email
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                We've sent a verification link to <strong>{email}</strong>. Please check your inbox and click the link to verify your account.
+                We&apos;ve sent a verification link to <strong>{email}</strong>. Please check your inbox and click the link to verify your account.
               </p>
               
               {resendMessage && (
@@ -306,7 +306,7 @@ export default function SignupPage() {
               </div>
               
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                Can't find the email? Check your spam folder or click resend.
+                Can&apos;t find the email? Check your spam folder or click resend.
               </p>
             </div>
           </div>
