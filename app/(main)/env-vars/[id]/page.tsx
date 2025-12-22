@@ -160,17 +160,17 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
-      <div className="mx-auto max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="min-h-screen bg-[#2b2d42] py-12 px-4">
+      <div className="mx-auto max-w-2xl bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-white">
             {isEditing ? "Edit Environment Variables" : title}
           </h1>
           {!isEditing && (
             <div className="space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-1 text-sm text-purple-600 hover:bg-purple-50 rounded dark:hover:bg-purple-900/20"
+                className="px-3 py-1 text-sm text-[#8d99ae] hover:bg-[#8d99ae]/20 rounded dark:hover:bg-[#8d99ae]/20"
               >
                 Edit
               </button>
@@ -186,36 +186,36 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+            <label className="block text-sm font-medium text-white/85">Title</label>
             <input
               type="text"
               required
               disabled={!isEditing}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:disabled:bg-gray-800"
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+            <label className="block text-sm font-medium text-white/85">Description</label>
             <input
               type="text"
               disabled={!isEditing}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:disabled:bg-gray-800"
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
             />
           </div>
 
           <div className="border-t pt-4">
             <div className="flex justify-between items-center mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Environment Variables</label>
+              <label className="block text-sm font-medium text-white/85">Environment Variables</label>
               {isEditing && (
                 <button
                   type="button"
                   onClick={addVariable}
-                  className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+                  className="text-sm text-[#8d99ae] hover:text-[#8d99ae]/80"
                 >
                   + Add Variable
                 </button>
@@ -231,7 +231,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                     disabled={!isEditing}
                     value={variable.key}
                     onChange={(e) => updateVariable(index, "key", e.target.value)}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:disabled:bg-gray-800 text-sm"
+                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white text-sm"
                   />
                   <input
                     type={isEditing ? "text" : "password"}
@@ -239,7 +239,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                     disabled={!isEditing}
                     value={variable.value}
                     onChange={(e) => updateVariable(index, "value", e.target.value)}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:disabled:bg-gray-800 text-sm"
+                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white text-sm"
                   />
                   {isEditing && variables.length > 1 && (
                     <button
@@ -254,7 +254,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                     <button
                       type="button"
                       onClick={() => navigator.clipboard.writeText(variable.value)}
-                      className="px-2 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      className="px-2 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
                       title="Copy value"
                     >
                       Copy
@@ -266,13 +266,13 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+            <label className="block text-sm font-medium text-white/85">Notes</label>
             <textarea
               disabled={!isEditing}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:disabled:bg-gray-800"
+              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
             />
           </div>
 
@@ -283,14 +283,14 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
@@ -302,7 +302,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="text-sm text-[#8d99ae]/60 hover:text-[#8d99ae]"
               >
                 &larr; Back to Dashboard
               </button>
