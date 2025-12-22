@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useVault } from "@/components/VaultProvider";
 import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/lib/crypto";
 
 export default function UnlockPage() {
   const [masterPassword, setMasterPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { setVaultKey, isUnlocked } = useVault();
@@ -47,38 +49,145 @@ export default function UnlockPage() {
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      setError("Invalid Master Password or server error");
+      setError("Unable to unlock vault. Please check your master password and try again.");
     } finally {
       setIsLoading(false);
     }
   }
 
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      router.push('/login');
+    }
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Unlock your passwords</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your Master Password to decrypt your vault.</p>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+      {/* Header with app name and logout */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+        <div className="text-xl font-bold" style={{ color: '#ffffff' }}>
+          Vaultr
+        </div>
+        <button
+          onClick={handleLogout}
+          className="text-xs transition-opacity hover:opacity-80"
+          style={{ color: '#ffffff', opacity: 0.5 }}
+        >
+          Logout
+        </button>
+      </div>
 
-        <form onSubmit={handleUnlock} className="space-y-4">
-          <label className="block">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Master Password</span>
-            <input
-              type="password"
-              required
-              value={masterPassword}
-              onChange={(e) => setMasterPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-          </label>
+      {/* Unlock Card */}
+      <div 
+        className="w-full max-w-[440px] rounded-xl p-8"
+        style={{ 
+          backgroundColor: '#2b2d42',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+        }}
+      >
+        <div className="text-center mb-8">
+          <div 
+            className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+          >
+            <svg 
+              className="w-8 h-8" 
+              style={{ color: '#8d99ae' }}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
+              />
+            </svg>
+          </div>
+          
+          <h1 className="text-3xl font-bold mb-3" style={{ color: '#ffffff' }}>
+            Unlock your vault
+          </h1>
+          <p className="text-sm" style={{ color: '#ffffff', opacity: 0.75 }}>
+            Enter your master password to access your secrets
+          </p>
+        </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+        <form onSubmit={handleUnlock} className="space-y-6">
+          <div>
+            <label className="block">
+              <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+                Master Password
+              </span>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={masterPassword}
+                  onChange={(e) => setMasterPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
+                  style={{
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    border: '1px solid rgba(141,153,174,0.2)',
+                    color: '#ffffff',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.2)'}
+                  placeholder="Enter your master password"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
+                  style={{ color: '#8d99ae', opacity: 0.6 }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </label>
+            
+            <p className="mt-2 text-xs flex items-center gap-1.5" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              Your master password never leaves this device
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
+              <p className="text-sm" style={{ color: '#8d99ae' }}>{error}</p>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+            style={{
+              backgroundColor: isLoading ? 'rgba(141,153,174,0.5)' : '#8d99ae',
+              color: '#2b2d42',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.7 : 1,
+            }}
           >
-            {isLoading ? "Unlocking..." : "Unlock"}
+            {isLoading ? "Unlocking..." : "Unlock Vault"}
           </button>
         </form>
       </div>

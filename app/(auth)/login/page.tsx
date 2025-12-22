@@ -16,6 +16,7 @@ function isValidPassword(password: string) {
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -213,14 +214,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Sign in to Vaultr</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your credentials to access your vault.</p>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+      {/* Back to home link */}
+      <Link 
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
+        style={{ color: '#ffffff', opacity: 0.6 }}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to home
+      </Link>
+      
+      <div 
+        className="w-full max-w-[440px] rounded-xl p-8"
+        style={{ 
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+        }}
+      >
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            Welcome back
+          </h1>
+          <p className="text-sm" style={{ color: '#ffffff', opacity: 0.7 }}>
+            Enter your credentials to access your secure vault
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <label className="block">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Email</span>
+            <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+              Email
+            </span>
             <input
               id="login-email"
               type="email"
@@ -232,71 +259,110 @@ export default function LoginPage() {
                 setEmail(e.target.value);
                 if (emailError) setEmailError(null);
               }}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                emailError ? "border-red-500" : "border-gray-200"
-              }`}
+              className="w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none"
+              style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                border: emailError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
+                color: '#ffffff',
+              }}
+              onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
+              onBlur={(e) => {
+                if (!emailError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
+              }}
+              placeholder="your@email.com"
             />
             {emailError && (
-              <p id="login-email-error" className="mt-1 text-sm text-red-600">
+              <p id="login-email-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
                 {emailError}
               </p>
             )}
           </label>
 
           <label className="block">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Password</span>
-            <input
-              id="login-password"
-              type="password"
-              required
-              aria-invalid={!!passwordError}
-              aria-describedby={passwordError ? "login-password-error" : undefined}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (passwordError) setPasswordError(null);
-              }}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                passwordError ? "border-red-500" : "border-gray-200"
-              }`}
-            />
+            <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+              Password
+            </span>
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                required
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? "login-password-error" : undefined}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError(null);
+                }}
+                className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
+                style={{
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  border: passwordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
+                  color: '#ffffff',
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
+                onBlur={(e) => {
+                  if (!passwordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
+                }}
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
+                style={{ color: '#8d99ae', opacity: 0.6 }}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {passwordError && (
-              <p id="login-password-error" className="mt-1 text-sm text-red-600">
+              <p id="login-password-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
                 {passwordError}
               </p>
             )}
           </label>
 
           <div className="flex items-center justify-between">
-            <label className="inline-flex items-center text-sm text-gray-600 dark:text-gray-300">
+            <label className="inline-flex items-center text-sm cursor-pointer" style={{ color: '#ffffff', opacity: 0.75 }}>
               <input 
                 type="checkbox" 
-                className="mr-2 rounded" 
+                className="mr-2 rounded"
+                style={{ accentColor: '#8d99ae' }}
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               /> 
               Remember me
             </label>
-            <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+            <Link 
+              href="/forgot-password" 
+              className="text-sm transition-opacity hover:opacity-80"
+              style={{ color: '#8d99ae' }}
+            >
               Forgot password?
             </Link>
           </div>
 
           {generalError && (
             <div className="space-y-3">
-              <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
-                <p className="text-sm text-red-800 dark:text-red-200">{generalError}</p>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
+                <p className="text-sm" style={{ color: '#8d99ae' }}>{generalError}</p>
               </div>
               
               {isEmailNotVerified && (
                 <div>
                   {resendMessage && (
-                    <div className={`mb-3 p-3 rounded-md ${
-                      resendMessage.includes('sent') 
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
-                        : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200'
-                    }`}>
-                      <p className="text-sm">{resendMessage}</p>
+                    <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.1)' }}>
+                      <p className="text-sm" style={{ color: '#8d99ae', opacity: 0.9 }}>{resendMessage}</p>
                     </div>
                   )}
                   
@@ -304,11 +370,13 @@ export default function LoginPage() {
                     type="button"
                     onClick={handleResendVerification}
                     disabled={isResending || countdown > 0}
-                    className={`w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium ${
-                      isResending || countdown > 0
-                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
+                    className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200"
+                    style={{
+                      backgroundColor: isResending || countdown > 0 ? 'rgba(141,153,174,0.3)' : '#8d99ae',
+                      color: isResending || countdown > 0 ? 'rgba(255,255,255,0.5)' : '#2b2d42',
+                      cursor: isResending || countdown > 0 ? 'not-allowed' : 'pointer',
+                      opacity: isResending || countdown > 0 ? 0.6 : 1,
+                    }}
                   >
                     {isResending 
                       ? 'Sending...' 
@@ -325,17 +393,25 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow ${
-              isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+            style={{
+              backgroundColor: isSubmitting ? 'rgba(141,153,174,0.5)' : '#8d99ae',
+              color: '#2b2d42',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting ? 0.7 : 1,
+            }}
           >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-500 dark:text-gray-400 mt-4">
+        <p className="text-sm text-center mt-6" style={{ color: '#ffffff', opacity: 0.6 }}>
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link 
+            href="/signup" 
+            className="font-medium transition-opacity hover:opacity-80"
+            style={{ color: '#8d99ae' }}
+          >
             Create account
           </Link>
         </p>

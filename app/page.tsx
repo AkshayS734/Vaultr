@@ -2,91 +2,209 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="px-4 lg:px-6 h-14 flex items-center bg-white dark:bg-black shadow-sm">
-        <Link href="#" className="flex items-center justify-center">
-          <span className="text-3xl font-bold text-gray-900 dark:text-white">Vaultr</span>
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#2b2d42' }}>
+      {/* Header */}
+      <header className="px-6 lg:px-12 h-20 flex items-center border-b border-white/10">
+        <Link href="/" className="flex items-center">
+          <span className="text-2xl font-bold tracking-tight" style={{ color: '#ffffff' }}>
+            Vaultr
+          </span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link href="/login" className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700">
+        <nav className="ml-auto flex gap-6 items-center">
+          <Link 
+            href="/login" 
+            className="text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ color: '#ffffff', opacity: 0.85 }}
+          >
             Login
           </Link>
-          <Link href="/signup" className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700">
+          <Link 
+            href="/signup" 
+            className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:shadow-lg"
+            style={{ 
+              backgroundColor: '#8d99ae', 
+              color: '#2b2d42',
+            }}
+          >
             Sign Up
           </Link>
         </nav>
       </header>
+
+      {/* Hero Section - Full Viewport */}
       <main className="flex-1">
-        <section className="flex items-center justify-center w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-white dark:bg-black text-center">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-gray-900 dark:text-white">
-                Secure Your Digital Life with Vaultr
+        <section className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-6">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div className="space-y-6">
+              <h1 
+                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight"
+                style={{ color: '#ffffff' }}
+              >
+                Security-First Password Management
               </h1>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                The simple, secure way to manage your passwords. Get started for free and never forget a password again.
+              <p 
+                className="text-lg md:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed"
+                style={{ color: '#ffffff', opacity: 0.75 }}
+              >
+                Enterprise-grade encryption meets intuitive design. Protect what matters with Vaultr.
               </p>
-              <div className="space-x-4">
-                <Link
-                  href="/signup"
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                >
-                  Get Started
-                </Link>
-              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link 
+                href="/signup" 
+                className="px-8 py-4 rounded-lg text-base font-semibold transition-all hover:shadow-xl hover:opacity-90 w-full sm:w-auto"
+                style={{ 
+                  backgroundColor: '#8d99ae', 
+                  color: '#2b2d42',
+                }}
+              >
+                Get Started Free
+              </Link>
+              <Link 
+                href="/login" 
+                className="text-base font-medium transition-opacity hover:opacity-80 w-full sm:w-auto py-4"
+                style={{ color: '#8d99ae' }}
+              >
+                View Demo →
+              </Link>
             </div>
           </div>
         </section>
-        <section className="flex items-center justify-center w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-black text-center">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-gray-200 px-3 py-1 text-sm dark:bg-gray-700 text-gray-900 dark:text-gray-50">Key Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-gray-900 dark:text-white">Everything You Need, Nothing You Don&apos;t</h2>
-                <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                  Vaultr is packed with features to make your digital life easier and more secure.
+
+        {/* Features Section */}
+        <section className="py-24 px-6 border-t border-white/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center space-y-4 mb-20">
+              <div 
+                className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-2"
+                style={{ 
+                  backgroundColor: '#8d99ae',
+                  color: '#2b2d42',
+                  opacity: 0.9 
+                }}
+              >
+                Features
+              </div>
+              <h2 
+                className="text-4xl md:text-5xl font-bold tracking-tight"
+                style={{ color: '#ffffff' }}
+              >
+                Built for Modern Security
+              </h2>
+              <p 
+                className="text-lg max-w-2xl mx-auto"
+                style={{ color: '#ffffff', opacity: 0.7 }}
+              >
+                Everything you need to manage passwords, API keys, and sensitive data securely.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              <div className="space-y-4 p-8 rounded-xl transition-all hover:bg-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8d99ae' }}>
+                  <svg className="w-6 h-6" style={{ color: '#2b2d42' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 
+                  className="text-xl font-bold"
+                  style={{ color: '#ffffff' }}
+                >
+                  Zero-Knowledge Encryption
+                </h3>
+                <p 
+                  className="leading-relaxed"
+                  style={{ color: '#ffffff', opacity: 0.7 }}
+                >
+                  AES-256 encryption with client-side hashing. Your master password never leaves your device.
+                </p>
+              </div>
+
+              <div className="space-y-4 p-8 rounded-xl transition-all hover:bg-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8d99ae' }}>
+                  <svg className="w-6 h-6" style={{ color: '#2b2d42' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </div>
+                <h3 
+                  className="text-xl font-bold"
+                  style={{ color: '#ffffff' }}
+                >
+                  Seamless Sync
+                </h3>
+                <p 
+                  className="leading-relaxed"
+                  style={{ color: '#ffffff', opacity: 0.7 }}
+                >
+                  Access your vault from anywhere. Real-time synchronization across all your devices.
+                </p>
+              </div>
+
+              <div className="space-y-4 p-8 rounded-xl transition-all hover:bg-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8d99ae' }}>
+                  <svg className="w-6 h-6" style={{ color: '#2b2d42' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h3 
+                  className="text-xl font-bold"
+                  style={{ color: '#ffffff' }}
+                >
+                  Advanced Security
+                </h3>
+                <p 
+                  className="leading-relaxed"
+                  style={{ color: '#ffffff', opacity: 0.7 }}
+                >
+                  Multi-factor authentication, session management, and comprehensive audit logs.
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12 text-center">
-              <div className="grid gap-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Secure Password Storage</h3>
-                <p className="text-gray-500 dark:text-gray-400 ">Store all your passwords in one secure place with AES-256 encryption.</p>
-              </div>
-              <div className="grid gap-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Cross-Platform Sync</h3>
-                <p className="text-gray-500 dark:text-gray-400">Access your passwords from anywhere with our web and mobile apps.</p>
-              </div>
-              <div className="grid gap-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Password Generator</h3>
-                <p className="text-gray-500 dark:text-gray-400">Create strong, unique passwords for every account.</p>
-              </div>
-            </div>
           </div>
         </section>
-        <section className="flex items-center justify-center w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-black">
-          <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
-            <div className="space-y-3">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-gray-900 dark:text-white">
-                Ready to take control of your passwords?
-              </h2>
-              <p className="mx-auto max-w-[600px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Join Vaultr today and experience the peace of mind that comes with knowing your digital life is secure.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
-              <Link
-                href="/signup"
-                className="inline-flex h-10 items-center justify-center rounded-md bg-blue-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-blue-700"
+
+        {/* CTA Section */}
+        <section className="py-24 px-6 border-t border-white/10">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <h2 
+              className="text-4xl md:text-5xl font-bold tracking-tight"
+              style={{ color: '#ffffff' }}
+            >
+              Ready to secure your digital life?
+            </h2>
+            <p 
+              className="text-lg md:text-xl"
+              style={{ color: '#ffffff', opacity: 0.75 }}
+            >
+              Join thousands who trust Vaultr to protect their most sensitive information.
+            </p>
+            <div className="pt-4">
+              <Link 
+                href="/signup" 
+                className="inline-block px-10 py-4 rounded-lg text-base font-semibold transition-all hover:shadow-xl hover:opacity-90"
+                style={{ 
+                  backgroundColor: '#8d99ae', 
+                  color: '#2b2d42',
+                }}
               >
-                Sign Up for Free
+                Start Free Trial
               </Link>
             </div>
           </div>
         </section>
       </main>
-      <footer className="flex items-center justify-center py-6 bg-gray-100 dark:bg-black">
-        <p className="text-sm text-gray-500 dark:text-gray-400">© 2025 Vaultr. All rights reserved.</p>
+
+      {/* Footer */}
+      <footer className="py-8 px-6 border-t border-white/10">
+        <div className="max-w-6xl mx-auto text-center">
+          <p 
+            className="text-sm"
+            style={{ color: '#ffffff', opacity: 0.5 }}
+          >
+            © 2025 Vaultr. All rights reserved.
+          </p>
+        </div>
       </footer>
     </div>
   );

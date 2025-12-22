@@ -15,6 +15,8 @@ function ResetPasswordContent() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -95,106 +97,193 @@ function ResetPasswordContent() {
   const strength = getPasswordStrength(password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+      {/* Back to home link */}
+      <Link 
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
+        style={{ color: '#ffffff', opacity: 0.6 }}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to home
+      </Link>
+      
+      <div 
+        className="w-full max-w-[440px] rounded-xl p-8"
+        style={{ 
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+        }}
+      >
         {status === "form" && (
           <>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              Reset Password
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Enter a new password for your account.
-            </p>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2" style={{ color: '#ffffff' }}>
+                Reset Password
+              </h1>
+              <p className="text-sm" style={{ color: '#ffffff', opacity: 0.7 }}>
+                Enter a new password for your account
+              </p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <label className="block">
-                <span className="text-sm text-gray-700 dark:text-gray-300">New Password</span>
-                <input
-                  id="new-password"
-                  type="password"
-                  required
-                  aria-invalid={!!passwordError}
-                  aria-describedby={passwordError ? "password-error" : undefined}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (passwordError) setPasswordError(null);
-                  }}
-                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                    passwordError ? "border-red-500" : "border-gray-200"
-                  }`}
-                />
+                <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+                  New Password
+                </span>
+                <div className="relative">
+                  <input
+                    id="new-password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    aria-invalid={!!passwordError}
+                    aria-describedby={passwordError ? "password-error" : undefined}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      border: passwordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
+                      color: '#ffffff',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
+                    onBlur={(e) => {
+                      if (!passwordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
+                    }}
+                    placeholder="Create a strong password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
+                    style={{ color: '#8d99ae', opacity: 0.6 }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 {password && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs mb-1" style={{ color: '#ffffff', opacity: 0.7 }}>
                       <span>Password strength:</span>
-                      <span>{strength.label}</span>
+                      <span style={{ color: '#8d99ae', opacity: strength.score === 'strong' ? 1 : strength.score === 'medium' ? 0.8 : 0.6 }}>
+                        {strength.label}
+                      </span>
                     </div>
-                    <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded mt-1 overflow-hidden">
+                    <div className="h-1 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                       <div
-                        className={`h-full ${strength.color} transition-all`}
+                        className="h-full transition-all duration-300"
                         style={{
-                          width:
-                            strength.score === "strong"
-                              ? "100%"
-                              : strength.score === "medium"
-                                ? "66%"
-                                : "33%",
+                          backgroundColor: '#8d99ae',
+                          opacity: strength.score === 'strong' ? 1 : strength.score === 'medium' ? 0.7 : 0.4,
+                          width: strength.score === "strong" ? "100%" : strength.score === "medium" ? "66%" : "33%",
                         }}
                       ></div>
                     </div>
                   </div>
                 )}
                 {passwordError && (
-                  <p id="password-error" className="mt-1 text-sm text-red-600">
+                  <p id="password-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
                     {passwordError}
                   </p>
                 )}
               </label>
 
               <label className="block">
-                <span className="text-sm text-gray-700 dark:text-gray-300">Confirm Password</span>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  required
-                  aria-invalid={!!confirmError}
-                  aria-describedby={confirmError ? "confirm-error" : undefined}
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    if (confirmError) setConfirmError(null);
-                  }}
-                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                    confirmError ? "border-red-500" : "border-gray-200"
-                  }`}
-                />
+                <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+                  Confirm Password
+                </span>
+                <div className="relative">
+                  <input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    aria-invalid={!!confirmError}
+                    aria-describedby={confirmError ? "confirm-error" : undefined}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (confirmError) setConfirmError(null);
+                    }}
+                    className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      border: confirmError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
+                      color: '#ffffff',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
+                    onBlur={(e) => {
+                      if (!confirmError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
+                    }}
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
+                    style={{ color: '#8d99ae', opacity: 0.6 }}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 {confirmError && (
-                  <p id="confirm-error" className="mt-1 text-sm text-red-600">
+                  <p id="confirm-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
                     {confirmError}
                   </p>
                 )}
               </label>
 
               {generalError && (
-                <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <p className="text-sm text-red-800 dark:text-red-200">{generalError}</p>
+                <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
+                  <p className="text-sm" style={{ color: '#8d99ae' }}>{generalError}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow ${
-                  isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+                style={{
+                  backgroundColor: isSubmitting ? 'rgba(141,153,174,0.5)' : '#8d99ae',
+                  color: '#2b2d42',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.7 : 1,
+                }}
               >
                 {isSubmitting ? "Resetting..." : "Reset Password"}
               </button>
             </form>
 
-            <p className="text-sm text-center text-gray-600 dark:text-gray-400 mt-6">
-              <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            <p className="text-sm text-center mt-6" style={{ color: '#ffffff', opacity: 0.6 }}>
+              <Link 
+                href="/login" 
+                className="font-medium transition-opacity hover:opacity-80"
+                style={{ color: '#8d99ae' }}
+              >
                 Back to login
               </Link>
             </p>
@@ -204,9 +293,13 @@ function ResetPasswordContent() {
         {status === "success" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'rgba(141,153,174,0.2)' }}
+              >
                 <svg
-                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  className="w-8 h-8"
+                  style={{ color: '#8d99ae' }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -220,15 +313,19 @@ function ResetPasswordContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
               Password Reset!
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+              style={{ 
+                backgroundColor: '#8d99ae',
+                color: '#2b2d42'
+              }}
             >
               Go to Sign In
             </Link>
@@ -238,9 +335,13 @@ function ResetPasswordContent() {
         {status === "error" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+              >
                 <svg
-                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  className="w-8 h-8"
+                  style={{ color: '#8d99ae', opacity: 0.8 }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -254,15 +355,19 @@ function ResetPasswordContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
               Invalid Request
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+              style={{ 
+                backgroundColor: '#8d99ae',
+                color: '#2b2d42'
+              }}
             >
               Back to Sign In
             </Link>
