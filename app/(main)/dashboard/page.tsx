@@ -114,59 +114,27 @@ export default function DashboardPage() {
   if (!isUnlocked) return null; // Or loading spinner
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#2b2d42' }}>
+    <div className="min-h-screen bg-[#2b2d42]">
       {/* Top Navigation Bar */}
-      <nav style={{ 
-        backgroundColor: 'rgba(0,0,0,0.2)', 
-        borderBottom: '1px solid rgba(141,153,174,0.1)',
-        backdropFilter: 'blur(10px)'
-      }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
-          padding: '0 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: '64px'
-        }}>
+      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
           {/* Logo/Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <div className="flex items-center gap-8">
             <Link 
               href="/dashboard"
-              style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: '700',
-                color: '#ffffff',
-                textDecoration: 'none'
-              }}
+              className="text-xl font-bold text-white no-underline"
             >
               Vaultr
             </Link>
           </div>
 
           {/* Navigation Links & Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="flex items-center gap-4">
             {/* Add Item Button with Dropdown */}
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                className="flex items-center gap-2 rounded-md bg-[#8d99ae] px-4 py-2 text-sm font-semibold text-[#2b2d42] transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#8d99ae]/60 focus:ring-offset-0"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19"/>
@@ -177,63 +145,22 @@ export default function DashboardPage() {
 
               {/* Dropdown Menu */}
               {showAddMenu && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 0.5rem)',
-                  right: '0',
-                  backgroundColor: 'rgba(43,45,66,0.9)',
-                  border: '1px solid rgba(141,153,174,0.35)',
-                  borderRadius: '8px',
-                  padding: '0.5rem',
-                  minWidth: '200px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                  zIndex: 50
-                }}>
+                <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-50 rounded-lg border border-[rgba(141,153,174,0.35)] bg-[rgba(43,45,66,0.9)] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                   <Link 
                     href="/passwords/new"
-                    style={{
-                      display: 'block',
-                      padding: '0.75rem 1rem',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      borderRadius: '6px',
-                      fontSize: '0.875rem',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(141,153,174,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     🔑 Password
                   </Link>
                   <Link 
                     href="/api-keys/new"
-                    style={{
-                      display: 'block',
-                      padding: '0.75rem 1rem',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      borderRadius: '6px',
-                      fontSize: '0.875rem',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(141,153,174,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     🔐 API Key
                   </Link>
                   <Link 
                     href="/env-vars/new"
-                    style={{
-                      display: 'block',
-                      padding: '0.75rem 1rem',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      borderRadius: '6px',
-                      fontSize: '0.875rem',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(141,153,174,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
                   >
                     ⚙️ Environment Variables
                   </Link>
@@ -244,25 +171,7 @@ export default function DashboardPage() {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: 'transparent',
-                color: 'rgba(141,153,174,0.8)',
-                border: '1px solid rgba(141,153,174,0.3)',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(141,153,174,0.1)';
-                e.currentTarget.style.color = '#8d99ae';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = 'rgba(141,153,174,0.8)';
-              }}
+              className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
             >
               Logout
             </button>
@@ -271,23 +180,11 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+      <div className="mx-auto max-w-300 px-6 py-8">
         {/* Search Bar and View Toggle */}
-        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ 
-            position: 'relative',
-            flex: '1',
-            minWidth: '300px',
-            maxWidth: '600px'
-          }}>
-            <div style={{
-              position: 'absolute',
-              left: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'rgba(141,153,174,0.5)',
-              pointerEvents: 'none'
-            }}>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="relative min-w-75 max-w-150 flex-1">
+            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(141,153,174,0.5)]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"/>
                 <path d="m21 21-4.35-4.35"/>
@@ -298,46 +195,15 @@ export default function DashboardPage() {
               placeholder="Search your vault..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.875rem 1rem 0.875rem 3rem',
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                color: '#ffffff',
-                border: '1px solid rgba(141,153,174,0.2)',
-                borderRadius: '8px',
-                fontSize: '0.938rem',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(141,153,174,0.6)'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(141,153,174,0.2)'}
+              className="w-full rounded-lg border border-[rgba(141,153,174,0.2)] bg-[rgba(0,0,0,0.3)] px-12 py-3 text-[0.938rem] text-white outline-none transition-colors duration-200 placeholder:text-[rgba(141,153,174,0.5)] focus:border-[rgba(141,153,174,0.6)]"
             />
           </div>
           
           {/* View Toggle Buttons */}
-          <div style={{ 
-            display: 'flex',
-            backgroundColor: 'rgba(0,0,0,0.3)',
-            border: '1px solid rgba(141,153,174,0.2)',
-            borderRadius: '8px',
-            padding: '0.25rem'
-          }}>
+          <div className="flex rounded-lg border border-[rgba(141,153,174,0.2)] bg-[rgba(0,0,0,0.3)] p-1">
             <button
               onClick={() => setViewMode('grid')}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: viewMode === 'grid' ? 'rgba(141,153,174,0.2)' : 'transparent',
-                color: viewMode === 'grid' ? '#8d99ae' : 'rgba(141,153,174,0.6)',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${viewMode === 'grid' ? 'bg-[rgba(141,153,174,0.2)] text-[#8d99ae]' : 'text-[rgba(141,153,174,0.6)]'}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7"/>
@@ -349,20 +215,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: viewMode === 'list' ? 'rgba(141,153,174,0.2)' : 'transparent',
-                color: viewMode === 'list' ? '#8d99ae' : 'rgba(141,153,174,0.6)',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${viewMode === 'list' ? 'bg-[rgba(141,153,174,0.2)] text-[#8d99ae]' : 'text-[rgba(141,153,174,0.6)]'}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="8" y1="6" x2="21" y2="6"/>
@@ -379,63 +232,24 @@ export default function DashboardPage() {
 
         {/* Vault Items */}
         {loading ? (
-          <div style={{ 
-            textAlign: 'center', 
-            paddingTop: '6rem',
-            paddingBottom: '6rem'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              margin: '0 auto 1rem',
-              border: '3px solid rgba(141,153,174,0.2)',
-              borderTopColor: '#8d99ae',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}/>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.938rem' }}>
+          <div className="py-24 text-center">
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-[3px] border-[rgba(141,153,174,0.2)] border-t-[#8d99ae]" />
+            <p className="text-[0.938rem] text-[rgba(255,255,255,0.6)]">
               Loading your vault...
             </p>
-            <style>{`
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            paddingTop: '6rem',
-            paddingBottom: '6rem'
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              margin: '0 auto 1.5rem',
-              backgroundColor: 'rgba(141,153,174,0.1)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+          <div className="py-24 text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(141,153,174,0.1)]">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8d99ae" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </div>
-            <h2 style={{ 
-              color: '#ffffff', 
-              fontSize: '1.25rem',
-              fontWeight: '600',
-              marginBottom: '0.5rem'
-            }}>
+            <h2 className="mb-2 text-xl font-semibold text-white">
               {searchQuery ? 'No items found' : 'Your vault is empty'}
             </h2>
-            <p style={{ 
-              color: 'rgba(141,153,174,0.8)', 
-              fontSize: '0.938rem',
-              marginBottom: '2rem'
-            }}>
+            <p className="mb-8 text-[0.938rem] text-[rgba(141,153,174,0.8)]">
               {searchQuery 
                 ? 'Try adjusting your search query'
                 : 'Add your first password, API key, or environment variable to get started'
@@ -444,30 +258,14 @@ export default function DashboardPage() {
             {!searchQuery && (
               <button
                 onClick={() => setShowAddMenu(true)}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.938rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                className="rounded-lg bg-[#8d99ae] px-6 py-3 text-[0.938rem] font-semibold text-[#2b2d42] transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#8d99ae]/60"
               >
                 Add Your First Item
               </button>
             )}
           </div>
         ) : viewMode === 'grid' ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '1.25rem'
-          }}>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
             {filteredItems.map(item => {
               // Determine link based on secret type
               let detailLink = `/passwords/${item.id}`;
@@ -489,16 +287,6 @@ export default function DashboardPage() {
                   key={item.id} 
                   role="button"
                   tabIndex={0}
-                  style={{
-                    padding: '1.25rem',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    border: '1px solid rgba(141,153,174,0.2)',
-                    borderRadius: '12px',
-                    transition: 'all 0.2s',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}
                   onClick={() => router.push(detailLink)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -506,97 +294,41 @@ export default function DashboardPage() {
                       router.push(detailLink);
                     }
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(141,153,174,0.5)';
-                    const viewLink = e.currentTarget.querySelector('.view-link') as HTMLElement | null;
-                    if (viewLink) {
-                      viewLink.style.transform = 'translateX(4px) scale(1.02)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(141,153,174,0.2)';
-                    const viewLink = e.currentTarget.querySelector('.view-link') as HTMLElement | null;
-                    if (viewLink) {
-                      viewLink.style.transform = 'translateX(0) scale(1)';
-                    }
-                  }}
+                  className="group flex cursor-pointer flex-col rounded-xl border border-[rgba(141,153,174,0.2)] bg-[rgba(0,0,0,0.2)] p-5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.5)] hover:border-[rgba(141,153,174,0.5)]"
                 >
                   {/* Header with Title and Type Badge */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'flex-start', 
-                    gap: '0.75rem',
-                    marginBottom: '0.75rem'
-                  }}>
-                    <div style={{ flex: '1', minWidth: '0' }}>
-                      <h3 style={{ 
-                        fontSize: '1.125rem',
-                        fontWeight: '600',
-                        color: '#ffffff',
-                        marginBottom: '0.25rem',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="mb-1 overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold text-white">
                         {item.title}
                       </h3>
                     </div>
-                    <span style={{
-                      padding: '0.25rem 0.625rem',
-                      backgroundColor: 'rgba(141,153,174,0.15)',
-                      color: '#8d99ae',
-                      fontSize: '0.688rem',
-                      fontWeight: '600',
-                      borderRadius: '4px',
-                      whiteSpace: 'nowrap',
-                      letterSpacing: '0.5px'
-                    }}>
+                    <span className="rounded bg-[rgba(141,153,174,0.15)] px-2.5 py-1 text-[0.688rem] font-semibold tracking-[0.5px] text-[#8d99ae]">
                       {typeIcon} {typeLabel}
                     </span>
                   </div>
                   
                   {/* Metadata */}
-                  <div style={{ marginBottom: '1rem', flex: '1' }}>
+                  <div className="mb-4 flex-1 space-y-2">
                     {item.username && (
-                      <p style={{ 
-                        fontSize: '0.875rem',
-                        color: 'rgba(141,153,174,0.8)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
+                      <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.875rem] text-[rgba(141,153,174,0.8)]">
                         {item.username}
                       </p>
                     )}
                     {item.secretType === 'API_KEY' && item.metadata && 'serviceName' in item.metadata && (
-                      <p style={{ 
-                        fontSize: '0.875rem',
-                        color: 'rgba(141,153,174,0.8)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
+                      <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.875rem] text-[rgba(141,153,174,0.8)]">
                         {String(item.metadata.serviceName)}
                       </p>
                     )}
                     {item.secretType === 'ENV_VARS' && item.metadata && 'variableCount' in item.metadata && (
-                      <p style={{ 
-                        fontSize: '0.875rem',
-                        color: 'rgba(141,153,174,0.8)'
-                      }}>
+                      <p className="text-[0.875rem] text-[rgba(141,153,174,0.8)]">
                         {item.metadata.variableCount} variable{item.metadata.variableCount !== 1 ? 's' : ''}
                       </p>
                     )}
                     
                     {/* Hidden password indicator */}
                     {(item.secretType === 'PASSWORD' || item.secretType === 'API_KEY') && (
-                      <p style={{ 
-                        fontSize: '0.875rem',
-                        color: 'rgba(141,153,174,0.5)',
-                        fontFamily: 'monospace',
-                        marginTop: '0.5rem',
-                        letterSpacing: '2px'
-                      }}>
+                      <p className="mt-2 font-mono text-[0.875rem] tracking-[2px] text-[rgba(141,153,174,0.5)]">
                         ••••••••
                       </p>
                     )}
@@ -605,24 +337,9 @@ export default function DashboardPage() {
                   {/* Action Button */}
                   <Link 
                     href={detailLink}
-                    className="view-link"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      padding: '0.5rem 0.35rem',
-                      backgroundColor: 'transparent',
-                      color: '#8d99ae',
-                      textDecoration: 'none',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      borderRadius: '4px',
-                      border: 'none',
-                      transition: 'transform 0.2s ease, color 0.2s ease',
-                      marginLeft: 'auto'
-                    }}
+                    className="view-link ml-auto inline-flex items-center gap-[0.35rem] text-sm font-semibold text-[#8d99ae] transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-[1.02]"
                   >
-                    <span style={{ letterSpacing: '0.3px' }}>View Details</span>
+                    <span className="tracking-[0.3px]">View Details</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
@@ -632,11 +349,7 @@ export default function DashboardPage() {
             })}
           </div>
         ) : (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.75rem'
-          }}>
+          <div className="flex flex-col gap-3">
             {filteredItems.map(item => {
               // Determine link based on secret type
               let detailLink = `/passwords/${item.id}`;
@@ -658,17 +371,6 @@ export default function DashboardPage() {
                   key={item.id} 
                   role="button"
                   tabIndex={0}
-                  style={{
-                    padding: '1rem 1.25rem',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    border: '1px solid rgba(141,153,174,0.2)',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1.25rem'
-                  }}
                   onClick={() => router.push(detailLink)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -676,105 +378,44 @@ export default function DashboardPage() {
                       router.push(detailLink);
                     }
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(141,153,174,0.5)';
-                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.3)';
-                    const viewLink = e.currentTarget.querySelector('.view-link') as HTMLElement | null;
-                    if (viewLink) {
-                      viewLink.style.transform = 'translateX(4px) scale(1.02)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(141,153,174,0.2)';
-                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.2)';
-                    const viewLink = e.currentTarget.querySelector('.view-link') as HTMLElement | null;
-                    if (viewLink) {
-                      viewLink.style.transform = 'translateX(0) scale(1)';
-                    }
-                  }}
+                  className="group flex cursor-pointer items-center gap-5 rounded-lg border border-[rgba(141,153,174,0.2)] bg-[rgba(0,0,0,0.2)] p-5 transition-all duration-200 hover:border-[rgba(141,153,174,0.5)] hover:bg-[rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.5)]"
                 >
                   {/* Type Badge */}
-                  <div style={{
-                    padding: '0.5rem',
-                    backgroundColor: 'rgba(141,153,174,0.15)',
-                    borderRadius: '8px',
-                    fontSize: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '48px',
-                    height: '48px'
-                  }}>
+                  <div className="flex h-12 w-12 min-w-12 items-center justify-center rounded-lg bg-[rgba(141,153,174,0.15)] text-xl">
                     {typeIcon}
                   </div>
                   
                   {/* Content */}
-                  <div style={{ flex: '1', minWidth: '0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-                      <h3 style={{ 
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        color: '#ffffff',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-3">
+                      <h3 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold text-white">
                         {item.title}
                       </h3>
-                      <span style={{
-                        padding: '0.125rem 0.5rem',
-                        backgroundColor: 'rgba(141,153,174,0.15)',
-                        color: '#8d99ae',
-                        fontSize: '0.625rem',
-                        fontWeight: '600',
-                        borderRadius: '4px',
-                        whiteSpace: 'nowrap',
-                        letterSpacing: '0.5px'
-                      }}>
+                      <span className="rounded bg-[rgba(141,153,174,0.15)] px-2 py-0.5 text-[0.625rem] font-semibold tracking-[0.5px] text-[#8d99ae]">
                         {typeLabel}
                       </span>
                     </div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div className="flex flex-wrap items-center gap-4">
                       {item.username && (
-                        <p style={{ 
-                          fontSize: '0.813rem',
-                          color: 'rgba(141,153,174,0.8)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
+                        <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.813rem] text-[rgba(141,153,174,0.8)]">
                           {item.username}
                         </p>
                       )}
                       {item.secretType === 'API_KEY' && item.metadata && 'serviceName' in item.metadata && (
-                        <p style={{ 
-                          fontSize: '0.813rem',
-                          color: 'rgba(141,153,174,0.8)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
+                        <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.813rem] text-[rgba(141,153,174,0.8)]">
                           {String(item.metadata.serviceName)}
                         </p>
                       )}
                       {item.secretType === 'ENV_VARS' && item.metadata && 'variableCount' in item.metadata && (
-                        <p style={{ 
-                          fontSize: '0.813rem',
-                          color: 'rgba(141,153,174,0.8)'
-                        }}>
+                        <p className="text-[0.813rem] text-[rgba(141,153,174,0.8)]">
                           {item.metadata.variableCount} variable{item.metadata.variableCount !== 1 ? 's' : ''}
                         </p>
                       )}
                       
                       {/* Hidden password indicator */}
                       {(item.secretType === 'PASSWORD' || item.secretType === 'API_KEY') && (
-                        <p style={{ 
-                          fontSize: '0.813rem',
-                          color: 'rgba(141,153,174,0.5)',
-                          fontFamily: 'monospace',
-                          letterSpacing: '2px'
-                        }}>
+                        <p className="font-mono text-[0.813rem] tracking-[2px] text-[rgba(141,153,174,0.5)]">
                           ••••••••
                         </p>
                       )}
@@ -784,24 +425,9 @@ export default function DashboardPage() {
                   {/* Action Button */}
                   <Link 
                     href={detailLink}
-                    className="view-link"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      padding: '0.5rem 0.35rem',
-                      backgroundColor: 'transparent',
-                      color: '#8d99ae',
-                      textDecoration: 'none',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      borderRadius: '4px',
-                      border: 'none',
-                      transition: 'transform 0.2s ease, color 0.2s ease',
-                      whiteSpace: 'nowrap'
-                    }}
+                    className="view-link inline-flex items-center gap-[0.35rem] whitespace-nowrap text-sm font-semibold text-[#8d99ae] transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-[1.02]"
                   >
-                    <span style={{ letterSpacing: '0.3px' }}>View Details</span>
+                    <span className="tracking-[0.3px]">View Details</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>

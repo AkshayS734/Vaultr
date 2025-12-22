@@ -81,12 +81,11 @@ function VerifyEmailContent() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
       {/* Back to home link */}
       <Link 
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
-        style={{ color: '#ffffff', opacity: 0.6 }}
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -95,27 +94,19 @@ function VerifyEmailContent() {
       </Link>
       
       <div 
-        className="w-full max-w-[440px] rounded-xl p-8"
-        style={{ 
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}
+        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
       >
         {status === "loading" && (
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="animate-spin rounded-full h-12 w-12"
-                style={{ 
-                  border: '3px solid rgba(141,153,174,0.2)',
-                  borderTop: '3px solid #8d99ae'
-                }}
+                className="animate-spin rounded-full h-12 w-12 border-[3px] border-[#8d99ae]/20 border-t-[#8d99ae]"
               ></div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Verifying Email
             </h1>
-            <p className="text-sm" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm text-white/70">
               Please wait while we verify your email address...
             </p>
           </div>
@@ -125,12 +116,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.2)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae' }}
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -144,19 +133,15 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Email Verified!
             </h1>
-            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-              style={{ 
-                backgroundColor: '#8d99ae',
-                color: '#2b2d42'
-              }}
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Go to Sign In
             </Link>
@@ -167,12 +152,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.2)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae' }}
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -186,19 +169,15 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Already Verified
             </h1>
-            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-              style={{ 
-                backgroundColor: '#8d99ae',
-                color: '#2b2d42'
-              }}
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Go to Sign In
             </Link>
@@ -209,12 +188,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae', opacity: 0.8 }}
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -228,24 +205,20 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Link Expired
             </h1>
-            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
               <Link
                 href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                style={{ 
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42'
-                }}
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
-              <p className="text-xs" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <p className="text-xs text-white/50">
                 You can request a new verification email on the login page.
               </p>
             </div>
@@ -256,12 +229,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae', opacity: 0.8 }}
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -275,23 +246,19 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Invalid Link
             </h1>
-            <p className="text-sm mb-4" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-xs mb-4" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <p className="text-xs mb-4 text-white/50">
                 Make sure you clicked the correct link from your email.
               </p>
               <Link
                 href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                style={{ 
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42'
-                }}
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
@@ -303,12 +270,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae', opacity: 0.8 }}
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -322,23 +287,19 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Verification Failed
             </h1>
-            <p className="text-sm mb-4" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-xs mb-4" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <p className="text-xs mb-4 text-white/50">
                 Please try again or contact support if the problem persists.
               </p>
               <Link
                 href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                style={{ 
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42'
-                }}
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
@@ -350,12 +311,10 @@ function VerifyEmailContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae', opacity: 0.8 }}
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -369,34 +328,25 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Invalid Request
             </h1>
-            <p className="text-sm mb-4" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-xs mb-4" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <p className="text-xs mb-4 text-white/50">
                 Please click the verification link from your email or sign up again.
               </p>
               <Link
                 href="/signup"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                style={{ 
-                  backgroundColor: '#8d99ae',
-                  color: '#2b2d42'
-                }}
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Sign Up
               </Link>
               <Link
                 href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90"
-                style={{ 
-                  backgroundColor: 'rgba(141,153,174,0.2)',
-                  border: '1px solid rgba(141,153,174,0.3)',
-                  color: '#8d99ae'
-                }}
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90 bg-[#8d99ae]/20 border border-[#8d99ae]/30 text-[#8d99ae]"
               >
                 Go to Sign In
               </Link>

@@ -256,12 +256,11 @@ export default function SignupPage() {
   const strength = passwordStrength(password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
       {/* Back to home link */}
       <Link 
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
-        style={{ color: '#ffffff', opacity: 0.6 }}
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -271,33 +270,28 @@ export default function SignupPage() {
       
       {/* Verification Modal */}
       {showVerificationModal && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-black/70">
           <div 
-            className="rounded-xl p-8 max-w-md w-full"
-            style={{ 
-              backgroundColor: 'rgba(0,0,0,0.3)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
-            }}
+            className="rounded-xl p-8 max-w-md w-full bg-black/30 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
           >
             <div className="text-center">
               <div 
-                className="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4"
-                style={{ backgroundColor: 'rgba(141,153,174,0.2)' }}
+                className="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 bg-[#8d99ae]/20"
               >
-                <svg className="h-7 w-7" style={{ color: '#8d99ae' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-7 w-7 text-[#8d99ae]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2" style={{ color: '#ffffff' }}>
+              <h3 className="text-xl font-bold mb-2 text-white">
                 Verify Your Email
               </h3>
-              <p className="text-sm mb-4" style={{ color: '#ffffff', opacity: 0.75 }}>
-                We&apos;ve sent a verification link to <strong style={{ color: '#8d99ae' }}>{email}</strong>. Please check your inbox and click the link to verify your account.
+              <p className="text-sm mb-4 text-white/75">
+                We&apos;ve sent a verification link to <strong className="text-[#8d99ae]">{email}</strong>. Please check your inbox and click the link to verify your account.
               </p>
               
               {resendMessage && (
-                <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
-                  <p className="text-sm" style={{ color: '#8d99ae' }}>{resendMessage}</p>
+                <div className="mb-4 p-3 rounded-lg bg-[#8d99ae]/15">
+                  <p className="text-sm text-[#8d99ae]">{resendMessage}</p>
                 </div>
               )}
               
@@ -305,13 +299,7 @@ export default function SignupPage() {
                 <button
                   onClick={handleResendVerification}
                   disabled={isResending || countdown > 0}
-                  className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200"
-                  style={{
-                    backgroundColor: isResending || countdown > 0 ? 'rgba(141,153,174,0.3)' : '#8d99ae',
-                    color: isResending || countdown > 0 ? 'rgba(255,255,255,0.5)' : '#2b2d42',
-                    cursor: isResending || countdown > 0 ? 'not-allowed' : 'pointer',
-                    opacity: isResending || countdown > 0 ? 0.6 : 1,
-                  }}
+                  className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isResending || countdown > 0 ? 'bg-[#8d99ae]/30 text-white/50 cursor-not-allowed opacity-60' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
                 >
                   {isResending 
                     ? 'Sending...' 
@@ -323,18 +311,13 @@ export default function SignupPage() {
                 
                 <button
                   onClick={() => router.push('/login')}
-                  className="w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90"
-                  style={{
-                    backgroundColor: 'rgba(141,153,174,0.2)',
-                    border: '1px solid rgba(141,153,174,0.3)',
-                    color: '#8d99ae',
-                  }}
+                  className="w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90 bg-[#8d99ae]/20 border border-[#8d99ae]/30 text-[#8d99ae]"
                 >
                   Go to Login
                 </button>
               </div>
               
-              <p className="text-xs mt-4" style={{ color: '#ffffff', opacity: 0.5 }}>
+              <p className="text-xs mt-4 text-white/50">
                 Can&apos;t find the email? Check your spam folder or click resend.
               </p>
             </div>
@@ -343,24 +326,20 @@ export default function SignupPage() {
       )}
 
       <div 
-        className="w-full max-w-[480px] rounded-xl p-8"
-        style={{ 
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}
+        className="w-full max-w-[480px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#ffffff' }}>
+          <h1 className="text-3xl font-bold mb-2 text-white">
             Create your account
           </h1>
-          <p className="text-sm" style={{ color: '#ffffff', opacity: 0.7 }}>
+          <p className="text-sm text-white/70">
             Start securing your passwords with enterprise-grade encryption
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <label className="block">
-            <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+            <span className="text-sm font-medium mb-2 block text-white/85">
               Email
             </span>
             <input
@@ -374,27 +353,18 @@ export default function SignupPage() {
                 setEmail(e.target.value);
                 if (emailError) setEmailError(null);
               }}
-              className="w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none"
-              style={{
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                border: emailError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                color: '#ffffff',
-              }}
-              onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-              onBlur={(e) => {
-                if (!emailError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-              }}
+              className={`w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${emailError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
               placeholder="your@email.com"
             />
             {emailError && (
-              <p id="signup-email-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+              <p id="signup-email-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                 {emailError}
               </p>
             )}
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+            <span className="text-sm font-medium mb-2 block text-white/85">
               Login Password
             </span>
             <div className="relative">
@@ -409,23 +379,13 @@ export default function SignupPage() {
                   setPassword(e.target.value);
                   if (passwordError) setPasswordError(null);
                 }}
-                className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                style={{
-                  backgroundColor: 'rgba(0,0,0,0.3)',
-                  border: passwordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                  color: '#ffffff',
-                }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                onBlur={(e) => {
-                  if (!passwordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                }}
+                className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${passwordError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                 placeholder="Create a strong password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                style={{ color: '#8d99ae', opacity: 0.6 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -441,24 +401,21 @@ export default function SignupPage() {
               </button>
             </div>
             {passwordError && (
-              <p id="signup-password-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+              <p id="signup-password-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                 {passwordError}
               </p>
             )}
 
             {strength && (
-              <p className="mt-2 text-xs" style={{ color: '#ffffff', opacity: 0.7 }}>
+              <p className="mt-2 text-xs text-white/70">
                 <span className="font-medium">Strength:</span>{' '}
-                <span style={{ 
-                  color: strength === 'strong' ? '#8d99ae' : strength === 'medium' ? '#8d99ae' : '#8d99ae',
-                  opacity: strength === 'strong' ? 1 : strength === 'medium' ? 0.7 : 0.5
-                }}>{strength}</span>
+                <span className={`${strength === 'strong' ? 'text-[#8d99ae] opacity-100' : strength === 'medium' ? 'text-[#8d99ae] opacity-70' : 'text-[#8d99ae] opacity-50'}`}>{strength}</span>
               </p>
             )}
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+            <span className="text-sm font-medium mb-2 block text-white/85">
               Confirm Login Password
             </span>
             <div className="relative">
@@ -473,23 +430,13 @@ export default function SignupPage() {
                   setConfirm(e.target.value);
                   if (confirmError) setConfirmError(null);
                 }}
-                className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                style={{
-                  backgroundColor: 'rgba(0,0,0,0.3)',
-                  border: confirmError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                  color: '#ffffff',
-                }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                onBlur={(e) => {
-                  if (!confirmError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                }}
+                className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${confirmError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                 placeholder="Confirm your password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                style={{ color: '#8d99ae', opacity: 0.6 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                 aria-label={showConfirm ? "Hide password" : "Show password"}
               >
                 {showConfirm ? (
@@ -505,20 +452,20 @@ export default function SignupPage() {
               </button>
             </div>
             {confirmError && (
-              <p id="signup-confirm-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+              <p id="signup-confirm-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                 {confirmError}
               </p>
             )}
           </label>
 
-          <div className="pt-4 mt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 className="text-lg font-bold mb-2" style={{ color: '#ffffff' }}>Security Setup</h3>
-            <p className="text-xs mb-4" style={{ color: '#ffffff', opacity: 0.65 }}>
+          <div className="pt-4 mt-4 border-t border-white/10">
+            <h3 className="text-lg font-bold mb-2 text-white">Security Setup</h3>
+            <p className="text-xs mb-4 text-white/65">
               Create a Master Password to encrypt your vault. This password is <strong>NEVER</strong> sent to our servers and cannot be recovered if lost.
             </p>
 
             <label className="block mb-5">
-              <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+              <span className="text-sm font-medium mb-2 block text-white/85">
                 Master Password
               </span>
               <div className="relative">
@@ -533,23 +480,13 @@ export default function SignupPage() {
                     setMasterPassword(e.target.value);
                     if (masterPasswordError) setMasterPasswordError(null);
                   }}
-                  className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    border: masterPasswordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                    color: '#ffffff',
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                  onBlur={(e) => {
-                    if (!masterPasswordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                  }}
+                  className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${masterPasswordError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                   placeholder="Create master password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowMasterPassword(!showMasterPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                  style={{ color: '#8d99ae', opacity: 0.6 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                   aria-label={showMasterPassword ? "Hide password" : "Show password"}
                 >
                   {showMasterPassword ? (
@@ -565,14 +502,14 @@ export default function SignupPage() {
                 </button>
               </div>
               {masterPasswordError && (
-                <p id="signup-master-password-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+                <p id="signup-master-password-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                   {masterPasswordError}
                 </p>
               )}
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+              <span className="text-sm font-medium mb-2 block text-white/85">
                 Confirm Master Password
               </span>
               <div className="relative">
@@ -587,23 +524,13 @@ export default function SignupPage() {
                     setConfirmMasterPassword(e.target.value);
                     if (confirmMasterPasswordError) setConfirmMasterPasswordError(null);
                   }}
-                  className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    border: confirmMasterPasswordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                    color: '#ffffff',
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                  onBlur={(e) => {
-                    if (!confirmMasterPasswordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                  }}
+                  className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${confirmMasterPasswordError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                   placeholder="Confirm master password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmMasterPassword(!showConfirmMasterPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                  style={{ color: '#8d99ae', opacity: 0.6 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                   aria-label={showConfirmMasterPassword ? "Hide password" : "Show password"}
                 >
                   {showConfirmMasterPassword ? (
@@ -619,7 +546,7 @@ export default function SignupPage() {
                 </button>
               </div>
               {confirmMasterPasswordError && (
-                <p id="signup-confirm-master-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+                <p id="signup-confirm-master-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                   {confirmMasterPasswordError}
                 </p>
               )}
@@ -627,32 +554,25 @@ export default function SignupPage() {
           </div>
 
           {generalError && (
-            <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
-              <p className="text-sm" style={{ color: '#8d99ae' }}>{generalError}</p>
+            <div className="p-3 rounded-lg bg-[#8d99ae]/15">
+              <p className="text-sm text-[#8d99ae]">{generalError}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-            style={{
-              backgroundColor: isSubmitting ? 'rgba(141,153,174,0.5)' : '#8d99ae',
-              color: '#2b2d42',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.7 : 1,
-            }}
+            className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isSubmitting ? 'bg-[#8d99ae]/50 text-[#2b2d42] cursor-not-allowed opacity-70' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
           >
             {isSubmitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-6" style={{ color: '#ffffff', opacity: 0.6 }}>
+        <p className="text-sm text-center mt-6 text-white/60">
           Already have an account?{' '}
           <Link 
             href="/login" 
-            className="font-medium transition-opacity hover:opacity-80"
-            style={{ color: '#8d99ae' }}
+            className="font-medium text-[#8d99ae] transition-opacity hover:opacity-80"
           >
             Sign in
           </Link>

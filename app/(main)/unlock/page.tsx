@@ -66,16 +66,15 @@ export default function UnlockPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
       {/* Header with app name and logout */}
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
-        <div className="text-xl font-bold" style={{ color: '#ffffff' }}>
+        <div className="text-xl font-bold text-white">
           Vaultr
         </div>
         <button
           onClick={handleLogout}
-          className="text-xs transition-opacity hover:opacity-80"
-          style={{ color: '#ffffff', opacity: 0.5 }}
+          className="text-xs text-white/50 transition-opacity hover:opacity-80"
         >
           Logout
         </button>
@@ -83,20 +82,14 @@ export default function UnlockPage() {
 
       {/* Unlock Card */}
       <div 
-        className="w-full max-w-[440px] rounded-xl p-8"
-        style={{ 
-          backgroundColor: '#2b2d42',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}
+        className="w-full max-w-[440px] rounded-xl p-8 bg-[#2b2d42] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
       >
         <div className="text-center mb-8">
           <div 
-            className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+            className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-[#8d99ae]/15"
           >
             <svg 
-              className="w-8 h-8" 
-              style={{ color: '#8d99ae' }}
+              className="w-8 h-8 text-[#8d99ae]" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -110,10 +103,10 @@ export default function UnlockPage() {
             </svg>
           </div>
           
-          <h1 className="text-3xl font-bold mb-3" style={{ color: '#ffffff' }}>
+          <h1 className="text-3xl font-bold mb-3 text-white">
             Unlock your vault
           </h1>
-          <p className="text-sm" style={{ color: '#ffffff', opacity: 0.75 }}>
+          <p className="text-sm text-white/75">
             Enter your master password to access your secrets
           </p>
         </div>
@@ -121,7 +114,7 @@ export default function UnlockPage() {
         <form onSubmit={handleUnlock} className="space-y-6">
           <div>
             <label className="block">
-              <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+              <span className="text-sm font-medium mb-2 block text-white/85">
                 Master Password
               </span>
               <div className="relative">
@@ -130,22 +123,14 @@ export default function UnlockPage() {
                   required
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    border: '1px solid rgba(141,153,174,0.2)',
-                    color: '#ffffff',
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.2)'}
+                  className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border border-[#8d99ae]/20 focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20"
                   placeholder="Enter your master password"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                  style={{ color: '#8d99ae', opacity: 0.6 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -162,7 +147,7 @@ export default function UnlockPage() {
               </div>
             </label>
             
-            <p className="mt-2 text-xs flex items-center gap-1.5" style={{ color: '#ffffff', opacity: 0.5 }}>
+            <p className="mt-2 text-xs flex items-center gap-1.5 text-white/50">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -171,21 +156,15 @@ export default function UnlockPage() {
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
-              <p className="text-sm" style={{ color: '#8d99ae' }}>{error}</p>
+            <div className="p-3 rounded-lg bg-[#8d99ae]/15">
+              <p className="text-sm text-[#8d99ae]">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-            style={{
-              backgroundColor: isLoading ? 'rgba(141,153,174,0.5)' : '#8d99ae',
-              color: '#2b2d42',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1,
-            }}
+            className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isLoading ? 'bg-[#8d99ae]/50 text-[#2b2d42] cursor-not-allowed opacity-70' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
           >
             {isLoading ? "Unlocking..." : "Unlock Vault"}
           </button>

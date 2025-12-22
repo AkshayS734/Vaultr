@@ -95,14 +95,18 @@ function ResetPasswordContent() {
   }
 
   const strength = getPasswordStrength(password);
+  const strengthBarClass = strength.score === "strong"
+    ? "w-full opacity-100"
+    : strength.score === "medium"
+      ? "w-2/3 opacity-70"
+      : "w-1/3 opacity-40";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#2b2d42' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
       {/* Back to home link */}
       <Link 
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
-        style={{ color: '#ffffff', opacity: 0.6 }}
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -111,26 +115,22 @@ function ResetPasswordContent() {
       </Link>
       
       <div 
-        className="w-full max-w-[440px] rounded-xl p-8"
-        style={{ 
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}
+        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
       >
         {status === "form" && (
           <>
             <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2" style={{ color: '#ffffff' }}>
+              <h1 className="text-3xl font-bold mb-2 text-white">
                 Reset Password
               </h1>
-              <p className="text-sm" style={{ color: '#ffffff', opacity: 0.7 }}>
+              <p className="text-sm text-white/70">
                 Enter a new password for your account
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <label className="block">
-                <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+                <span className="text-sm font-medium mb-2 block text-white/85">
                   New Password
                 </span>
                 <div className="relative">
@@ -145,23 +145,13 @@ function ResetPasswordContent() {
                       setPassword(e.target.value);
                       if (passwordError) setPasswordError(null);
                     }}
-                    className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.3)',
-                      border: passwordError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                      color: '#ffffff',
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                    onBlur={(e) => {
-                      if (!passwordError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                    }}
+                    className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${passwordError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                     placeholder="Create a strong password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                    style={{ color: '#8d99ae', opacity: 0.6 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -178,33 +168,26 @@ function ResetPasswordContent() {
                 </div>
                 {password && (
                   <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs mb-1" style={{ color: '#ffffff', opacity: 0.7 }}>
+                    <div className="flex items-center justify-between text-xs mb-1 text-white/70">
                       <span>Password strength:</span>
-                      <span style={{ color: '#8d99ae', opacity: strength.score === 'strong' ? 1 : strength.score === 'medium' ? 0.8 : 0.6 }}>
+                      <span className={`text-[#8d99ae] ${strength.score === 'strong' ? 'opacity-100' : strength.score === 'medium' ? 'opacity-80' : 'opacity-60'}`}>
                         {strength.label}
                       </span>
                     </div>
-                    <div className="h-1 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                      <div
-                        className="h-full transition-all duration-300"
-                        style={{
-                          backgroundColor: '#8d99ae',
-                          opacity: strength.score === 'strong' ? 1 : strength.score === 'medium' ? 0.7 : 0.4,
-                          width: strength.score === "strong" ? "100%" : strength.score === "medium" ? "66%" : "33%",
-                        }}
-                      ></div>
+                    <div className="h-1 rounded overflow-hidden bg-white/10">
+                      <div className={`h-full transition-all duration-300 bg-[#8d99ae] ${strengthBarClass}`}></div>
                     </div>
                   </div>
                 )}
                 {passwordError && (
-                  <p id="password-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+                  <p id="password-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                     {passwordError}
                   </p>
                 )}
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium mb-2 block" style={{ color: '#ffffff', opacity: 0.85 }}>
+                <span className="text-sm font-medium mb-2 block text-white/85">
                   Confirm Password
                 </span>
                 <div className="relative">
@@ -219,23 +202,13 @@ function ResetPasswordContent() {
                       setConfirmPassword(e.target.value);
                       if (confirmError) setConfirmError(null);
                     }}
-                    className="w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.3)',
-                      border: confirmError ? '1px solid rgba(141,153,174,0.6)' : '1px solid rgba(141,153,174,0.2)',
-                      color: '#ffffff',
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = 'rgba(141,153,174,0.6)'}
-                    onBlur={(e) => {
-                      if (!confirmError) e.target.style.borderColor = 'rgba(141,153,174,0.2)';
-                    }}
+                    className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${confirmError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                     placeholder="Confirm your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-100"
-                    style={{ color: '#8d99ae', opacity: 0.6 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
                     aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   >
                     {showConfirmPassword ? (
@@ -251,38 +224,31 @@ function ResetPasswordContent() {
                   </button>
                 </div>
                 {confirmError && (
-                  <p id="confirm-error" className="mt-2 text-xs" style={{ color: '#8d99ae', opacity: 0.9 }}>
+                  <p id="confirm-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                     {confirmError}
                   </p>
                 )}
               </label>
 
               {generalError && (
-                <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}>
-                  <p className="text-sm" style={{ color: '#8d99ae' }}>{generalError}</p>
+                <div className="p-3 rounded-lg bg-[#8d99ae]/15">
+                  <p className="text-sm text-[#8d99ae]">{generalError}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                style={{
-                  backgroundColor: isSubmitting ? 'rgba(141,153,174,0.5)' : '#8d99ae',
-                  color: '#2b2d42',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  opacity: isSubmitting ? 0.7 : 1,
-                }}
+                className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isSubmitting ? 'bg-[#8d99ae]/50 text-[#2b2d42] cursor-not-allowed opacity-70' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
               >
                 {isSubmitting ? "Resetting..." : "Reset Password"}
               </button>
             </form>
 
-            <p className="text-sm text-center mt-6" style={{ color: '#ffffff', opacity: 0.6 }}>
+            <p className="text-sm text-center mt-6 text-white/60">
               <Link 
                 href="/login" 
-                className="font-medium transition-opacity hover:opacity-80"
-                style={{ color: '#8d99ae' }}
+                className="font-medium text-[#8d99ae] transition-opacity hover:opacity-80"
               >
                 Back to login
               </Link>
@@ -294,12 +260,10 @@ function ResetPasswordContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.2)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae' }}
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -313,19 +277,15 @@ function ResetPasswordContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Password Reset!
             </h1>
-            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-              style={{ 
-                backgroundColor: '#8d99ae',
-                color: '#2b2d42'
-              }}
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Go to Sign In
             </Link>
@@ -336,12 +296,10 @@ function ResetPasswordContent() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(141,153,174,0.15)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: '#8d99ae', opacity: 0.8 }}
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -355,19 +313,15 @@ function ResetPasswordContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#ffffff' }}>
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Invalid Request
             </h1>
-            <p className="text-sm mb-6" style={{ color: '#ffffff', opacity: 0.7 }}>
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-              style={{ 
-                backgroundColor: '#8d99ae',
-                color: '#2b2d42'
-              }}
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Back to Sign In
             </Link>
