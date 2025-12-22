@@ -1,10 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import Redis from 'ioredis';
 
 function readEnvFile(file) {
   try {
     return fs.readFileSync(file, 'utf8');
-  } catch (e) {
+  } catch {
     return '';
   }
 }
@@ -22,7 +23,6 @@ if (!redisUrl) {
   process.exit(2);
 }
 
-const Redis = require('ioredis');
 const r = new Redis(redisUrl);
 
 r.ping().then(res => {

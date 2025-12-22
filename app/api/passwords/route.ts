@@ -23,7 +23,15 @@ export async function GET(req: Request) {
 
     const items = await prisma.item.findMany({
       where: { vaultId: vault.id },
-      select: { id: true, encryptedData: true, iv: true, createdAt: true, updatedAt: true }
+      select: { 
+        id: true, 
+        secretType: true,
+        encryptedData: true, 
+        iv: true,
+        metadata: true,
+        createdAt: true, 
+        updatedAt: true 
+      }
     })
 
     return NextResponse.json(items)
@@ -53,17 +61,41 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { encryptedData, iv } = body
+    const { encryptedData, iv, metadata, secretType } = body
 
     if (!encryptedData || !iv) {
       return NextResponse.json({ error: 'Missing encrypted data' }, { status: 400 })
     }
 
+    // ENCRYPTION BOUNDARY VALIDATION
+    // ================================
+    // CRITICAL: Validate that metadata contains ONLY non-sensitive information
+    // - encryptedData: Contains ALL sensitive values (encrypted)
+    // - metadata: Contains ONLY non-sensitive UI metadata (unencrypted)
+    // - This validation prevents accidental secret leakage into metadata
+    if (metadata) {
+      const { validateMetadataSafety } = await import('@/lib/secret-utils')
+      const { validateMetadataSecurity } = await import('@/schemas/secrets')
+      
+      try {
+        // Runtime validation: Check for forbidden fields and patterns
+        validateMetadataSafety(metadata)
+        validateMetadataSecurity(metadata)
+      } catch (validationError) {
+        console.error('Metadata validation failed:', validationError)
+        return NextResponse.json({ 
+          error: 'Invalid metadata: contains sensitive data or forbidden patterns' 
+        }, { status: 400 })
+      }
+    }
+
     const item = await prisma.item.create({
       data: {
         vaultId: vault.id,
+        secretType: secretType || 'PASSWORD', // Default to PASSWORD for backward compatibility
         encryptedData,
-        iv
+        iv,
+        metadata: metadata || null,
       }
     })
 

@@ -47,14 +47,14 @@ export async function POST(req: Request) {
     const now = new Date()
     if (session.expiresAt < now) {
       // session expired
-      try { await prisma.session.delete({ where: { id: sessionId } }) } catch (e) {}
+      try { await prisma.session.delete({ where: { id: sessionId } }) } catch {}
       return NextResponse.json({ error: 'Session expired' }, { status: 401 })
     }
 
     const ok = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
     if (!ok) {
       // possible theft — delete session
-      try { await prisma.session.delete({ where: { id: sessionId } }) } catch (e) {}
+      try { await prisma.session.delete({ where: { id: sessionId } }) } catch {}
       return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 })
     }
 

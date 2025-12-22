@@ -31,7 +31,7 @@ export function validateEnvironment(): void {
 
   if (missing.length > 0) {
     console.error(
-      '❌ FATAL: Missing required environment variables:',
+      '  FATAL: Missing required environment variables:',
       missing.join(', ')
     )
     console.error('Please set the following variables before running the application:')
