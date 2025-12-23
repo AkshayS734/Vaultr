@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/lib/crypto";
 
