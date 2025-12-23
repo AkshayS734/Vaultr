@@ -59,20 +59,37 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
+      {/* Back to home link */}
+      <Link 
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to home
+      </Link>
+      
+      <div 
+        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+      >
         {!showSuccess ? (
           <>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              Reset Password
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Enter your email address and we&apos;ll send you a link to reset your password.
-            </p>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2 text-white">
+                Reset Password
+              </h1>
+              <p className="text-sm text-white/70">
+                Enter your email address and we&apos;ll send you a link to reset your password
+              </p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <label className="block">
-                <span className="text-sm text-gray-700 dark:text-gray-300">Email</span>
+                <span className="text-sm font-medium mb-2 block text-white/85">
+                  Email
+                </span>
                 <input
                   id="forgot-email"
                   type="email"
@@ -84,38 +101,37 @@ export default function ForgotPasswordPage() {
                     setEmail(e.target.value);
                     if (emailError) setEmailError(null);
                   }}
-                  className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                    emailError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${emailError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
                   placeholder="your@email.com"
                 />
                 {emailError && (
-                  <p id="forgot-email-error" className="mt-1 text-sm text-red-600">
+                  <p id="forgot-email-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
                     {emailError}
                   </p>
                 )}
               </label>
 
               {generalError && (
-                <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <p className="text-sm text-red-800 dark:text-red-200">{generalError}</p>
+                <div className="p-3 rounded-lg bg-[#8d99ae]/15">
+                  <p className="text-sm text-[#8d99ae]">{generalError}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow ${
-                  isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isSubmitting ? 'bg-[#8d99ae]/50 text-[#2b2d42] cursor-not-allowed opacity-70' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
               >
                 {isSubmitting ? "Sending..." : "Send Reset Link"}
               </button>
             </form>
 
-            <p className="text-sm text-center text-gray-600 dark:text-gray-400 mt-6">
+            <p className="text-sm text-center mt-6 text-white/60">
               Remember your password?{" "}
-              <Link href="/login" className="text-blue-600 hover:underline font-medium">
+              <Link 
+                href="/login" 
+                className="font-medium text-[#8d99ae] transition-opacity hover:opacity-80"
+              >
                 Back to login
               </Link>
             </p>
@@ -123,9 +139,11 @@ export default function ForgotPasswordPage() {
         ) : (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
+              >
                 <svg
-                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -139,18 +157,18 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold mb-2 text-white">
               Email Sent!
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-4 text-white/75">
               {successMessage}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-xs mb-6 text-white/60">
               The reset link will expire in 24 hours. If you don&apos;t receive the email, check your spam folder.
             </p>
             <Link
               href="/login"
-              className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Back to Sign In
             </Link>

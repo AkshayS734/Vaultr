@@ -1,4 +1,4 @@
-import { VaultProvider } from "@/components/VaultProvider";
+import { VaultProvider } from "@/app/components/providers/VaultProvider";
 
 export default function MainLayout({
   children,
