@@ -81,17 +81,32 @@ function VerifyEmailContent() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
+      {/* Back to home link */}
+      <Link 
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to home
+      </Link>
+      
+      <div 
+        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+      >
         {status === "loading" && (
           <div className="text-center">
-            <div className="inline-block">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="inline-block mb-4">
+              <div 
+                className="animate-spin rounded-full h-12 w-12 border-[3px] border-[#8d99ae]/20 border-t-[#8d99ae]"
+              ></div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mt-4 mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Verifying Email
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-white/70">
               Please wait while we verify your email address...
             </p>
           </div>
@@ -100,9 +115,11 @@ function VerifyEmailContent() {
         {status === "success" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
+              >
                 <svg
-                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -116,15 +133,15 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Email Verified!
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Go to Sign In
             </Link>
@@ -134,9 +151,11 @@ function VerifyEmailContent() {
         {status === "already-verified" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
+              >
                 <svg
-                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                  className="w-8 h-8 text-[#8d99ae]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -150,15 +169,15 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Already Verified
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <Link
               href="/login"
-              className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
             >
               Go to Sign In
             </Link>
@@ -168,9 +187,11 @@ function VerifyEmailContent() {
         {status === "expired-token" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
+              >
                 <svg
-                  className="w-6 h-6 text-orange-600 dark:text-orange-400"
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -184,20 +205,20 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Link Expired
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-6 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
               <Link
                 href="/login"
-                className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-white/50">
                 You can request a new verification email on the login page.
               </p>
             </div>
@@ -207,9 +228,11 @@ function VerifyEmailContent() {
         {status === "invalid-token" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
+              >
                 <svg
-                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -223,19 +246,19 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Invalid Link
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs mb-4 text-white/50">
                 Make sure you clicked the correct link from your email.
               </p>
               <Link
                 href="/login"
-                className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
@@ -246,9 +269,11 @@ function VerifyEmailContent() {
         {status === "server-error" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
+              >
                 <svg
-                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -262,19 +287,19 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Verification Failed
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs mb-4 text-white/50">
                 Please try again or contact support if the problem persists.
               </p>
               <Link
                 href="/login"
-                className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Go to Sign In
               </Link>
@@ -285,9 +310,11 @@ function VerifyEmailContent() {
         {status === "no-token" && (
           <div className="text-center">
             <div className="inline-block mb-4">
-              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
+              >
                 <svg
-                  className="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+                  className="w-8 h-8 text-[#8d99ae] opacity-80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -301,25 +328,25 @@ function VerifyEmailContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-white">
               Invalid Request
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm mb-4 text-white/70">
               {message}
             </p>
             <div className="space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs mb-4 text-white/50">
                 Please click the verification link from your email or sign up again.
               </p>
               <Link
                 href="/signup"
-                className="inline-block w-full bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
               >
                 Sign Up
               </Link>
               <Link
                 href="/login"
-                className="inline-block w-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90 bg-[#8d99ae]/20 border border-[#8d99ae]/30 text-[#8d99ae]"
               >
                 Go to Sign In
               </Link>
