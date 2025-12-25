@@ -3,14 +3,14 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
-import { encryptItem, decryptItem } from "@/lib/crypto";
+import { encryptItem, decryptItem } from "@/app/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
   validatePasswordInput,
   type PasswordInput
-} from "@/lib/secret-utils";
+} from "@/app/lib/secret-utils";
 
 export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import Link from 'next/link'
-import { prisma } from '../../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 
 export default async function SessionsPage() {
   const cookieStore = await cookies()
@@ -29,7 +29,12 @@ export default async function SessionsPage() {
   }
 
   const userId = session.userId
-  const sessions = await prisma.session.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } })
+  const sessions = await prisma.session.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  })
+
+type SessionItem = (typeof sessions)[number]
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
@@ -40,7 +45,7 @@ export default async function SessionsPage() {
         </header>
 
         <div className="space-y-4">
-          {sessions.map((s) => (
+          {sessions.map((s : SessionItem) => (
             <div key={s.id} className="flex items-center justify-between rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">{s.userAgent ?? 'Unknown device'}</div>

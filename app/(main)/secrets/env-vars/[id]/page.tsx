@@ -3,14 +3,14 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
-import { encryptItem, decryptItem } from "@/lib/crypto";
+import { encryptItem, decryptItem } from "@/app/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
   validateEnvVarsInput,
   type EnvVarsInput
-} from "@/lib/secret-utils";
+} from "@/app/lib/secret-utils";
 
 interface EnvVariable {
   key: string;

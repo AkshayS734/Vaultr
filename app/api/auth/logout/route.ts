@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import cookie from 'cookie'
 import argon2 from 'argon2'
-import { prisma } from '../../../../lib/prisma'
-import { logAuditEvent } from '../../../../lib/audit'
+import { prisma } from '../../../lib/prisma'
+import { logAuditEvent } from '../../../lib/audit'
 
 export async function POST(req: Request) {
   try {

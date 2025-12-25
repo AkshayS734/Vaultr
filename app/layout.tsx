@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { validateEnvironment } from "../lib/env";
+import { validateEnvironment } from "./lib/env";
 
 // Validate environment at startup
 validateEnvironment()

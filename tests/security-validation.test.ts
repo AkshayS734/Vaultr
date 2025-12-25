@@ -15,9 +15,9 @@ import {
   type PasswordInput,
   type ApiKeyInput,
   type EnvVarsInput
-} from '@/lib/secret-utils';
+} from '@/app/lib/secret-utils';
 
-import { validateMetadataSecurity } from '@/schemas/secrets';
+import { validateMetadataSecurity } from '@/app/schemas/secrets';
 
 describe('Security Validation', () => {
   // ============================================================================

@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { generateVerificationToken, hashVerificationToken } from '@/lib/crypto'
-import { sendPasswordResetEmail } from '@/lib/email'
-import { getClientIp, readLimitedJson } from '@/lib/utils'
-import { logAuditEvent } from '@/lib/audit'
+import { prisma } from '@/app/lib/prisma'
+import { generateVerificationToken, hashVerificationToken } from '@/app/lib/crypto'
+import { sendPasswordResetEmail } from '@/app/lib/email'
+import { getClientIp, readLimitedJson } from '@/app/lib/utils'
+import { rateLimit } from '@/app/lib/redis'
+import { logAuditEvent } from '@/app/lib/audit'
 import { z } from 'zod'
 
 const forgotSchema = z.object({
   email: z.string().email(),
 })
+
+// Rate limit: 5 password reset attempts per hour (keyed by email + IP)
+const FORGOT_MAX = 5
+const FORGOT_WINDOW_MS = 60 * 60 * 1000
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +36,21 @@ export async function POST(req: Request) {
     }
 
     const normalized = String(email).trim().toLowerCase()
+    const rateLimitKey = `forgot:${normalized}:${ip || 'unknown'}`
+
+    // Rate limit by normalized email + IP
+    try {
+      const rl = await rateLimit(rateLimitKey, FORGOT_WINDOW_MS, FORGOT_MAX)
+      if (!rl.allowed) {
+        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+        return NextResponse.json(
+          { message: 'Too many password reset requests. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+        )
+      }
+    } catch (e) {
+      console.warn('Rate limit check failed, allowing request', e)
+    }
 
     // Find user (don't reveal if exists for security)
     const user = await prisma.user.findUnique({
@@ -94,3 +114,4 @@ export async function POST(req: Request) {
     )
   }
 }
+

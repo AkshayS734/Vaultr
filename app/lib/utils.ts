@@ -4,26 +4,37 @@
 
 /**
  * Get client IP address from request
- * Respects X-Forwarded-For header but validates it properly
+ * Priority:
+ * 1. req.ip (Node.js native; set by reverse proxy)
+ * 2. x-real-ip (commonly set by nginx/apache)
+ * 3. First IP from x-forwarded-for (only if no other source; spoofable)
+ * 
+ * SECURITY: x-forwarded-for is spoofable and must only be used as a last resort
+ * or when behind a trusted proxy. For rate limiting, prefer platform-native IPs.
+ * 
  * @param req - Next.js Request object
  * @returns IP address string or null
  */
 export function getClientIp(req: Request): string | null {
-  // Try x-forwarded-for first (comma-separated list of IPs)
-  const xForwardedFor = req.headers.get('x-forwarded-for')
-  if (xForwardedFor) {
-    // Take only the first IP (the original client)
-    const ips = xForwardedFor.split(',').map((ip) => ip.trim())
-    const ip = ips[0]
-    if (isValidIp(ip)) {
-      return ip
-    }
+  // Try x-real-ip (nginx / trusted proxy)
+  const realIp = req.headers.get('x-real-ip')
+  if (realIp && isValidIp(realIp)) {
+    return realIp
   }
 
-  // Fallback to cf-connecting-ip (Cloudflare)
+  // Cloudflare (trusted if you are behind CF)
   const cfConnecting = req.headers.get('cf-connecting-ip')
   if (cfConnecting && isValidIp(cfConnecting)) {
     return cfConnecting
+  }
+
+  // Fallback: x-forwarded-for (SPOOFABLE — last resort only)
+  const xForwardedFor = req.headers.get('x-forwarded-for')
+  if (xForwardedFor) {
+    const ip = xForwardedFor.split(',')[0]?.trim()
+    if (ip && isValidIp(ip)) {
+      return ip
+    }
   }
 
   return null

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import argon2 from 'argon2'
-import { prisma } from '@/lib/prisma'
-import { hashVerificationToken } from '@/lib/crypto'
-import { getClientIp, readLimitedJson } from '@/lib/utils'
-import { logAuditEvent } from '@/lib/audit'
+import { prisma } from '@/app/lib/prisma'
+import { hashVerificationToken } from '@/app/lib/crypto'
+import { getClientIp, readLimitedJson } from '@/app/lib/utils'
+import { rateLimit } from '@/app/lib/redis'
+import { logAuditEvent } from '@/app/lib/audit'
 import { z } from 'zod'
 
 const resetSchema = z.object({
@@ -11,9 +12,28 @@ const resetSchema = z.object({
   password: z.string().min(8).max(128),
 })
 
+// Rate limit: 5 password reset attempts per hour (keyed by IP)
+const RESET_MAX = 5
+const RESET_WINDOW_MS = 60 * 60 * 1000
+
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req)
+    const rateLimitKey = `reset:${ip || 'unknown'}`
+
+    // Rate limit by IP
+    try {
+      const rl = await rateLimit(rateLimitKey, RESET_WINDOW_MS, RESET_MAX)
+      if (!rl.allowed) {
+        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+        return NextResponse.json(
+          { error: 'Too many password reset attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+        )
+      }
+    } catch (e) {
+      console.warn('Rate limit check failed, allowing request', e)
+    }
 
     let token: string
     let password: string
@@ -104,3 +124,4 @@ export async function POST(req: Request) {
     )
   }
 }
+

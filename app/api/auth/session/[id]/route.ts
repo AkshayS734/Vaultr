@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../../../../lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 import cookie from 'cookie'
-import { logAuditEvent } from '../../../../../lib/audit'
+import { logAuditEvent } from '../../../../lib/audit'
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

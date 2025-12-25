@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
-import { encryptItem } from "@/lib/crypto";
+import { encryptItem } from "@/app/lib/crypto";
 import { 
   SecretType, 
   buildEncryptedPayload, 
   buildMetadata,
   validateApiKeyInput,
   type ApiKeyInput 
-} from "@/lib/secret-utils";
+} from "@/app/lib/secret-utils";
 
 export default function NewApiKeyPage() {
   const router = useRouter();

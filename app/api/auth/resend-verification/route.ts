@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../../../lib/prisma'
-import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, readLimitedJson } from '../../../../lib/utils'
-import { generateVerificationToken, hashVerificationToken } from '../../../../lib/crypto'
-import { sendVerificationEmail } from '../../../../lib/email'
-import { logAuditEvent } from '../../../../lib/audit'
+import { prisma } from '../../../lib/prisma'
+import { rateLimit } from '../../../lib/redis'
+import { getClientIp, readLimitedJson } from '../../../lib/utils'
+import { generateVerificationToken, hashVerificationToken } from '../../../lib/crypto'
+import { sendVerificationEmail } from '../../../lib/email'
+import { logAuditEvent } from '../../../lib/audit'
 import { z } from 'zod'
 
 // Rate limit: 3 resend attempts per hour per email
