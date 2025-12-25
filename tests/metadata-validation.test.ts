@@ -2,8 +2,8 @@
  * Test: Verify metadata validation accepts safe fields
  */
 
-import { validateMetadataSafety } from '@/lib/secret-utils';
-import { validateMetadataSecurity } from '@/schemas/secrets';
+import { validateMetadataSafety } from '@/app/lib/secret-utils';
+import { validateMetadataSecurity } from '@/app/schemas/secrets';
 
 describe('Metadata Validation', () => {
   // Test 1: Password metadata should be accepted

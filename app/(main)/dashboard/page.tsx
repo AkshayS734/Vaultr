@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useVault } from "@/app/components/providers/VaultProvider";
-import { decryptItem } from "@/lib/crypto";
-import { buildMetadataFromDecrypted } from "@/lib/secret-utils";
+import { decryptItem } from "@/app/lib/crypto";
+import { buildMetadataFromDecrypted } from "@/app/lib/secret-utils";
 
-import type { Metadata } from "@/lib/secret-utils";
+import type { Metadata } from "@/app/lib/secret-utils";
 
 interface PasswordItem {
   id: string;

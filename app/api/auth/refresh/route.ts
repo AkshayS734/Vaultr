@@ -3,8 +3,8 @@ import cookie from 'cookie'
 import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
-import { prisma } from '../../../../lib/prisma'
-import { rateLimit } from '../../../../lib/redis'
+import { prisma } from '../../../lib/prisma'
+import { rateLimit } from '../../../lib/redis'
 
 function parseIntOrDefault(v: string | undefined, def: number) {
   if (!v) return def

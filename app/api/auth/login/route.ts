@@ -3,11 +3,11 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
-import { prisma } from '../../../../lib/prisma'
-import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, truncate, readLimitedJson } from '@/lib/utils'
-import { loginSchema } from '@/schemas/auth'
-import { logAuditEvent } from '../../../../lib/audit'
+import { prisma } from '../../../lib/prisma'
+import { rateLimit } from '../../../lib/redis'
+import { getClientIp, truncate, readLimitedJson } from '@/app/lib/utils'
+import { loginSchema } from '@/app/schemas/auth'
+import { logAuditEvent } from '../../../lib/audit'
 
 // Rate limit: 5 failed attempts per 15 minutes
 const LOGIN_MAX = 5

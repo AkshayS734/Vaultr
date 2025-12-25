@@ -47,7 +47,7 @@ model User {
   authHash        String
   isEmailVerified Boolean   @default(false)
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime? @updatedAt
+  updatedAt       DateTime  @updatedAt
   lastLoginAt     DateTime?
   deletedAt       DateTime? // soft-delete marker
 
@@ -118,6 +118,7 @@ model Session {
   ip               String?
   lastUsedAt       DateTime?
   createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   expiresAt        DateTime
 
   @@index([userId])
