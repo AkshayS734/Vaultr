@@ -11,6 +11,7 @@ import { signupSchema } from '@/app/schemas/auth'
 import { logAuditEvent } from '../../../lib/audit'
 import { generateVerificationToken, hashVerificationToken } from '../../../lib/crypto'
 import { sendVerificationEmail } from '../../../lib/email'
+import { checkPasswordStrength } from '../../../lib/password-strength'
 
 // Rate limit: 5 signup attempts per hour
 const SIGNUP_MAX = 50
@@ -52,6 +53,18 @@ export async function POST(req: Request) {
     }
 
     // Zod already validated email/password
+
+    // Enforce strong password requirements server-side (authoritative)
+    const passwordStrength = checkPasswordStrength(password, { email })
+    if (!passwordStrength.isStrong) {
+      return NextResponse.json(
+        {
+          error: 'Password is too weak',
+          requirements: passwordStrength.feedback,
+        },
+        { status: 400 }
+      )
+    }
 
     // Prevent duplicate accounts using normalized email
     const normalized = String(email).trim().toLowerCase()
