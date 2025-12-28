@@ -3,9 +3,9 @@ import cookie from 'cookie'
 import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
-import { prisma } from '../../../../lib/prisma'
-import { rateLimit } from '../../../../lib/redis'
-import { truncate, getClientIp } from '@/lib/utils'
+import { prisma } from '../../../lib/prisma'
+import { rateLimit } from '../../../lib/redis'
+import { truncate, getClientIp } from '@/app/lib/utils'
 
 function parseIntOrDefault(v: string | undefined, def: number) {
   if (!v) return def
