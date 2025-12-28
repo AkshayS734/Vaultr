@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateVaultKey, deriveKeyFromPasswordScrypt, encryptVaultKey, arrayBufferToBase64, generateKdfParamsScrypt } from "@/app/lib/crypto";
+import { generatePassword } from "@/app/lib/password-generator";
 import { checkPasswordStrength, getStrengthLabel, getStrengthColor } from "@/app/lib/password-strength";
 
 // Match Zod schemas from @/schemas/auth
@@ -60,6 +61,14 @@ export default function SignupPage() {
     setPasswordScore(result.score);
     setPasswordStrengthFeedback(result.feedback);
   }, [password, email]);
+
+  function handleGeneratePassword() {
+    const generated = generatePassword({ length: 16, includeUpper: true, includeLower: true, includeNumbers: true, includeSymbols: true })
+    setPassword(generated)
+    setConfirm(generated)
+    setPasswordError(null)
+    setConfirmError(null)
+  }
 
   function validate() {
     let ok = true;
@@ -377,6 +386,16 @@ export default function SignupPage() {
             <span className="text-sm font-medium mb-2 block text-white/85">
               Login Password
             </span>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-white/60">Use a strong, unique password.</p>
+              <button
+                type="button"
+                onClick={handleGeneratePassword}
+                className="text-xs font-semibold px-3 py-1 rounded-lg bg-[#8d99ae]/20 border border-[#8d99ae]/40 text-[#8d99ae] hover:bg-[#8d99ae]/30 transition"
+              >
+                Generate strong password
+              </button>
+            </div>
             <div className="relative">
               <input
                 id="signup-password"
