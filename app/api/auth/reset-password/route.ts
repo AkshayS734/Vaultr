@@ -6,10 +6,12 @@ import { getClientIp, readLimitedJson } from '@/app/lib/utils'
 import { rateLimit } from '@/app/lib/redis'
 import { logAuditEvent } from '@/app/lib/audit'
 import { z } from 'zod'
+import { checkPasswordStrength } from '@/app/lib/password-strength'
 
 const resetSchema = z.object({
   token: z.string().length(64),
-  password: z.string().min(8).max(128),
+  // NIST SP 800-63B: enforce min length >= 12 for password resets
+  password: z.string().min(12).max(128),
 })
 
 // Rate limit: 5 password reset attempts per hour (keyed by IP)
@@ -87,7 +89,19 @@ export async function POST(req: Request) {
       )
     }
 
-    // Update user password
+    // NIST SP 800-63B: server-side authoritative strength enforcement (entropy + denylist + identifier checks)
+    const strength = checkPasswordStrength(password, { email: resetToken.user.email })
+    if (!strength.isStrong) {
+      return NextResponse.json(
+        {
+          error: 'Password is too weak',
+          requirements: strength.feedback,
+        },
+        { status: 400 }
+      )
+    }
+
+    // Update user password after strength validation
     const newAuthHash = await argon2.hash(password)
 
     await prisma.$transaction([

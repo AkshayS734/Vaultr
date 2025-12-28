@@ -1,8 +1,10 @@
 /**
  * Password Strength Evaluation Module
  * 
+ * NIST SP 800-63B alignment: single source of truth for password quality checks
+ * (length >=12, common password denylist, identifier checks, entropy-based assessment).
  * This module provides a single source of truth for password strength validation
- * across Vaultr. It enforces modern security standards without external dependencies.
+ * across Vaultr without external dependencies.
  * 
  * SECURITY NOTES:
  * - This runs on both client and server. Server is authoritative.
