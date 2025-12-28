@@ -37,6 +37,8 @@ enum AuditEvent {
   PASSWORD_RESET_REQUESTED
   PASSWORD_RESET_COMPLETED
   PASSWORD_RESET_FAILED
+  PASSWORD_REUSE_DETECTED
+  PASSWORD_HISTORY_CLEANED
   OTHER
 }
 
@@ -57,6 +59,7 @@ model User {
   auditLogs          AuditLog[]
   verificationTokens VerificationToken[]
   passwordResetTokens PasswordResetToken[]
+  passwordHistory    PasswordHistory[]
 
   @@index([emailNormalized])
 }
@@ -163,4 +166,15 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
   @@index([tokenHash])
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String   // Argon2 hash of the previous password
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

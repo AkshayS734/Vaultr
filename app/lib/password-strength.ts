@@ -61,9 +61,6 @@ function containsEmailPart(password: string, email?: string): boolean {
 
 // Shannon entropy calculation (bits per character)
 function calculateEntropy(password: string): number {
-  // Count unique characters
-  const unique = new Set(password)
-
   // Estimate alphabet size based on character types
   let alphabetSize = 0
   if (/[a-z]/.test(password)) alphabetSize += 26

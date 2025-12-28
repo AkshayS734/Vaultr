@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     const newExpires = new Date(Math.min(relativeExpiry.getTime(), absoluteExpiry.getTime()))
 
     // Atomic rotation: create new session then delete old one
-    const newSession = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const created = await tx.session.create({
         data: {
           userId: session.userId,

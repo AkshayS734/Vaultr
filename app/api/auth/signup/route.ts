@@ -66,6 +66,10 @@ export async function POST(req: Request) {
       )
     }
 
+    // Check for password reuse (warning only, don't block signup)
+    // Note: For signup, we can't check against user history since user doesn't exist yet
+    // This could be extended to check against common passwords or breached passwords in future
+
     // Prevent duplicate accounts using normalized email
     const normalized = String(email).trim().toLowerCase()
     const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })

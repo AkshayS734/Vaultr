@@ -43,6 +43,22 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    // SECURITY ARCHITECTURE NOTE:
+    // ===========================
+    // This endpoint handles VAULT PASSWORDS (zero-knowledge encrypted secrets).
+    // 
+    // Password reuse detection is NOT applied here because:
+    // 1. Server receives only encryptedData (AES-GCM ciphertext)
+    // 2. Server has no vault key (derived from master password client-side)
+    // 3. Server CANNOT decrypt vault passwords (zero-knowledge by design)
+    // 
+    // Password reuse detection is ONLY applied to:
+    // - Account authentication passwords (/api/auth/change-password)
+    // - Where server has legitimate plaintext access via argon2.verify()
+    // 
+    // For vault password reuse warnings, implement CLIENT-SIDE ONLY detection.
+    // See: docs/security/VAULT_PASSWORD_SECURITY_SUMMARY.md
+    
     // Verify authentication and email verification
     const auth = await requireAuth(req, true)
     if (!auth.success) {
