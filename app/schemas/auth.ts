@@ -5,9 +5,10 @@ export const emailSchema = z
   .email()
   .max(254);
 
+// NIST SP 800-63B: minimum length >= 12 for new credentials
 export const passwordSchema = z
   .string()
-  .min(8)
+  .min(12)
   .max(128);
 
 export const loginSchema = z.object({

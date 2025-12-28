@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { prisma } from '../../../lib/prisma'
-import { rateLimit } from '../../../lib/redis'
+import { checkRateLimit, consumeRateLimit } from '../../../lib/redis'
 import { getClientIp, truncate, readLimitedJson } from '@/app/lib/utils'
 import { loginSchema } from '@/app/schemas/auth'
 import { logAuditEvent } from '../../../lib/audit'
@@ -18,21 +18,6 @@ export async function POST(req: Request) {
     let email: string
     let password: string
     const ip = getClientIp(req)
-    const rateLimitKey = `login:${ip || 'unknown'}`
-
-    // Rate limit by IP
-    try {
-      const rl = await rateLimit(rateLimitKey, LOGIN_WINDOW_MS, LOGIN_MAX)
-      if (!rl.allowed) {
-        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
-        return NextResponse.json(
-          { error: 'Too many failed login attempts. Please try again later.' },
-          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
-        )
-      }
-    } catch (e) {
-      console.warn('Rate limit check failed, allowing request', e)
-    }
 
     try {
       const raw = await readLimitedJson(req, 64 * 1024)
@@ -47,27 +32,47 @@ export async function POST(req: Request) {
       }
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
-
-  // Zod already validated email/password
+    // Zod already validated email/password
 
     const normalized = String(email).trim().toLowerCase()
+    const rateLimitKey = `login:${ip || 'unknown'}:${normalized}`
+
+    // Check rate limit based on composite key (IP + normalizedEmail)
+    const rl = await checkRateLimit(rateLimitKey, LOGIN_WINDOW_MS, LOGIN_MAX)
+    if (!rl.allowed) {
+      const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        { error: 'Too many failed login attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      )
+    }
     const user = await prisma.user.findUnique({ 
       where: { emailNormalized: normalized }, 
-      select: { id: true, email: true, authHash: true, isEmailVerified: true } 
+      select: { id: true, email: true, authHash: true, isEmailVerified: true, deletedAt: true } 
     })
     if (!user) {
+      await consumeRateLimit(rateLimitKey, LOGIN_WINDOW_MS)
       await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'User not found' })
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+
+    // Reject deleted accounts to prevent reactivation with stale sessions
+    if (user.deletedAt) {
+      await consumeRateLimit(rateLimitKey, LOGIN_WINDOW_MS)
+      await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'User deleted' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     const verified = await argon2.verify(user.authHash, password)
     if (!verified) {
+      await consumeRateLimit(rateLimitKey, LOGIN_WINDOW_MS)
       await logAuditEvent('LOGIN_FAILED', user.id, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Invalid password' })
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     // Check if email is verified (for password manager security)
     if (!user.isEmailVerified) {
+      await consumeRateLimit(rateLimitKey, LOGIN_WINDOW_MS)
       await logAuditEvent('LOGIN_FAILED', user.id, { 
         email: normalized, 
         ip, 

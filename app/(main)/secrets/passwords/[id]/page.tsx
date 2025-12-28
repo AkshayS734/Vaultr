@@ -11,6 +11,21 @@ import {
   validatePasswordInput,
   type PasswordInput
 } from "@/app/lib/secret-utils";
+import { 
+  checkVaultPasswordReuse,
+  formatReuseWarning,
+  type VaultPasswordReuseResult 
+} from "@/app/lib/vault-password-reuse";
+
+interface VaultItem {
+  id: string
+  encryptedData: string
+  iv: string
+  secretType: string
+  metadata?: {
+    title?: string
+  }
+}
 
 export default function PasswordDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -19,6 +34,8 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reuseResult, setReuseResult] = useState<VaultPasswordReuseResult | null>(null);
+  const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -61,8 +78,51 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
       }
     }
 
+    // Also fetch other vault items for reuse detection
+    async function fetchVaultItems() {
+      try {
+        const res = await fetch("/api/passwords");
+        if (res.ok) {
+          const items = await res.json();
+          setVaultItems(items);
+        }
+      } catch (err) {
+        // Silent fail - reuse detection is optional enhancement
+        console.error("Failed to fetch vault items for reuse detection", err);
+      }
+    }
+
     fetchItem();
+    if (vaultKey) {
+      fetchVaultItems();
+    }
   }, [id, isUnlocked, vaultKey]);
+
+  // Check for password reuse as user edits (excluding current item)
+  useEffect(() => {
+    async function checkReuse() {
+      if (!password || password.length < 3 || !vaultKey || !isEditing) {
+        setReuseResult(null);
+        return;
+      }
+
+      try {
+        const result = await checkVaultPasswordReuse(
+          password,
+          vaultKey,
+          vaultItems,
+          id // Exclude current item from reuse check
+        );
+        setReuseResult(result.matches > 0 ? result : null);
+      } catch (err) {
+        // Silent fail - reuse detection is optional enhancement
+        console.error("Reuse check failed", err);
+        setReuseResult(null);
+      }
+    }
+
+    checkReuse();
+  }, [password, vaultKey, vaultItems, isEditing, id]);
 
   if (!isUnlocked) return null;
   if (loading) return <div className="p-8 text-center">Loading...</div>;
@@ -254,6 +314,22 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
                 </button>
               )}
             </div>
+            {reuseResult && isEditing && (
+              <div className="mt-2 p-3 rounded-md bg-yellow-900/30 border border-yellow-600/50 text-yellow-200 text-sm">
+                <div className="flex gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <div>
+                    <p className="font-medium">Password already in use</p>
+                    <p className="text-yellow-300/80 text-xs mt-1">
+                      {formatReuseWarning(reuseResult)}
+                    </p>
+                    <p className="text-yellow-300/70 text-xs mt-2 italic">
+                      You can still save this password if intended.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

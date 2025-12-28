@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem } from "@/app/lib/crypto";
@@ -11,6 +11,21 @@ import {
   validatePasswordInput,
   type PasswordInput 
 } from "@/app/lib/secret-utils";
+import { 
+  checkVaultPasswordReuse,
+  formatReuseWarning,
+  type VaultPasswordReuseResult 
+} from "@/app/lib/vault-password-reuse";
+
+interface VaultItem {
+  id: string
+  encryptedData: string
+  iv: string
+  secretType: string
+  metadata?: {
+    title?: string
+  }
+}
 
 export default function NewPasswordPage() {
   const router = useRouter();
@@ -22,6 +37,8 @@ export default function NewPasswordPage() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reuseResult, setReuseResult] = useState<VaultPasswordReuseResult | null>(null);
+  const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
 
   async function handleLogout() {
     try {
@@ -31,6 +48,51 @@ export default function NewPasswordPage() {
       console.error("Logout failed", err);
     }
   }
+
+  // Fetch existing vault items on mount to enable reuse detection
+  useEffect(() => {
+    async function fetchVaultItems() {
+      try {
+        const res = await fetch("/api/passwords");
+        if (res.ok) {
+          const items = await res.json();
+          setVaultItems(items);
+        }
+      } catch (err) {
+        // Silent fail - reuse detection is optional enhancement
+        console.error("Failed to fetch vault items for reuse detection", err);
+      }
+    }
+
+    if (isUnlocked && vaultKey) {
+      fetchVaultItems();
+    }
+  }, [isUnlocked, vaultKey]);
+
+  // Check for password reuse as user types
+  useEffect(() => {
+    async function checkReuse() {
+      if (!password || password.length < 3 || !vaultKey) {
+        setReuseResult(null);
+        return;
+      }
+
+      try {
+        const result = await checkVaultPasswordReuse(
+          password,
+          vaultKey,
+          vaultItems
+        );
+        setReuseResult(result.matches > 0 ? result : null);
+      } catch (err) {
+        // Silent fail - reuse detection is optional enhancement
+        console.error("Reuse check failed", err);
+        setReuseResult(null);
+      }
+    }
+
+    checkReuse();
+  }, [password, vaultKey, vaultItems]);
 
   if (!isUnlocked) return null;
 
@@ -156,6 +218,22 @@ export default function NewPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
             />
+            {reuseResult && (
+              <div className="mt-2 p-3 rounded-md bg-yellow-900/30 border border-yellow-600/50 text-yellow-200 text-sm">
+                <div className="flex gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <div>
+                    <p className="font-medium">Password already in use</p>
+                    <p className="text-yellow-300/80 text-xs mt-1">
+                      {formatReuseWarning(reuseResult)}
+                    </p>
+                    <p className="text-yellow-300/70 text-xs mt-2 italic">
+                      You can still save this password if intended.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

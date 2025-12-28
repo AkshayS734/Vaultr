@@ -6,10 +6,13 @@ import { getClientIp, readLimitedJson } from '@/app/lib/utils'
 import { rateLimit } from '@/app/lib/redis'
 import { logAuditEvent } from '@/app/lib/audit'
 import { z } from 'zod'
+import { checkPasswordStrength } from '@/app/lib/password-strength'
+import { checkPasswordReuse, storePasswordInHistory } from '@/app/lib/password-reuse'
 
 const resetSchema = z.object({
   token: z.string().length(64),
-  password: z.string().min(8).max(128),
+  // NIST SP 800-63B: enforce min length >= 12 for password resets
+  password: z.string().min(12).max(128),
 })
 
 // Rate limit: 5 password reset attempts per hour (keyed by IP)
@@ -87,8 +90,34 @@ export async function POST(req: Request) {
       )
     }
 
-    // Update user password
+    // NIST SP 800-63B: server-side authoritative strength enforcement (entropy + denylist + identifier checks)
+    const strength = checkPasswordStrength(password, { email: resetToken.user.email })
+    if (!strength.isStrong) {
+      return NextResponse.json(
+        {
+          error: 'Password is too weak',
+          requirements: strength.feedback,
+        },
+        { status: 400 }
+      )
+    }
+
+    // Check for password reuse (warning only, don't block reset)
+    const reuseCheck = await checkPasswordReuse(resetToken.userId, password)
+    
+    // Get current password hash before updating
+    const currentUser = await prisma.user.findUnique({
+      where: { id: resetToken.userId },
+      select: { authHash: true }
+    })
+
+    // Update user password after strength validation
     const newAuthHash = await argon2.hash(password)
+
+    // Store old password in history if we have it
+    if (currentUser?.authHash) {
+      await storePasswordInHistory(resetToken.userId, currentUser.authHash)
+    }
 
     await prisma.$transaction([
       prisma.user.update({
@@ -109,13 +138,31 @@ export async function POST(req: Request) {
       ip,
     })
 
-    return NextResponse.json(
-      {
-        message: 'Password has been reset successfully. Please sign in with your new password.',
-        verified: true,
-      },
-      { status: 200 }
-    )
+    const responseData: {
+      message: string;
+      verified: boolean;
+      warning?: string;
+      recommendation?: string;
+    } = {
+      message: 'Password has been reset successfully. Please sign in with your new password.',
+      verified: true,
+    }
+
+    // Include reuse warning if detected
+    if (reuseCheck.warning) {
+      responseData.warning = reuseCheck.warning
+      responseData.recommendation = reuseCheck.recommendation
+      
+      // Log the reuse detection
+      await logAuditEvent('PASSWORD_REUSE_DETECTED', resetToken.userId, {
+        email: resetToken.user.email,
+        ip,
+        context: 'password_reset',
+        warning: reuseCheck.warning
+      })
+    }
+
+    return NextResponse.json(responseData, { status: 200 })
   } catch (err) {
     console.error('Password reset error:', err)
     return NextResponse.json(
