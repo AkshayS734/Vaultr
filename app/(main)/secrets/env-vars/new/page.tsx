@@ -26,6 +26,7 @@ export default function NewEnvVarsPage() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showValues, setShowValues] = useState<Set<number>>(new Set());
 
   async function handleLogout() {
     try {
@@ -190,13 +191,41 @@ export default function NewEnvVarsPage() {
                     onChange={(e) => updateVariable(index, "key", e.target.value)}
                     className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
                   />
-                  <input
-                    type="password"
-                    placeholder="Value"
-                    value={variable.value}
-                    onChange={(e) => updateVariable(index, "value", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
-                  />
+                  <div className="flex-1 relative">
+                    <input
+                      type={showValues.has(index) ? "text" : "password"}
+                      placeholder="Value"
+                      value={variable.value}
+                      onChange={(e) => updateVariable(index, "value", e.target.value)}
+                      className="w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newShowValues = new Set(showValues);
+                        if (newShowValues.has(index)) {
+                          newShowValues.delete(index);
+                        } else {
+                          newShowValues.add(index);
+                        }
+                        setShowValues(newShowValues);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
+                      title={showValues.has(index) ? "Hide value" : "Show value"}
+                    >
+                      {showValues.has(index) ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                   {variables.length > 1 && (
                     <button
                       type="button"
