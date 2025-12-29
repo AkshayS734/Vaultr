@@ -255,12 +255,7 @@ export default function LoginPage() {
               aria-describedby={emailError ? "login-email-error" : undefined}
               value={email}
               onChange={(e) => {
-                const nextEmail = e.target.value;
-                setEmail(nextEmail);
-                if (rememberMe && nextEmail === "") {
-                  setRememberMe(false);
-                  localStorage.removeItem("remembered_email");
-                }
+                setEmail(e.target.value);
                 if (emailError) setEmailError(null);
               }}
               className={`w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${emailError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}

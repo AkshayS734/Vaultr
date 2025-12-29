@@ -66,6 +66,7 @@ export function AddItemOverlay({
       className="fixed inset-0 z-[120]"
       role="dialog"
       aria-modal="true"
+      aria-label="Add item menu"
       onClick={onClose}
     >
       {/* ✅ Subtle backdrop (interaction blocker, NOT heavy modal) */}

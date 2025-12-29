@@ -138,7 +138,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Navigation Links & Actions */}
-          <div className={`flex items-center gap-4 ${showAddMenu ? "pointer-events-none select-none" : ""}`} aria-hidden={showAddMenu}>
+          <div className={`flex items-center gap-4 ${showAddMenu ? "pointer-events-none select-none" : ""}`}>
             {/* Add Item Button */}
             <button
               ref={addMenuTriggerRef}
