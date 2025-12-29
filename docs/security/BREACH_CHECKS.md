@@ -3,9 +3,9 @@
 Vaultr supports optional breach indicators during password entry using the **Have I Been Pwned (HIBP)** API, while preserving strict zero-knowledge boundaries. This feature is OFF by default and must be explicitly enabled via a server-side upstream.
 
 ## Design Principles
-- Client computes `SHA-1(password)` in-memory (HIBP requirement); only the first 5 hex characters (prefix) may leave the browser.
-- SHA-1 is used ONLY for breach detection (never for storage, auth, reuse, or encryption).
-- Client performs suffix matching on the server's text response (true k-anonymity).
+- Client computes `SHA-1(password)` in-memory **only for HIBP lookups** (prefix/suffix derivation); only the first 5 hex characters (prefix) may leave the browser.
+- SHA-1 is used ONLY for breach detection (HIBP k-anonymity prefixing) — never for storage, auth, reuse detection, or encryption.
+- Password reuse detection (if enabled elsewhere) uses direct, in-memory password comparison only; no SHA-1 or additional hashes are stored or transmitted.
 - Client never calls third-party services directly. All requests must go through the internal proxy: `/api/breach?prefix=<5-hex>`.
 - Proxy validates `prefix` is exactly 5 hex chars, forwards to `BREACH_UPSTREAM_URL/{prefix}`, and returns raw text response.
 - Fail-open posture: on any error or missing config, return empty string and proceed without blocking or retries.
