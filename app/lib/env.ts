@@ -12,6 +12,8 @@ const optionalEnvVars = [
   'REDIS_URL',
   'NODE_ENV',
   'NEXT_PUBLIC_BASE_URL', // For email verification links
+  'NEXT_PUBLIC_BREACH_ENDPOINT', // Client-only breach check endpoint (k-anonymity)
+  'BREACH_UPSTREAM_URL', // Server-side upstream for /api/breach proxy (prefix-only)
   'SMTP_HOST',            // Email server configuration
   'SMTP_PORT',
   'SMTP_USER',

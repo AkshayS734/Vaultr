@@ -1,4 +1,5 @@
 import { VaultProvider } from "@/app/components/providers/VaultProvider";
+import { RouteGuard } from "@/app/components/providers/RouteGuard";
 
 export default function MainLayout({
   children,
@@ -7,7 +8,9 @@ export default function MainLayout({
 }) {
   return (
     <VaultProvider>
-      {children}
+      <RouteGuard>
+        {children}
+      </RouteGuard>
     </VaultProvider>
   );
 }

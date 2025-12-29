@@ -11,11 +11,9 @@ import {
   validatePasswordInput,
   type PasswordInput 
 } from "@/app/lib/secret-utils";
-import { 
-  checkVaultPasswordReuse,
-  formatReuseWarning,
-  type VaultPasswordReuseResult 
-} from "@/app/lib/vault-password-reuse";
+// Reuse detection is handled via PasswordHealthEngine flags; no direct calls here.
+import { evaluatePasswordHealth, type PasswordHealthResult } from "@/app/lib/password-health-engine";
+import { makeBreachChecker } from "@/app/lib/password-breach";
 
 interface VaultItem {
   id: string
@@ -37,8 +35,10 @@ export default function NewPasswordPage() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [reuseResult, setReuseResult] = useState<VaultPasswordReuseResult | null>(null);
+  const [health, setHealth] = useState<PasswordHealthResult | null>(null);
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
+  const [breachCheckEnabled, setBreachCheckEnabled] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogout() {
     try {
@@ -69,30 +69,44 @@ export default function NewPasswordPage() {
     }
   }, [isUnlocked, vaultKey]);
 
-  // Check for password reuse as user types
+  // Check for password health as user types (in-memory only)
   useEffect(() => {
-    async function checkReuse() {
-      if (!password || password.length < 3 || !vaultKey) {
-        setReuseResult(null);
+    let cancelled = false;
+    async function checkHealth() {
+      if (!password) {
+        if (!cancelled) {
+          setHealth(null);
+        }
         return;
       }
 
       try {
-        const result = await checkVaultPasswordReuse(
-          password,
-          vaultKey,
-          vaultItems
-        );
-        setReuseResult(result.matches > 0 ? result : null);
-      } catch (err) {
-        // Silent fail - reuse detection is optional enhancement
-        console.error("Reuse check failed", err);
-        setReuseResult(null);
+        let breachChecker: ((password: string) => Promise<boolean>) | undefined = undefined;
+        // Enforce client calls our own proxy only (no third-party direct calls)
+        if (breachCheckEnabled) {
+          breachChecker = makeBreachChecker('/api/breach');
+        }
+        // Evaluate full health including client-side reuse detection
+        const result = await evaluatePasswordHealth(password, {
+          vaultKey: vaultKey ?? undefined,
+          existingItems: vaultItems,
+          enableBreachCheck: breachCheckEnabled,
+          breachChecker,
+        });
+        if (!cancelled) {
+          setHealth(result);
+        }
+      } catch {
+        // Silent fail - do not leak password or results
+        if (!cancelled) {
+          setHealth(null);
+        }
       }
     }
 
-    checkReuse();
-  }, [password, vaultKey, vaultItems]);
+    checkHealth();
+    return () => { cancelled = true };
+  }, [password, vaultKey, vaultItems, breachCheckEnabled]);
 
   if (!isUnlocked) return null;
 
@@ -209,32 +223,158 @@ export default function NewPasswordPage() {
             />
           </div>
 
+          {/* Password Input Field - Outside Card */}
           <div>
-            <label className="block text-sm font-medium text-white/85">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-            />
-            {reuseResult && (
-              <div className="mt-2 p-3 rounded-md bg-yellow-900/30 border border-yellow-600/50 text-yellow-200 text-sm">
-                <div className="flex gap-2">
-                  <span className="text-lg">⚠️</span>
-                  <div>
-                    <p className="font-medium">Password already in use</p>
-                    <p className="text-yellow-300/80 text-xs mt-1">
-                      {formatReuseWarning(reuseResult)}
-                    </p>
-                    <p className="text-yellow-300/70 text-xs mt-2 italic">
-                      You can still save this password if intended.
-                    </p>
+            <label className="block text-sm font-medium text-white/85 mb-2">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2.5 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-base"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Password Health Display Card */}
+          {password && health && (
+          <div className="bg-[#1f2233]/50 rounded-lg border border-[#8d99ae]/20 p-5 space-y-4">
+            <div className="space-y-3">
+                {/* Strength Meter Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-white/70 uppercase tracking-wide">Strength</span>
+                    <span className={`text-sm font-semibold ${
+                      health.score >= 90 ? 'text-green-400' :
+                      health.score >= 70 ? 'text-green-400' :
+                      health.score >= 50 ? 'text-yellow-400' :
+                      'text-red-400'
+                    }`}>
+                      {health.score >= 90 ? 'Excellent' :
+                       health.score >= 70 ? 'Strong' :
+                       health.score >= 50 ? 'Fair' : 'Weak'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-[#2b2d42] rounded-full overflow-hidden border border-[#8d99ae]/10">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                        health.score >= 90 ? 'bg-green-500/90' :
+                        health.score >= 70 ? 'bg-green-500/90' :
+                        health.score >= 50 ? 'bg-yellow-500/90' :
+                          'bg-red-500/90'
+                        }`}
+                        style={{ width: `${Math.min(100, Math.max(0, health.score))}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-white/60 w-10 text-right">{health.score}/100</span>
                   </div>
                 </div>
+
+                {/* Risk Indicators Section */}
+                <div className="space-y-2 pt-1">
+                  {/* Reuse Warning - Always visible if detected */}
+                  {health.flags.reused && (
+                    <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-600/40 text-yellow-300 text-xs">
+                      <span className="text-lg mt-0.5 flex-shrink-0">⚠️</span>
+                      <span className="flex-1">This password is already used in other items. Consider a unique password.</span>
+                    </div>
+                  )}
+
+                  {/* Other Flags - Age and Weak */}
+                  {(health.flags.old || health.flags.weak) && (
+                    <div className="flex flex-wrap gap-2">
+                      {health.flags.weak && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 border border-red-600/40 text-red-300 text-xs font-medium">
+                          <span>●</span> Weak composition
+                        </div>
+                      )}
+                      {health.flags.old && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-600/40 text-orange-300 text-xs font-medium">
+                          <span>●</span> Changed long ago
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Warnings List - If any */}
+                {health.warnings.length > 0 && (
+                  <div className="pt-1 space-y-1 text-xs text-[#ffd6a0]">
+                    {health.warnings.map((w, i) => (
+                      <div key={i} className="flex gap-2">
+                        <span className="text-[#8d99ae] flex-shrink-0">•</span>
+                        <span>{w}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+
+            {/* Optional Breach Detection Section */}
+            <div className="pt-2 border-t border-[#8d99ae]/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <label htmlFor="breach-check" className="block text-xs font-medium text-white/70 uppercase tracking-wide cursor-pointer">
+                    Breach Detection <span className="text-[#8d99ae]/60">(optional)</span>
+                  </label>
+                  <p className="text-xs text-white/50">Check if this password appeared in known data breaches</p>
+                </div>
+                <input
+                  id="breach-check"
+                  type="checkbox"
+                  className="h-5 w-5 rounded border-[#8d99ae]/30 bg-[#2b2d42] accent-[#8d99ae] cursor-pointer"
+                  checked={breachCheckEnabled}
+                  onChange={(e) => setBreachCheckEnabled(e.target.checked)}
+                />
               </div>
-            )}
+
+              {/* Breach Status Message - Only shown when breach check enabled */}
+              {breachCheckEnabled && health && password && (
+                <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
+                  health.flags.breached
+                    ? 'bg-red-500/10 border border-red-600/40 text-red-300'
+                    : 'bg-green-500/10 border border-green-600/40 text-green-300'
+                }`}>
+                  <span className="text-lg mt-0.5 flex-shrink-0">
+                    {health.flags.breached ? '⚠️' : '✅'}
+                  </span>
+                  <span className="flex-1">
+                    {health.flags.breached 
+                      ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
+                      : 'No known breaches found. This password has not appeared in known data breach databases.'}
+                  </span>
+                </div>
+              )}
+
+              {/* Breach Disabled Hint - When toggle is OFF */}
+              {!breachCheckEnabled && health && password && (
+                <div className="text-xs text-white/40 italic">
+                  Enable above to check if this password has appeared in known data breaches.
+                </div>
+              )}
+            </div>
           </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-white/85">Website URL</label>
