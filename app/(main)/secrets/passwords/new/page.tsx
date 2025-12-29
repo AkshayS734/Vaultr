@@ -72,6 +72,8 @@ export default function NewPasswordPage() {
   // Check for password health as user types (in-memory only)
   useEffect(() => {
     let cancelled = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+
     async function checkHealth() {
       if (!password) {
         if (!cancelled) {
@@ -104,8 +106,16 @@ export default function NewPasswordPage() {
       }
     }
 
-    checkHealth();
-    return () => { cancelled = true };
+    // Debounce only applies to the entire check (network breach check is inside)
+    // Local checks (strength, reuse) run within the debounced call
+    timeoutId = setTimeout(() => {
+      checkHealth();
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [password, vaultKey, vaultItems, breachCheckEnabled]);
 
   if (!isUnlocked) return null;
@@ -239,6 +249,7 @@ export default function NewPasswordPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
                 title={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
