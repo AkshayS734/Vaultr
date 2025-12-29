@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { decryptItem } from "@/app/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/app/lib/secret-utils";
+import { AddItemOverlay } from "@/app/components/ui/AddItemOverlay";
 
 import type { Metadata } from "@/app/lib/secret-utils";
 
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const addMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const fetchInProgressRef = useRef(false);
 
@@ -99,6 +101,13 @@ export default function DashboardPage() {
     fetchItems();
   }, [isUnlocked, vaultKey]);
 
+  // Retain focus on trigger when closing overlay
+  useEffect(() => {
+    if (!showAddMenu) {
+      addMenuTriggerRef.current?.focus();
+    }
+  }, [showAddMenu]);
+
   // Filter items based on search query
   const filteredItems = items.filter(item => {
     const query = searchQuery.toLowerCase();
@@ -129,44 +138,19 @@ export default function DashboardPage() {
           </div>
 
           {/* Navigation Links & Actions */}
-          <div className="flex items-center gap-4">
-            {/* Add Item Button with Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowAddMenu(!showAddMenu)}
-                className="flex items-center gap-2 rounded-md bg-[#8d99ae] px-4 py-2 text-sm font-semibold text-[#2b2d42] transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#8d99ae]/60 focus:ring-offset-0"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Add Item
-              </button>
-
-              {/* Dropdown Menu */}
-              {showAddMenu && (
-                <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-50 rounded-lg border border-[rgba(141,153,174,0.35)] bg-[rgba(43,45,66,0.9)] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                  <Link 
-                    href="/secrets/passwords/new"
-                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
-                  >
-                    🔑 Password
-                  </Link>
-                  <Link 
-                    href="/secrets/api-keys/new"
-                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
-                  >
-                    🔐 API Key
-                  </Link>
-                  <Link 
-                    href="/secrets/env-vars/new"
-                    className="block rounded-md px-4 py-3 text-sm text-white transition-colors duration-200 hover:bg-[rgba(141,153,174,0.1)]"
-                  >
-                    ⚙️ Environment Variables
-                  </Link>
-                </div>
-              )}
-            </div>
+          <div className={`flex items-center gap-4 ${showAddMenu ? "pointer-events-none select-none" : ""}`} aria-hidden={showAddMenu}>
+            {/* Add Item Button */}
+            <button
+              ref={addMenuTriggerRef}
+              onClick={() => setShowAddMenu(true)}
+              className="flex items-center gap-2 rounded-md bg-[#8d99ae] px-4 py-2 text-sm font-semibold text-[#2b2d42] transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#8d99ae]/60 focus:ring-offset-0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Item
+            </button>
 
             {/* Logout Button */}
             <button
@@ -178,6 +162,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </nav>
+
+      {/* Add Item Overlay mounted at page level to avoid stacking issues */}
+      <AddItemOverlay
+        open={showAddMenu}
+        onClose={() => setShowAddMenu(false)}
+        onNavigate={() => setShowAddMenu(false)}
+        anchorRef={addMenuTriggerRef}
+      />
 
       {/* Main Content */}
       <div className="mx-auto max-w-300 px-6 py-8">
