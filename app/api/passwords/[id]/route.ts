@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Prisma, SecretType as PrismaSecretType } from '@prisma/client'
-import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/auth-utils'
+import { prisma } from '@/app/lib/prisma'
+import { requireAuth } from '@/app/lib/auth-utils'
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -124,8 +124,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     // - metadata: Contains ONLY non-sensitive UI metadata (unencrypted)
     // - This validation prevents accidental secret leakage into metadata
     if (metadata) {
-      const { validateMetadataSafety } = await import('@/lib/secret-utils')
-      const { validateMetadataSecurity } = await import('@/schemas/secrets')
+      const { validateMetadataSafety } = await import('@/app/lib/secret-utils')
+      const { validateMetadataSecurity } = await import('@/app/schemas/secrets')
       
       try {
         // Runtime validation: Check for forbidden fields and patterns

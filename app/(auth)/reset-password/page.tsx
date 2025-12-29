@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { checkPasswordStrength, getStrengthLabel, getStrengthColor } from "@/app/lib/password-strength";
 
 function isValidPassword(password: string) {
   return password.length >= 8 && password.length <= 128;
@@ -18,6 +19,8 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordStrengthFeedback, setPasswordStrengthFeedback] = useState<string[]>([]);
+  const [passwordScore, setPasswordScore] = useState(0);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,11 +38,27 @@ function ResetPasswordContent() {
     }
   }, [token]);
 
+  // Update password strength feedback in real-time
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrengthFeedback([]);
+      setPasswordScore(0);
+      return;
+    }
+    
+    const result = checkPasswordStrength(password);
+    setPasswordScore(result.score);
+    setPasswordStrengthFeedback(result.feedback);
+  }, [password]);
+
   function validate(): boolean {
     let ok = true;
 
     if (!isValidPassword(password)) {
       setPasswordError("Password must be 8-128 characters");
+      ok = false;
+    } else if (passwordStrengthFeedback.length > 0) {
+      setPasswordError("Password does not meet strength requirements");
       ok = false;
     } else {
       setPasswordError(null);
@@ -53,12 +72,6 @@ function ResetPasswordContent() {
     }
 
     return ok;
-  }
-
-  function getPasswordStrength(pw: string) {
-    if (pw.length >= 12) return { score: "strong", color: "bg-green-500", label: "Strong" };
-    if (pw.length >= 8) return { score: "medium", color: "bg-yellow-500", label: "Medium" };
-    return { score: "weak", color: "bg-red-500", label: "Weak" };
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -93,13 +106,6 @@ function ResetPasswordContent() {
       setIsSubmitting(false);
     }
   }
-
-  const strength = getPasswordStrength(password);
-  const strengthBarClass = strength.score === "strong"
-    ? "w-full opacity-100"
-    : strength.score === "medium"
-      ? "w-2/3 opacity-70"
-      : "w-1/3 opacity-40";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
@@ -167,16 +173,47 @@ function ResetPasswordContent() {
                   </button>
                 </div>
                 {password && (
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs mb-1 text-white/70">
-                      <span>Password strength:</span>
-                      <span className={`text-[#8d99ae] ${strength.score === 'strong' ? 'opacity-100' : strength.score === 'medium' ? 'opacity-80' : 'opacity-60'}`}>
-                        {strength.label}
-                      </span>
+                  <div className="mt-4 space-y-3 p-3 rounded-lg bg-[#8d99ae]/10 border border-[#8d99ae]/20">
+                    {/* Strength Indicator Bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-white/75">Strength</span>
+                        <span className={`text-xs font-semibold ${passwordScore >= 3 ? 'text-green-400' : 'text-[#8d99ae]'}`}>
+                          {getStrengthLabel(passwordScore)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${getStrengthColor(passwordScore)}`}
+                          style={{ width: `${Math.min(100, (passwordScore / 5) * 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1 rounded overflow-hidden bg-white/10">
-                      <div className={`h-full transition-all duration-300 bg-[#8d99ae] ${strengthBarClass}`}></div>
-                    </div>
+
+                    {/* Requirements Checklist */}
+                    {passwordStrengthFeedback.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-white/75">Unmet requirements:</p>
+                        <ul className="space-y-1">
+                          {passwordStrengthFeedback.map((feedback, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-xs text-[#8d99ae]">
+                              <span className="text-[#8d99ae]/60 mt-0.5">•</span>
+                              <span>{feedback}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Success State */}
+                    {passwordScore >= 3 && passwordStrengthFeedback.length === 0 && (
+                      <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Password meets all requirements
+                      </div>
+                    )}
                   </div>
                 )}
                 {passwordError && (

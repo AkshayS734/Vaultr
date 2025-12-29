@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/auth-utils'
+import { prisma } from '@/app/lib/prisma'
+import { requireAuth } from '@/app/lib/auth-utils'
 
 export async function GET(req: Request) {
   try {
@@ -43,6 +43,22 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    // SECURITY ARCHITECTURE NOTE:
+    // ===========================
+    // This endpoint handles VAULT PASSWORDS (zero-knowledge encrypted secrets).
+    // 
+    // Password reuse detection is NOT applied here because:
+    // 1. Server receives only encryptedData (AES-GCM ciphertext)
+    // 2. Server has no vault key (derived from master password client-side)
+    // 3. Server CANNOT decrypt vault passwords (zero-knowledge by design)
+    // 
+    // Password reuse detection is ONLY applied to:
+    // - Account authentication passwords (/api/auth/change-password)
+    // - Where server has legitimate plaintext access via argon2.verify()
+    // 
+    // For vault password reuse warnings, implement CLIENT-SIDE ONLY detection.
+    // See: docs/security/VAULT_PASSWORD_SECURITY_SUMMARY.md
+    
     // Verify authentication and email verification
     const auth = await requireAuth(req, true)
     if (!auth.success) {
@@ -74,8 +90,8 @@ export async function POST(req: Request) {
     // - metadata: Contains ONLY non-sensitive UI metadata (unencrypted)
     // - This validation prevents accidental secret leakage into metadata
     if (metadata) {
-      const { validateMetadataSafety } = await import('@/lib/secret-utils')
-      const { validateMetadataSecurity } = await import('@/schemas/secrets')
+      const { validateMetadataSafety } = await import('@/app/lib/secret-utils')
+      const { validateMetadataSecurity } = await import('@/app/schemas/secrets')
       
       try {
         // Runtime validation: Check for forbidden fields and patterns

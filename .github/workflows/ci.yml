@@ -65,7 +65,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
+      - name: Ensure Prisma schema exists
+        run: test -f app/prisma/schema.prisma
+      - name: Verify required secrets
+        run: |
+          test -n "$JWT_SECRET" || (echo "JWT_SECRET missing" && exit 1)
       - name: Prisma generate
         run: npx prisma generate --schema=app/prisma/schema.prisma
 

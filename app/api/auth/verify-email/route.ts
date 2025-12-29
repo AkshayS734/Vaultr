@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../../../lib/prisma'
-import { hashVerificationToken } from '../../../../lib/crypto'
-import { logAuditEvent } from '../../../../lib/audit'
-import { sendWelcomeEmail } from '../../../../lib/email'
-import { getClientIp, truncate } from '../../../../lib/utils'
+import { prisma } from '../../../lib/prisma'
+import { hashVerificationToken } from '../../../lib/crypto'
+import { logAuditEvent } from '../../../lib/audit'
+import { sendWelcomeEmail } from '../../../lib/email'
+import { getClientIp, truncate } from '../../../lib/utils'
 
 export async function GET(req: Request) {
   try {

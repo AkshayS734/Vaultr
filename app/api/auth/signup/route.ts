@@ -4,13 +4,14 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { Prisma } from '@prisma/client'
-import { prisma } from '../../../../lib/prisma'
-import { rateLimit } from '../../../../lib/redis'
-import { getClientIp, truncate, readLimitedJson } from '../../../../lib/utils'
-import { signupSchema } from '@/schemas/auth'
-import { logAuditEvent } from '../../../../lib/audit'
-import { generateVerificationToken, hashVerificationToken } from '../../../../lib/crypto'
-import { sendVerificationEmail } from '../../../../lib/email'
+import { prisma } from '../../../lib/prisma'
+import { rateLimit } from '../../../lib/redis'
+import { getClientIp, truncate, readLimitedJson } from '../../../lib/utils'
+import { signupSchema } from '@/app/schemas/auth'
+import { logAuditEvent } from '../../../lib/audit'
+import { generateVerificationToken, hashVerificationToken } from '../../../lib/crypto'
+import { sendVerificationEmail } from '../../../lib/email'
+import { checkPasswordStrength } from '../../../lib/password-strength'
 
 // Rate limit: 5 signup attempts per hour
 const SIGNUP_MAX = 50
@@ -39,17 +40,12 @@ export async function POST(req: Request) {
 
     try {
       const raw = await readLimitedJson(req, 64 * 1024)
-      console.log('Signup payload:', JSON.stringify(raw, null, 2));
-      console.log('Signup schema type:', typeof signupSchema);
-      
       const parsed = signupSchema.safeParse(raw)
       if (!parsed.success) {
-        console.error('Signup validation error:', parsed.error);
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
       }
       ({ email, password, encryptedVaultKey, salt, kdfParams } = parsed.data)
     } catch (e) {
-      console.error('Signup JSON error:', e);
       if ((e as Error).message === 'PAYLOAD_TOO_LARGE') {
         return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
       }
@@ -57,6 +53,22 @@ export async function POST(req: Request) {
     }
 
     // Zod already validated email/password
+
+    // Enforce strong password requirements server-side (authoritative)
+    const passwordStrength = checkPasswordStrength(password, { email })
+    if (!passwordStrength.isStrong) {
+      return NextResponse.json(
+        {
+          error: 'Password is too weak',
+          requirements: passwordStrength.feedback,
+        },
+        { status: 400 }
+      )
+    }
+
+    // Check for password reuse (warning only, don't block signup)
+    // Note: For signup, we can't check against user history since user doesn't exist yet
+    // This could be extended to check against common passwords or breached passwords in future
 
     // Prevent duplicate accounts using normalized email
     const normalized = String(email).trim().toLowerCase()

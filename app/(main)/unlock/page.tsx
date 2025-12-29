@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
-import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/lib/crypto";
+import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/app/lib/crypto";
 
 export default function UnlockPage() {
   const [masterPassword, setMasterPassword] = useState("");
