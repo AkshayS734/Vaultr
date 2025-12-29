@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface AddItemOverlayProps {
   open: boolean;
@@ -28,16 +28,26 @@ export function AddItemOverlay({
   };
 
   // Position menu below trigger
-  useEffect(() => {
-    if (!open || !anchorRef.current) return;
+  useLayoutEffect(() => {
+  if (!open || !anchorRef.current) return;
 
-    const rect = anchorRef.current.getBoundingClientRect();
-
+  const updatePosition = () => {
+    const rect = anchorRef.current!.getBoundingClientRect();
     setPosition({
-      top: rect.bottom + 8, // small gap
-      left: rect.right - 260, // align right edges (menu width ~260)
+      top: rect.bottom + 8,
+      left: rect.right - 260,
     });
-  }, [open, anchorRef]);
+  };
+
+  updatePosition();
+  window.addEventListener("resize", updatePosition);
+  window.addEventListener("scroll", updatePosition, true);
+
+  return () => {
+    window.removeEventListener("resize", updatePosition);
+    window.removeEventListener("scroll", updatePosition, true);
+  };
+}, [open, anchorRef]);
 
   // ESC to close
   useEffect(() => {
