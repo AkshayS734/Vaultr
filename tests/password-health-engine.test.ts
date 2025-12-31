@@ -5,13 +5,8 @@ import { evaluatePasswordHealth } from '@/app/lib/password-health-engine'
 
 // Mock vault-password-reuse to control reuse outcomes
 jest.mock('@/app/lib/vault-password-reuse', () => ({
-  checkVaultPasswordReuse: jest.fn(async (
-    _pw: string,
-    _vaultKey: CryptoKey,
-    _items: unknown[],
-    _excludeId?: string
-  ) => {
-    if (_pw === 'reusedPw') {
+  checkVaultPasswordReuse: jest.fn(async (pw: string) => {
+    if (pw === 'reusedPw') {
       return { isReused: true, matches: 1, matchingTitles: ['Item A'], matchingIds: ['id-1'] }
     }
     return { isReused: false, matches: 0, matchingTitles: [], matchingIds: [] }
