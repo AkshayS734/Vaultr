@@ -113,21 +113,45 @@ export default function SignupPage() {
 
   const router = useRouter();
 
-  // Load rate limiting data from localStorage
+  // Load rate limiting data from cookies (not localStorage)
   useEffect(() => {
-    const stored = localStorage.getItem(`resend_lock_${email}`);
+    if (!email) {
+      setResendAttempts(0);
+      setLockUntil(null);
+      return;
+    }
+
+    // Get resend lock cookie (set by server, read from document.cookie)
+    const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=');
+      acc[key] = decodeURIComponent(value);
+      return acc;
+    }, {} as Record<string, string>);
+
+    const lockCookieKey = `resend_lock_${email.toLowerCase()}`;
+    const stored = cookies[lockCookieKey];
+    
     if (stored) {
-      const data = JSON.parse(stored);
-      const now = Date.now();
-      
-      if (data.lockUntil > now) {
-        setLockUntil(data.lockUntil);
-        setResendAttempts(data.attempts || 0);
-      } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
-        // Reset after 24 hours past lock expiry
-        localStorage.removeItem(`resend_lock_${email}`);
+      try {
+        const data = JSON.parse(stored);
+        const now = Date.now();
+        
+        if (data.lockUntil && data.lockUntil > now) {
+          setLockUntil(data.lockUntil);
+          setResendAttempts(data.attempts || 0);
+        } else {
+          setResendAttempts(data.attempts || 0);
+        }
+      } catch {
+        // Invalid cookie, ignore
         setResendAttempts(0);
         setLockUntil(null);
+      }
+    } else {
+      setResendAttempts(0);
+      setLockUntil(null);
+    }
+  }, [email]);
       } else {
         setResendAttempts(data.attempts || 0);
       }
@@ -190,6 +214,8 @@ export default function SignupPage() {
         setResendMessage('Verification email sent! Please check your inbox.');
         
         // Calculate new lock time with progressive delays: 30s, 60s, 120s
+        // Note: The actual rate limit cookie is set by the server in the response
+        // This is just client-side UI state for countdown display
         const newAttempts = resendAttempts + 1;
         const lockDuration = 30000 * Math.pow(2, newAttempts - 1);
         
@@ -197,19 +223,12 @@ export default function SignupPage() {
         setLockUntil(newLockUntil);
         setResendAttempts(newAttempts);
         
-        // Save to localStorage
-        localStorage.setItem(`resend_lock_${email}`, JSON.stringify({
-          attempts: newAttempts,
-          lockUntil: newLockUntil,
-        }));
+        // Don't use localStorage - the cookie is set by the server
       } else if (res.status === 429) {
         // Backend rate limit reached (all 3 attempts used)
         setResendMessage('Too many resend attempts. You can try again in 1 hour.');
         setResendAttempts(3); // Mark as maxed out
-        localStorage.setItem(`resend_lock_${email}`, JSON.stringify({
-          attempts: 3,
-          lockUntil: Date.now() + 1000, // Lock immediately
-        }));
+        // Cookie is set by server in response headers
       } else {
         setResendMessage(data?.error || 'Failed to resend email. Please try again.');
       }

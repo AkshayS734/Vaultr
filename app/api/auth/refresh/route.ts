@@ -112,14 +112,30 @@ export async function POST(req: Request) {
     if (!jwtSecret) return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
 
     // Rotate refresh token and session ID (single use, prevents fixation)
+    // Strategy: Delete old session FIRST within transaction, then create new one
+    // This ensures no window where both tokens are valid
     const newRefresh = crypto.randomBytes(48).toString('hex')
     const newHash = await argon2.hash(newRefresh)
 
     const relativeExpiry = new Date(Date.now() + DEFAULT_REFRESH_DAYS * 24 * 60 * 60 * 1000)
     const newExpires = new Date(Math.min(relativeExpiry.getTime(), absoluteExpiry.getTime()))
 
-    // Atomic rotation: create new session then delete old one
+    // Atomic rotation: delete old session THEN create new one (prevents reuse window)
     const newSessionId = await prisma.$transaction(async (tx) => {
+      // Delete old session first to invalidate any intercepted token
+      const deleted = await tx.session.deleteMany({
+        where: { 
+          id: sessionId,
+          userId: session.userId // extra safety: ensure we only delete own session
+        },
+      })
+      
+      // Verify deletion occurred (prevents use-after-free bugs)
+      if (deleted.count === 0) {
+        throw new Error('Session already invalidated - possible concurrent refresh or token theft')
+      }
+      
+      // Now create new session (old token completely invalid by this point)
       const created = await tx.session.create({
         data: {
           userId: session.userId,
@@ -133,7 +149,6 @@ export async function POST(req: Request) {
         select: { id: true },
       })
       
-      await tx.session.delete({ where: { id: sessionId } })
       return created.id
     })
 

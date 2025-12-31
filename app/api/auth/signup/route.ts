@@ -18,6 +18,15 @@ import { checkPasswordStrength } from '../../../lib/password-strength'
 const SIGNUP_MAX = 50
 const SIGNUP_WINDOW_MS = 60 * 60 * 1000
 
+// Argon2 configuration: OWASP 2023 recommendations for password hashing
+// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+const ARGON2_CONFIG = {
+  type: argon2.argon2id, // Argon2id: balanced against side-channel + GPU attacks
+  memoryCost: 47 * 1024, // 47 MiB (OWASP minimum)
+  timeCost: 1, // 1 iteration (memory-hard approach preferred)
+  parallelism: 1, // 1 thread (conservative, optimized for memory)
+  hashLength: 32, // 32 bytes output
+}
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req)
@@ -79,8 +88,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
     }
 
-    // Hash password with argon2
-    const hash = await argon2.hash(password)
+    // Hash password with argon2 (OWASP-compliant parameters)
+    const hash = await argon2.hash(password, ARGON2_CONFIG)
 
     const user = await prisma.user.create({
       data: {
@@ -100,7 +109,7 @@ export async function POST(req: Request) {
 
     // Create refresh token + session
     const refreshToken = crypto.randomBytes(48).toString('hex')
-    const refreshTokenHash = await argon2.hash(refreshToken)
+    const refreshTokenHash = await argon2.hash(refreshToken, ARGON2_CONFIG)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
     const userAgent = truncate(req.headers.get('user-agent'), 256)
