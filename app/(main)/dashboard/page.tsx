@@ -162,16 +162,6 @@ export default function DashboardPage() {
               <RefreshCw className="h-4 w-4" />
               Generate password
             </Button>
-            <Button
-              ref={addMenuTriggerRef}
-              size="sm"
-              className="gap-2"
-              onClick={() => setShowAddMenu(true)}
-              disabled={showAddMenu}
-            >
-              <Plus className="h-4 w-4" />
-              Add item
-            </Button>
             <Button variant="outline" size="sm" className="gap-2" onClick={handleLogout}>
               Logout
             </Button>
@@ -196,9 +186,19 @@ export default function DashboardPage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           <Card
-            className={`cursor-pointer transition hover:border-primary/50 ${filterType === 'PASSWORD' ? 'border-primary/60' : ''}`}
+            className={`cursor-pointer transition hover:border-primary/50 relative ${filterType === 'PASSWORD' ? 'border-primary/60' : ''}`}
             onClick={() => setFilterType('PASSWORD')}
           >
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push('/secrets/passwords/new')
+              }}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-110 transition-all cursor-pointer flex items-center justify-center"
+              title="Add new password"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Passwords</CardTitle>
               <Key className="h-4 w-4 text-primary" />
@@ -210,9 +210,19 @@ export default function DashboardPage() {
           </Card>
 
           <Card
-            className={`cursor-pointer transition hover:border-primary/50 ${filterType === 'API_KEY' ? 'border-primary/60' : ''}`}
+            className={`cursor-pointer transition hover:border-primary/50 relative ${filterType === 'API_KEY' ? 'border-primary/60' : ''}`}
             onClick={() => setFilterType('API_KEY')}
           >
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push('/secrets/api-keys/new')
+              }}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-110 transition-all cursor-pointer flex items-center justify-center"
+              title="Add new API key"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">API Keys</CardTitle>
               <Code className="h-4 w-4 text-primary" />
@@ -224,9 +234,19 @@ export default function DashboardPage() {
           </Card>
 
           <Card
-            className={`cursor-pointer transition hover:border-primary/50 ${filterType === 'ENV_VARS' ? 'border-primary/60' : ''}`}
+            className={`cursor-pointer transition hover:border-primary/50 relative ${filterType === 'ENV_VARS' ? 'border-primary/60' : ''}`}
             onClick={() => setFilterType('ENV_VARS')}
           >
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push('/secrets/env-vars/new')
+              }}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-110 transition-all cursor-pointer flex items-center justify-center"
+              title="Add new env var"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Env Vars</CardTitle>
               <FileText className="h-4 w-4 text-primary" />
