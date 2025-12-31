@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { Prisma, SecretType as PrismaSecretType } from '@prisma/client'
 import { prisma } from '@/app/lib/prisma'
 import { requireAuth } from '@/app/lib/auth-utils'
+import { validateCsrf } from '@/app/lib/csrf'
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -44,13 +45,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     return NextResponse.json(item)
   } catch (err) {
-    console.error('get password error', err)
+    console.error('[ERR_GET_PASSWORD]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
+
     const { id } = await params
     
     // Verify authentication and email verification
@@ -84,13 +88,16 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ ok: true })
   } catch (err) {
-    console.error('delete password error', err)
+    console.error('[ERR_DELETE_PASSWORD]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
+
     const { id } = await params
     
     // Verify authentication and email verification
@@ -132,7 +139,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         validateMetadataSafety(metadata)
         validateMetadataSecurity(metadata)
       } catch (validationError) {
-        console.error('Metadata validation failed:', validationError)
+        console.error('[ERR_METADATA_VALIDATION]', validationError instanceof Error ? validationError.message : String(validationError))
         return NextResponse.json({ 
           error: 'Invalid metadata: contains sensitive data or forbidden patterns' 
         }, { status: 400 })
@@ -174,7 +181,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     return NextResponse.json(updated)
   } catch (err) {
-    console.error('update password error', err)
+    console.error('[ERR_UPDATE_PASSWORD]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

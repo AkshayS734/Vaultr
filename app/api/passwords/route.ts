@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { requireAuth } from '@/app/lib/auth-utils'
+import { validateCsrf } from '@/app/lib/csrf'
 
 export async function GET(req: Request) {
   try {
@@ -36,13 +37,16 @@ export async function GET(req: Request) {
 
     return NextResponse.json(items)
   } catch (err) {
-    console.error('get passwords error', err)
+    console.error('[ERR_GET_PASSWORDS]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: Request) {
   try {
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
+
     // SECURITY ARCHITECTURE NOTE:
     // ===========================
     // This endpoint handles VAULT PASSWORDS (zero-knowledge encrypted secrets).
@@ -98,7 +102,7 @@ export async function POST(req: Request) {
         validateMetadataSafety(metadata)
         validateMetadataSecurity(metadata)
       } catch (validationError) {
-        console.error('Metadata validation failed:', validationError)
+        console.error('[ERR_METADATA_VALIDATION]', validationError instanceof Error ? validationError.message : String(validationError))
         return NextResponse.json({ 
           error: 'Invalid metadata: contains sensitive data or forbidden patterns' 
         }, { status: 400 })
@@ -117,7 +121,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(item)
   } catch (err) {
-    console.error('create password error', err)
+    console.error('[ERR_CREATE_PASSWORD]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

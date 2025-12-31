@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(vault)
   } catch (err) {
-    console.error('vault keys error', err)
+    console.error('[ERR_VAULT_KEYS]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

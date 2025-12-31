@@ -84,7 +84,7 @@ export async function GET(req: Request) {
 
     // Send welcome email (don't block)
     sendWelcomeEmail(verificationToken.user.email).catch((err) => {
-      console.error('Failed to send welcome email:', err)
+      console.error('[ERR_WELCOME_EMAIL]', err instanceof Error ? err.message : String(err))
     })
 
     // Redirect to a success page or return success JSON
@@ -97,7 +97,7 @@ export async function GET(req: Request) {
       { status: 200 }
     )
   } catch (err) {
-    console.error('Email verification error:', err)
+    console.error('[ERR_VERIFY_EMAIL]', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'Verification failed. Please try again.' },
       { status: 500 }

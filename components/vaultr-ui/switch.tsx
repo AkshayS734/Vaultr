@@ -11,7 +11,7 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, label, disabled, checked, ...props }, ref) => (
+  ({ label, disabled, checked, ...props }, ref) => (
     <label className="flex items-center gap-2 cursor-pointer">
       <div className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors">
         <input

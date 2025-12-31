@@ -300,16 +300,13 @@ export default function DashboardPage() {
                 <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2' : 'divide-y rounded-lg border'}>
                   {filteredItems.map(item => {
                     let detailLink = `/secrets/passwords/${item.id}`;
-                    let typeLabel = 'PASSWORD';
                     let TypeIcon = Key;
 
                     if (item.secretType === 'API_KEY') {
                       detailLink = `/secrets/api-keys/${item.id}`;
-                      typeLabel = 'API KEY';
                       TypeIcon = Code;
                     } else if (item.secretType === 'ENV_VARS') {
                       detailLink = `/secrets/env-vars/${item.id}`;
-                      typeLabel = 'ENV VARS';
                       TypeIcon = FileText;
                     }
 

@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
+import { serializeCsrfCookie, generateCsrfToken } from '@/app/lib/csrf'
 import { prisma } from '../../../lib/prisma'
 import { checkRateLimit, consumeRateLimit } from '../../../lib/redis'
 import { getClientIp, truncate, readLimitedJson } from '@/app/lib/utils'
@@ -107,7 +108,7 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
-      console.error('JWT_SECRET not configured')
+      console.error('[ERR_JWT_CONFIG]')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
@@ -129,15 +130,20 @@ export async function POST(req: Request) {
       maxAge: 30 * 24 * 60 * 60,
     })
 
+    const csrfToken = generateCsrfToken()
+    const csrfCookie = serializeCsrfCookie(csrfToken)
+
     // Log successful login
     await logAuditEvent('LOGIN_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
 
     const response = NextResponse.json({ accessToken }, { status: 200 })
     response.headers.append('Set-Cookie', refreshCookie)
     response.headers.append('Set-Cookie', sessionCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
+    response.headers.set('X-CSRF-Token', csrfToken)
     return response
   } catch (err) {
-    console.error('login error', err)
+    console.error('[ERR_LOGIN]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }

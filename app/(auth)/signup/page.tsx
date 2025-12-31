@@ -11,8 +11,7 @@ import { Input } from "@/components/vaultr-ui/input";
 import { Label } from "@/components/vaultr-ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
 import { Separator } from "@/components/vaultr-ui/separator";
-import { Checkbox } from "@/components/vaultr-ui/checkbox";
-import { Lock, Mail, AlertCircle } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 
 // Match Zod schemas from @/schemas/auth
 function isValidEmail(email: string) {

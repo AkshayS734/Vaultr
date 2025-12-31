@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
+import { serializeCsrfCookie, generateCsrfToken } from '@/app/lib/csrf'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../../../lib/prisma'
 import { rateLimit } from '../../../lib/redis'
@@ -119,7 +120,7 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
-      console.error('JWT_SECRET not configured')
+      console.error('[ERR_JWT_CONFIG]')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
@@ -140,6 +141,9 @@ export async function POST(req: Request) {
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
+
+    const csrfToken = generateCsrfToken()
+    const csrfCookie = serializeCsrfCookie(csrfToken)
 
     // Log successful signup
     await logAuditEvent('SIGNUP_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
@@ -170,23 +174,25 @@ export async function POST(req: Request) {
           if (sent) {
             logAuditEvent('EMAIL_VERIFICATION_SENT', user.id, { email: normalized })
           } else {
-            console.error('Failed to send verification email to', user.email)
+            console.error('[ERR_EMAIL] Failed to send verification email')
           }
         })
         .catch((err) => {
-          console.error('Error sending verification email:', err)
+          console.error('[ERR_EMAIL]', err instanceof Error ? err.message : String(err))
         })
     } catch (emailError) {
       // Don't fail signup if email fails
-      console.error('Email verification setup failed:', emailError)
+      console.error('[ERR_EMAIL_SETUP]', emailError instanceof Error ? emailError.message : String(emailError))
     }
 
     const response = NextResponse.json({ accessToken }, { status: 201 })
     response.headers.append('Set-Cookie', refreshCookie)
     response.headers.append('Set-Cookie', sessionCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
+    response.headers.set('X-CSRF-Token', csrfToken)
     return response
   } catch (err) {
-    console.error('signup error', err)
+    console.error('[ERR_SIGNUP]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }

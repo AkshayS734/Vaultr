@@ -3,10 +3,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PUBLIC_PATHS = ['/login', '/signup', '/unlock', '/forgot-password', '/reset-password', '/verify-email']
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
+  let { pathname } = req.nextUrl
 
-  // Allow public routes
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  // Normalize path: lowercase, remove trailing slashes (except root), collapse duplicate slashes
+  pathname = pathname.toLowerCase().replace(/\/+/g, '/').replace(/\/$/, '') || '/'
+
+  // Allow public routes (with normalized comparison)
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
   }
 

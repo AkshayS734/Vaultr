@@ -4,6 +4,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../../lib/prisma'
+import { serializeCsrfCookie, generateCsrfToken, validateCsrf } from '@/app/lib/csrf'
 import { rateLimit } from '../../../lib/redis'
 import { truncate, getClientIp } from '@/app/lib/utils'
 
@@ -27,6 +28,9 @@ export async function POST(req: Request) {
     const refresh = cookies.refreshToken
     const ip = getClientIp(req)
     const userAgent = truncate(req.headers.get('user-agent'), 256)
+
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
 
     if (!sessionId || !refresh) {
       return NextResponse.json({ error: 'Missing session or refresh token' }, { status: 401 })
@@ -115,7 +119,7 @@ export async function POST(req: Request) {
     const newExpires = new Date(Math.min(relativeExpiry.getTime(), absoluteExpiry.getTime()))
 
     // Atomic rotation: create new session then delete old one
-    await prisma.$transaction(async (tx) => {
+    const newSessionId = await prisma.$transaction(async (tx) => {
       const created = await tx.session.create({
         data: {
           userId: session.userId,
@@ -128,9 +132,9 @@ export async function POST(req: Request) {
         },
         select: { id: true },
       })
-
+      
       await tx.session.delete({ where: { id: sessionId } })
-      return created
+      return created.id
     })
 
     const accessToken = jwt.sign({ sub: session.userId }, jwtSecret as string, { expiresIn: '15m' })
@@ -143,7 +147,7 @@ export async function POST(req: Request) {
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
 
-    const sessionCookie = cookie.serialize('sessionId', sessionId, {
+    const sessionCookie = cookie.serialize('sessionId', newSessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -151,12 +155,17 @@ export async function POST(req: Request) {
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
 
+    const csrfToken = generateCsrfToken()
+    const csrfCookie = serializeCsrfCookie(csrfToken)
+
     const response = NextResponse.json({ accessToken }, { status: 200 })
     response.headers.append('Set-Cookie', refreshCookie)
     response.headers.append('Set-Cookie', sessionCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
+    response.headers.set('X-CSRF-Token', csrfToken)
+    
     return response
   } catch (err) {
-    console.error('refresh error', err)
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+      console.error('[ERR_REFRESH]', err instanceof Error ? err.message : err)
   }
 }
