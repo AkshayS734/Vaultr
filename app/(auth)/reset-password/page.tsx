@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { checkPasswordStrength, getStrengthLabel, getStrengthColor } from "@/app/lib/password-strength";
+import { generatePassword } from "@/app/lib/password-generator";
+import { Button } from "@/components/vaultr-ui/button";
+import { Input } from "@/components/vaultr-ui/input";
+import { Label } from "@/components/vaultr-ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
+import { Lock, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 
 function isValidPassword(password: string) {
   return password.length >= 8 && password.length <= 128;
@@ -108,270 +114,212 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
-      {/* Back to home link */}
-      <Link 
-        href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to home
-      </Link>
-      
-      <div 
-        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-      >
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
         {status === "form" && (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2 text-white">
-                Reset Password
-              </h1>
-              <p className="text-sm text-white/70">
+            <CardHeader>
+              <CardTitle>Reset Password</CardTitle>
+              <CardDescription>
                 Enter a new password for your account
-              </p>
-            </div>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="new-password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      aria-invalid={!!passwordError}
+                      aria-describedby={passwordError ? "password-error" : undefined}
+                      value={password}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setPassword(e.target.value);
+                        if (passwordError) setPasswordError(null);
+                      }}
+                      className={`pl-10 pr-20 ${passwordError ? 'border-destructive' : ''}`}
+                      placeholder="Create a strong password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newPassword = generatePassword({ length: 16 })
+                        setPassword(newPassword)
+                        setConfirmPassword(newPassword)
+                        setShowPassword(true)
+                      }}
+                      className="absolute right-11 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                      title="Generate password"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22l-.394-1.433a2.25 2.25 0 00-1.423-1.423L13.25 19l1.433-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.433a2.25 2.25 0 001.423 1.423L19.75 19l-1.433.394a2.25 2.25 0 00-1.423 1.423z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {password && (
+                    <div className="mt-4 space-y-3 p-3 rounded-lg bg-muted/50 border border-border">
+                      {/* Strength Indicator Bar */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-muted-foreground">Strength</span>
+                          <span className={`text-xs font-semibold ${passwordScore >= 3 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                            {getStrengthLabel(passwordScore)}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 ${getStrengthColor(passwordScore)}`}
+                            style={{ width: `${Math.min(100, (passwordScore / 5) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              <label className="block">
-                <span className="text-sm font-medium mb-2 block text-white/85">
-                  New Password
-                </span>
-                <div className="relative">
-                  <input
-                    id="new-password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    aria-invalid={!!passwordError}
-                    aria-describedby={passwordError ? "password-error" : undefined}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (passwordError) setPasswordError(null);
-                    }}
-                    className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${passwordError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
-                    placeholder="Create a strong password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                {password && (
-                  <div className="mt-4 space-y-3 p-3 rounded-lg bg-[#8d99ae]/10 border border-[#8d99ae]/20">
-                    {/* Strength Indicator Bar */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-white/75">Strength</span>
-                        <span className={`text-xs font-semibold ${passwordScore >= 3 ? 'text-green-400' : 'text-[#8d99ae]'}`}>
-                          {getStrengthLabel(passwordScore)}
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-300 ${getStrengthColor(passwordScore)}`}
-                          style={{ width: `${Math.min(100, (passwordScore / 5) * 100)}%` }}
-                        />
-                      </div>
+                      {/* Requirements Checklist */}
+                      {passwordStrengthFeedback.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Unmet requirements:</p>
+                          <ul className="space-y-1">
+                            {passwordStrengthFeedback.map((feedback, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                <span className="text-muted-foreground/60 mt-0.5">•</span>
+                                <span>{feedback}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Success State */}
+                      {passwordScore >= 3 && passwordStrengthFeedback.length === 0 && (
+                        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Password meets all requirements</span>
+                        </div>
+                      )}
                     </div>
+                  )}
+                  {passwordError && (
+                    <p id="password-error" className="text-xs text-destructive">
+                      {passwordError}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Requirements Checklist */}
-                    {passwordStrengthFeedback.length > 0 && (
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-white/75">Unmet requirements:</p>
-                        <ul className="space-y-1">
-                          {passwordStrengthFeedback.map((feedback, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-xs text-[#8d99ae]">
-                              <span className="text-[#8d99ae]/60 mt-0.5">•</span>
-                              <span>{feedback}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      aria-invalid={!!confirmError}
+                      aria-describedby={confirmError ? "confirm-error" : undefined}
+                      value={confirmPassword}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setConfirmPassword(e.target.value);
+                        if (confirmError) setConfirmError(null);
+                      }}
+                      className={`pl-10 pr-10 ${confirmError ? 'border-destructive' : ''}`}
+                      placeholder="Confirm your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {confirmError && (
+                    <p id="confirm-error" className="text-xs text-destructive">
+                      {confirmError}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Success State */}
-                    {passwordScore >= 3 && passwordStrengthFeedback.length === 0 && (
-                      <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Password meets all requirements
-                      </div>
-                    )}
+                {generalError && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-sm text-destructive">{generalError}</p>
                   </div>
                 )}
-                {passwordError && (
-                  <p id="password-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
-                    {passwordError}
-                  </p>
-                )}
-              </label>
 
-              <label className="block">
-                <span className="text-sm font-medium mb-2 block text-white/85">
-                  Confirm Password
-                </span>
-                <div className="relative">
-                  <input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    aria-invalid={!!confirmError}
-                    aria-describedby={confirmError ? "confirm-error" : undefined}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      if (confirmError) setConfirmError(null);
-                    }}
-                    className={`w-full px-4 py-3 pr-12 rounded-lg text-sm transition-all duration-200 outline-none bg-black/30 text-white border ${confirmError ? 'border-[#8d99ae]/60' : 'border-[#8d99ae]/20'} focus:border-[#8d99ae]/60 focus:ring-2 focus:ring-[#8d99ae]/20`}
-                    placeholder="Confirm your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8d99ae] opacity-60 transition-opacity hover:opacity-100"
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                  >
-                    {showConfirmPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                {confirmError && (
-                  <p id="confirm-error" className="mt-2 text-xs text-[#8d99ae] opacity-90">
-                    {confirmError}
-                  </p>
-                )}
-              </label>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {isSubmitting ? "Resetting..." : "Reset Password"}
+                </Button>
+              </form>
 
-              {generalError && (
-                <div className="p-3 rounded-lg bg-[#8d99ae]/15">
-                  <p className="text-sm text-[#8d99ae]">{generalError}</p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${isSubmitting ? 'bg-[#8d99ae]/50 text-[#2b2d42] cursor-not-allowed opacity-70' : 'bg-[#8d99ae] text-[#2b2d42] hover:shadow-lg'}`}
-              >
-                {isSubmitting ? "Resetting..." : "Reset Password"}
-              </button>
-            </form>
-
-            <p className="text-sm text-center mt-6 text-white/60">
-              <Link 
-                href="/login" 
-                className="font-medium text-[#8d99ae] transition-opacity hover:opacity-80"
-              >
-                Back to login
-              </Link>
-            </p>
+              <p className="text-sm text-center text-muted-foreground">
+                <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+                  Back to login
+                </Link>
+              </p>
+            </CardContent>
           </>
         )}
 
         {status === "success" && (
-          <div className="text-center">
+          <CardContent className="text-center py-8">
             <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center bg-primary/10">
+                <CheckCircle className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Password Reset!
-            </h1>
-            <p className="text-sm mb-6 text-white/70">
-              {message}
-            </p>
-            <Link
-              href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-            >
+            <CardTitle className="mb-2">Password Reset!</CardTitle>
+            <CardDescription className="mb-6">{message}</CardDescription>
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 w-full">
               Go to Sign In
             </Link>
-          </div>
+          </CardContent>
         )}
 
         {status === "error" && (
-          <div className="text-center">
+          <CardContent className="text-center py-8">
             <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae] opacity-80"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center bg-destructive/10">
+                <XCircle className="w-8 h-8 text-destructive" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Invalid Request
-            </h1>
-            <p className="text-sm mb-6 text-white/70">
-              {message}
-            </p>
-            <Link
-              href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-            >
+            <CardTitle className="mb-2">Invalid Request</CardTitle>
+            <CardDescription className="mb-6">{message}</CardDescription>
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 w-full">
               Back to Sign In
             </Link>
-          </div>
+          </CardContent>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center py-8">
+            <p className="text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
       <ResetPasswordContent />
     </Suspense>
   );
