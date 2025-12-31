@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem } from "@/app/lib/crypto";
+import { generatePassword } from "@/app/lib/password-generator";
 import { 
   SecretType, 
   buildEncryptedPayload, 
@@ -266,9 +267,23 @@ export default function NewPasswordPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
                     placeholder="Enter or generate a password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newPassword = generatePassword({ length: 16 })
+                      setPassword(newPassword)
+                      setShowPassword(true)
+                    }}
+                    className="absolute right-11 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                    title="Generate password"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22l-.394-1.433a2.25 2.25 0 00-1.423-1.423L13.25 19l1.433-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.433a2.25 2.25 0 001.423 1.423L19.75 19l-1.433.394a2.25 2.25 0 00-1.423 1.423z" />
+                    </svg>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -387,12 +402,12 @@ export default function NewPasswordPage() {
 
                       {/* Breach Status Message - Only shown when breach check enabled */}
                       {breachCheckEnabled && health && password && (
-                        <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
+                        <div className={`flex items-center gap-2 p-3 rounded-md text-xs ${
                           health.flags.breached
                             ? 'bg-red-500/10 border border-red-600/40 text-red-300'
                             : 'bg-green-500/10 border border-green-600/40 text-green-300'
                         }`}>
-                          <span className="text-lg mt-0.5 flex-shrink-0">
+                          <span className="text-lg flex-shrink-0">
                             {health.flags.breached ? '⚠️' : '✅'}
                           </span>
                           <span className="flex-1">
