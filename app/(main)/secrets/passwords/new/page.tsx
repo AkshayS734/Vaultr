@@ -179,26 +179,25 @@ export default function NewPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2b2d42]">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
-      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+      <nav className="border-b border-border bg-card/50 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
               <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Back
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Logout
           </button>
@@ -206,227 +205,273 @@ export default function NewPasswordPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <h1 className="text-2xl font-bold text-white mb-6">Add New Password</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/85">Title</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="e.g. Google, Netflix"
-            />
-          </div>
+      <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Add Password</h1>
+          <p className="text-muted-foreground">Store a new credential in your vault</p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Username / Email</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-            />
-          </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Credential Details Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Credential Details</h2>
+            
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g., GitHub, Gmail, Work Email"
+                />
+              </div>
 
-          {/* Password Input Field - Outside Card */}
-          <div>
-            <label className="block text-sm font-medium text-white/85 mb-2">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2.5 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-base"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
-                title={showPassword ? "Hide password" : "Show password"}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                )}
-              </button>
+              {/* Website */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Website</label>
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Username / Email</label>
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="username or email@example.com"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                    placeholder="Enter or generate a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Password Health Display Card */}
           {password && health && (
-          <div className="bg-[#1f2233]/50 rounded-lg border border-[#8d99ae]/20 p-5 space-y-4">
-            <div className="space-y-3">
-                {/* Strength Meter Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-white/70 uppercase tracking-wide">Strength</span>
-                    <span className={`text-sm font-semibold ${
-                      health.score >= 90 ? 'text-green-400' :
-                      health.score >= 70 ? 'text-green-400' :
-                      health.score >= 50 ? 'text-yellow-400' :
-                      'text-red-400'
-                    }`}>
-                      {health.score >= 90 ? 'Excellent' :
-                       health.score >= 70 ? 'Strong' :
-                       health.score >= 50 ? 'Fair' : 'Weak'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-[#2b2d42] rounded-full overflow-hidden border border-[#8d99ae]/10">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                        health.score >= 90 ? 'bg-green-500/90' :
-                        health.score >= 70 ? 'bg-green-500/90' :
-                        health.score >= 50 ? 'bg-yellow-500/90' :
-                          'bg-red-500/90'
-                        }`}
-                        style={{ width: `${Math.min(100, Math.max(0, health.score))}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-white/60 w-10 text-right">{health.score}/100</span>
-                  </div>
-                </div>
-
-                {/* Risk Indicators Section */}
-                <div className="space-y-2 pt-1">
-                  {/* Reuse Warning - Always visible if detected */}
-                  {health.flags.reused && (
-                    <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-600/40 text-yellow-300 text-xs">
-                      <span className="text-lg mt-0.5 flex-shrink-0">⚠️</span>
-                      <span className="flex-1">This password is already used in other items. Consider a unique password.</span>
-                    </div>
-                  )}
-
-                  {/* Other Flags - Age and Weak */}
-                  {(health.flags.old || health.flags.weak) && (
-                    <div className="flex flex-wrap gap-2">
-                      {health.flags.weak && (
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 border border-red-600/40 text-red-300 text-xs font-medium">
-                          <span>●</span> Weak composition
+                  <div className="bg-muted/30 rounded-lg border border-border p-5 space-y-4 mt-3">
+                    <div className="space-y-3">
+                      {/* Strength Meter Section */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
+                          <span className={`text-sm font-semibold ${
+                            health.score >= 90 ? 'text-green-400' :
+                            health.score >= 70 ? 'text-green-400' :
+                            health.score >= 50 ? 'text-yellow-400' :
+                            'text-red-400'
+                          }`}>
+                            {health.score >= 90 ? 'Excellent' :
+                             health.score >= 70 ? 'Strong' :
+                             health.score >= 50 ? 'Fair' : 'Weak'}
+                          </span>
                         </div>
-                      )}
-                      {health.flags.old && (
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-600/40 text-orange-300 text-xs font-medium">
-                          <span>●</span> Changed long ago
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-background rounded-full overflow-hidden border border-border">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                health.score >= 90 ? 'bg-green-500/90' :
+                                health.score >= 70 ? 'bg-green-500/90' :
+                                health.score >= 50 ? 'bg-yellow-500/90' :
+                                'bg-red-500/90'
+                              }`}
+                              style={{ width: `${Math.min(100, Math.max(0, health.score))}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-white/60 w-10 text-right">{health.score}/100</span>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Warnings List - If any */}
-                {health.warnings.length > 0 && (
-                  <div className="pt-1 space-y-1 text-xs text-[#ffd6a0]">
-                    {health.warnings.map((w, i) => (
-                      <div key={i} className="flex gap-2">
-                        <span className="text-[#8d99ae] flex-shrink-0">•</span>
-                        <span>{w}</span>
                       </div>
-                    ))}
+
+                      {/* Risk Indicators Section */}
+                      <div className="space-y-2 pt-1">
+                        {/* Reuse Warning - Always visible if detected */}
+                        {health.flags.reused && (
+                          <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-600/40 text-yellow-300 text-xs">
+                            <span className="text-lg mt-0.5 flex-shrink-0">⚠️</span>
+                            <span className="flex-1">This password is already used in other items. Consider a unique password.</span>
+                          </div>
+                        )}
+
+                        {/* Other Flags - Age and Weak */}
+                        {(health.flags.old || health.flags.weak) && (
+                          <div className="flex flex-wrap gap-2">
+                            {health.flags.weak && (
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 border border-red-600/40 text-red-300 text-xs font-medium">
+                                <span>●</span> Weak composition
+                              </div>
+                            )}
+                            {health.flags.old && (
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-600/40 text-orange-300 text-xs font-medium">
+                                <span>●</span> Changed long ago
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Warnings List - If any */}
+                      {health.warnings.length > 0 && (
+                        <div className="pt-1 space-y-1 text-xs text-warning">
+                          {health.warnings.map((w, i) => (
+                            <div key={i} className="flex gap-2">
+                              <span className="text-muted-foreground flex-shrink-0">•</span>
+                              <span>{w}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Optional Breach Detection Section */}
+                    <div className="pt-2 border-t border-border space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <label htmlFor="breach-check" className="block text-xs font-medium text-muted-foreground uppercase tracking-wide cursor-pointer">
+                            Breach Detection <span className="text-muted-foreground/60">(optional)</span>
+                          </label>
+                          <p className="text-xs text-muted-foreground/70">Check if this password appeared in known data breaches</p>
+                        </div>
+                        <input
+                          id="breach-check"
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-border bg-background accent-primary cursor-pointer"
+                          checked={breachCheckEnabled}
+                          onChange={(e) => setBreachCheckEnabled(e.target.checked)}
+                        />
+                      </div>
+
+                      {/* Breach Status Message - Only shown when breach check enabled */}
+                      {breachCheckEnabled && health && password && (
+                        <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
+                          health.flags.breached
+                            ? 'bg-red-500/10 border border-red-600/40 text-red-300'
+                            : 'bg-green-500/10 border border-green-600/40 text-green-300'
+                        }`}>
+                          <span className="text-lg mt-0.5 flex-shrink-0">
+                            {health.flags.breached ? '⚠️' : '✅'}
+                          </span>
+                          <span className="flex-1">
+                            {health.flags.breached 
+                              ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
+                              : 'No known breaches found. This password has not appeared in known data breach databases.'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Breach Disabled Hint - When toggle is OFF */}
+                      {!breachCheckEnabled && health && password && (
+                        <div className="text-xs text-muted-foreground/50 italic">
+                          Enable above to check if this password has appeared in known data breaches.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
+
+          {/* Notes */}
+          <div className="bg-card rounded-lg shadow-lg border border-border">
+            <div className="border-b border-border p-4">
+              <h3 className="text-lg font-semibold text-foreground">Notes (Optional)</h3>
             </div>
-
-            {/* Optional Breach Detection Section */}
-            <div className="pt-2 border-t border-[#8d99ae]/10 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <label htmlFor="breach-check" className="block text-xs font-medium text-white/70 uppercase tracking-wide cursor-pointer">
-                    Breach Detection <span className="text-[#8d99ae]/60">(optional)</span>
-                  </label>
-                  <p className="text-xs text-white/50">Check if this password appeared in known data breaches</p>
-                </div>
-                <input
-                  id="breach-check"
-                  type="checkbox"
-                  className="h-5 w-5 rounded border-[#8d99ae]/30 bg-[#2b2d42] accent-[#8d99ae] cursor-pointer"
-                  checked={breachCheckEnabled}
-                  onChange={(e) => setBreachCheckEnabled(e.target.checked)}
-                />
-              </div>
-
-              {/* Breach Status Message - Only shown when breach check enabled */}
-              {breachCheckEnabled && health && password && (
-                <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
-                  health.flags.breached
-                    ? 'bg-red-500/10 border border-red-600/40 text-red-300'
-                    : 'bg-green-500/10 border border-green-600/40 text-green-300'
-                }`}>
-                  <span className="text-lg mt-0.5 flex-shrink-0">
-                    {health.flags.breached ? '⚠️' : '✅'}
-                  </span>
-                  <span className="flex-1">
-                    {health.flags.breached 
-                      ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
-                      : 'No known breaches found. This password has not appeared in known data breach databases.'}
-                  </span>
-                </div>
-              )}
-
-              {/* Breach Disabled Hint - When toggle is OFF */}
-              {!breachCheckEnabled && health && password && (
-                <div className="text-xs text-white/40 italic">
-                  Enable above to check if this password has appeared in known data breaches.
-                </div>
-              )}
+            <div className="p-4">
+              <textarea
+                id="notes"
+                placeholder="Add any additional notes about this credential..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="block w-full rounded-md border border-border bg-background px-3 py-2 shadow-sm focus:border-primary focus:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
+              />
             </div>
           </div>
+
+          {/* Security Warning */}
+          {password && password.length < 12 && (
+            <div className="flex items-start gap-3 rounded-lg bg-warning/10 border border-warning/20 p-4">
+              <svg className="h-5 w-5 flex-shrink-0 text-warning mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <p className="font-medium text-warning">Weak Password Detected</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Consider using a longer password (12+ characters) with a mix of
+                  letters, numbers, and symbols.
+                </p>
+              </div>
+            </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Website URL</label>
-            <input
-              type="url"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-            />
-          </div>
+          {error && (
+            <div className="flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+              <p className="text-sm text-red-300">{error}</p>
+            </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-            />
-          </div>
-
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          <div className="flex justify-end space-x-3 pt-4">
+          {/* Actions */}
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
+              className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Saving..." : "Save Password"}
             </button>
           </div>
         </form>
-      </div>
       </div>
     </div>
   );
