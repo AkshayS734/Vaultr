@@ -73,9 +73,9 @@ export async function POST(req: Request) {
     // Determine which hash to verify: real hash if user exists, dummy hash if not
     // This ensures consistent timing regardless of whether user exists
     const hashToVerify = user?.authHash ?? DUMMY_HASH
-    let userExists = !!user
-    let userDeleted = user?.deletedAt ? true : false
-    let emailVerified = user?.isEmailVerified ?? false
+    const userExists = !!user
+    const userDeleted = user?.deletedAt ? true : false
+    const emailVerified = user?.isEmailVerified ?? false
     
     // Always verify password (takes same time regardless of user existence)
     let verified = false

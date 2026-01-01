@@ -152,11 +152,6 @@ export default function SignupPage() {
       setLockUntil(null);
     }
   }, [email]);
-      } else {
-        setResendAttempts(data.attempts || 0);
-      }
-    }
-  }, [email]);
 
   // Countdown timer
   useEffect(() => {

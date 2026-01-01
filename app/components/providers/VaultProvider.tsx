@@ -23,11 +23,21 @@ const VAULT_ABSOLUTE_TIMEOUT_MS =
     60 * 60 * 1000) // 60 minutes default
 
 export function VaultProvider({ children }: { children: ReactNode }) {
-  const [vaultKey, setVaultKey] = useState<CryptoKey | null>(null);
+  const [vaultKeyState, setVaultKeyState] = useState<CryptoKey | null>(null);
   const [vaultUnlockedAt, setVaultUnlockedAt] = useState<number | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
+  const setVaultKey = (key: CryptoKey | null) => {
+    setVaultKeyState(key);
+    if (key) {
+      setVaultUnlockedAt(Date.now());
+    } else {
+      setVaultUnlockedAt(null);
+    }
+  };
+
+  const vaultKey = vaultKeyState;
   const isUnlocked = !!vaultKey;
 
   useEffect(() => {
@@ -43,8 +53,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
   // Inactivity timer + absolute timeout + visibility listener
   useEffect(() => {
-    let inactivityTimer: NodeJS.Timeout;
-    let absoluteTimer: NodeJS.Timeout;
+    let inactivityTimer: NodeJS.Timeout | null = null;
+    let absoluteTimer: NodeJS.Timeout | null = null;
     
     const lockVault = () => {
       setVaultKey(null);
@@ -71,11 +81,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     const events = ["mousedown", "keydown", "scroll", "touchstart"];
     
     if (isUnlocked) {
-      // Set unlock timestamp for absolute timeout tracking
-      if (!vaultUnlockedAt) {
-        setVaultUnlockedAt(Date.now());
-      }
-
       resetInactivityTimer();
       events.forEach(event => window.addEventListener(event, resetInactivityTimer));
       
