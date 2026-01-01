@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     // Find the password reset token
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { tokenHash },
-      include: { user: { select: { id: true, email: true } } },
+      include: { user: { select: { id: true, email: true, isEmailVerified: true } } },
     })
 
     if (!resetToken) {
@@ -71,6 +71,20 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }
+      )
+    }
+
+    // Item 4.5: Require email verification before password reset
+    // Security: Prevent password reset if email is unverified (account takeover risk)
+    if (!resetToken.user.isEmailVerified) {
+      await logAuditEvent('PASSWORD_RESET_FAILED', resetToken.userId, {
+        reason: 'Email not verified',
+        email: resetToken.user.email,
+        ip,
+      })
+      return NextResponse.json(
+        { error: 'Please verify your email address before resetting your password.' },
+        { status: 403 }
       )
     }
 

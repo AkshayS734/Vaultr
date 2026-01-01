@@ -22,6 +22,38 @@ const optionalEnvVars = [
   'SMTP_SECURE',
 ]
 
+/**
+ * Validate JWT_SECRET has minimum entropy (32 bytes = 256 bits)
+ * OWASP recommendation for cryptographic keys
+ */
+function validateJwtSecret(): void {
+  const jwtSecret = process.env.JWT_SECRET
+  if (!jwtSecret) {
+    return // Already checked in requiredEnvVars
+  }
+
+  // Check minimum length: 32 bytes base64-decoded
+  // Base64 string of 32 bytes = ~43 characters (32 * 4/3)
+  // For raw hex: 64 characters (32 bytes * 2)
+  if (jwtSecret.length < 32) {
+    console.error('  FATAL: JWT_SECRET is too weak')
+    console.error('  JWT_SECRET must be at least 32 bytes (256 bits)')
+    console.error('  Recommendation: Generate with: openssl rand -base64 32')
+    console.error(`  Current length: ${jwtSecret.length} characters`)
+    process.exit(1)
+  }
+
+  // Warn if all same character (extremely low entropy)
+  const uniqueChars = new Set(jwtSecret)
+  if (uniqueChars.size === 1) {
+    console.warn('  ⚠️  WARNING: JWT_SECRET has extremely low entropy (all same character)')
+    console.warn('  Recommendation: Regenerate with: openssl rand -base64 32')
+  } else if (uniqueChars.size < 5) {
+    console.warn('  ⚠️  WARNING: JWT_SECRET has low entropy (very few unique characters)')
+    console.warn('  Recommendation: Regenerate with: openssl rand -base64 32')
+  }
+}
+
 export function validateEnvironment(): void {
   const missing: string[] = []
 
@@ -42,6 +74,9 @@ export function validateEnvironment(): void {
     })
     process.exit(1)
   }
+
+  // Validate JWT_SECRET entropy
+  validateJwtSecret()
 
   // Log optional vars status
   const unavailable = optionalEnvVars.filter((v) => !process.env[v])
