@@ -4,7 +4,7 @@ import "./globals.css";
 import { validateEnvironment } from "./lib/env";
 
 // Validate environment at startup
-if (typeof window === 'undefined') {
+if (process.env.NEXT_RUNTIME === 'nodejs') {
   validateEnvironment()
 }
 
