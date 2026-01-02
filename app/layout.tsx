@@ -4,8 +4,8 @@ import "./globals.css";
 import { validateEnvironment } from "./lib/env";
 
 // Validate environment at startup
-if (process.env.NEXT_RUNTIME === 'nodejs') {
-  validateEnvironment()
+if (!process.env.VERCEL) {
+  validateEnvironment();
 }
 
 const geistSans = Geist({
