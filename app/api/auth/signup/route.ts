@@ -213,9 +213,6 @@ export async function POST(req: Request) {
     return response
   } catch (err) {
     console.error('[ERR_SIGNUP]', err instanceof Error ? err.message : String(err))
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : String(err) }, 
-      { status: 500 } 
-    )
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }
