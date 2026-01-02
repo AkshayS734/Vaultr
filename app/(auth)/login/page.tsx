@@ -54,33 +54,37 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  // Load remember me data and rate limiting data from localStorage
+  // Load remembered email once on mount
   useEffect(() => {
     const remembered = localStorage.getItem("remembered_email");
     if (remembered) {
       setEmail(remembered);
       setRememberMe(true);
     }
+  }, []);
 
-    // Load rate limiting data
-    const storedEmail = remembered || email;
-    if (storedEmail) {
-      const stored = localStorage.getItem(`resend_lock_${storedEmail}`);
-      if (stored) {
-        const data = JSON.parse(stored);
-        const now = Date.now();
-        
-        if (data.lockUntil > now) {
-          setLockUntil(data.lockUntil);
-          setResendAttempts(data.attempts || 0);
-        } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
-          localStorage.removeItem(`resend_lock_${storedEmail}`);
-          setResendAttempts(0);
-          setLockUntil(null);
-        } else {
-          setResendAttempts(data.attempts || 0);
-        }
+  // Load rate limiting data for the current email
+  useEffect(() => {
+    if (!email) return;
+
+    const stored = localStorage.getItem(`resend_lock_${email}`);
+    if (stored) {
+      const data = JSON.parse(stored);
+      const now = Date.now();
+      
+      if (data.lockUntil > now) {
+        setLockUntil(data.lockUntil);
+        setResendAttempts(data.attempts || 0);
+      } else if (data.lockUntil && now - data.lockUntil > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(`resend_lock_${email}`);
+        setResendAttempts(0);
+        setLockUntil(null);
+      } else {
+        setResendAttempts(data.attempts || 0);
       }
+    } else {
+      setResendAttempts(0);
+      setLockUntil(null);
     }
   }, [email]);
 
@@ -316,7 +320,7 @@ export default function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               /> 
-              Remember me
+              Remember email
             </label>
             <Link 
               href="/forgot-password" 

@@ -111,3 +111,4 @@ redis-data/
 .DS_Store
 Thumbs.db
 tree.txt
+patches/
