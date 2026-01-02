@@ -26,7 +26,16 @@ export function parseCsrfTokens(req: Request) {
 
 export function validateCsrf(req: Request) {
   const method = req.method.toUpperCase()
-  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+  const pathname = new URL(req.url).pathname
+
+  // Safe / bootstrap routes
+  if (
+    method === 'GET' ||
+    method === 'HEAD' ||
+    method === 'OPTIONS' ||
+    pathname === '/api/auth/login' ||
+    pathname === '/api/auth/signup'
+  ) {
     return { ok: true }
   }
 
@@ -34,7 +43,13 @@ export function validateCsrf(req: Request) {
   const headerToken = req.headers.get('x-csrf-token') || ''
 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-    return { ok: false, response: new Response(JSON.stringify({ error: 'CSRF validation failed' }), { status: 403, headers: { 'Content-Type': 'application/json' } }) }
+    return {
+      ok: false,
+      response: new Response(
+        JSON.stringify({ error: 'CSRF validation failed' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
   }
 
   return { ok: true }
