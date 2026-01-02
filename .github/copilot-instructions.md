@@ -200,6 +200,72 @@ When implementing features:
 ## Project Status
 **MVP under active development** — not production-hardened or externally audited yet. See [README.md](README.md) for roadmap and disclaimer.
 
+## UI Refactor Scope (Presentation-Only Changes)
+
+The project contains a shared UI component library under:
+
+/components/ui
+
+These components are generated from Figma and MUST be reused.
+
+### When UI Refactors Are Requested
+
+UI refactors are explicitly allowed **ONLY** if ALL conditions below are met:
+
+✅ Changes are limited to JSX / TSX structure, layout, and styling  
+✅ Existing state, hooks, handlers, effects, and logic remain unchanged  
+✅ No backend services, API routes, schemas, or crypto code are modified  
+✅ No auth, encryption, vault, or metadata logic is altered  
+✅ Application behavior remains byte-for-byte equivalent  
+
+### Mandatory Rules for UI Refactors
+
+- Prefer components from `/components/ui` over custom HTML elements
+- Do NOT reimplement UI primitives already present
+- Do NOT change variable names, function signatures, or hooks
+- Do NOT introduce new state or side effects
+- Do NOT remove existing validation or guards
+- Do NOT rename or merge security concepts
+
+### Password Semantics (Critical)
+
+Vaultr uses TWO DIFFERENT PASSWORD CONCEPTS:
+
+1. Login Password
+   - Authentication only
+   - Recoverable via email reset
+   - Never used for encryption
+
+2. Master Password
+   - Used only for client-side encryption
+   - Never stored or transmitted
+   - Never recoverable
+
+❗ UI labels, inputs, and flows MUST preserve this distinction.
+❗ Never collapse both into a single “Password” field or label.
+
+### Navigation Constraints
+
+- Do NOT introduce or use sidebar-based navigation
+- Use top navigation, tabs, sheets, and dialogs only
+- Sidebar components may exist but are NOT used in MVP UI
+
+### Destructive & Sensitive Actions
+
+- Use AlertDialog for destructive actions (delete, revoke, logout all)
+- Secrets must remain masked by default
+- Revealing secrets requires explicit user action
+- Feedback must use toast notifications (sonner)
+
+### If Unsure
+
+If a requested UI change appears to affect:
+- crypto boundaries
+- auth flow
+- vault unlocking
+- metadata structure
+
+→ STOP and ask for clarification.
 ---
 
 **Tip**: Cross-file navigation is critical. Metadata safety requires reading secret-utils.ts + schemas/secrets.ts + test validation examples together to understand the boundary rules.

@@ -77,15 +77,15 @@ export async function deriveSha256Hex(password: string): Promise<string> {
   return hex
 }
 
-// Length score: scale 0–50 with linear ramp, saturates at 20 chars
+// Length score: scale 0–40 with linear ramp, saturates at 16 chars
 function computeLengthScore(pw: string): { score: number; warning?: string } {
   const len = pw.length
-  const score = clamp((len / 20) * 50, 0, 50)
+  const score = clamp((len / 16) * 40, 0, 40)
   const warning = len < 12 ? 'Use at least 12 characters' : undefined
   return { score, warning }
 }
 
-// Character diversity score: presence of lower, upper, digit, special → 0–50
+// Character diversity score: presence of lower, upper, digit, special → 0–60
 function computeDiversityScore(pw: string): { score: number; warnings: string[] } {
   const warnings: string[] = []
   let categories = 0
@@ -98,7 +98,7 @@ function computeDiversityScore(pw: string): { score: number; warnings: string[] 
   if (/[^a-zA-Z0-9]/.test(pw)) categories += 1
   else warnings.push('Add special characters (!@#$%^&*)')
 
-  const score = (categories / 4) * 50
+  const score = (categories / 4) * 60
   return { score, warnings }
 }
 
@@ -119,7 +119,7 @@ export async function evaluatePasswordHealth(
   options: PasswordHealthOptions = {}
 ): Promise<PasswordHealthResult> {
   // Base scores (no hashing needed for strength checks)
-  // Max baseline: 50 (length) + 50 (diversity) = 100
+  // Max baseline: 40 (length) + 60 (diversity) = 100
   const { score: lengthScore, warning: lengthWarn } = computeLengthScore(password)
   const { score: diversityScore, warnings: diversityWarns } = computeDiversityScore(password)
   let score = lengthScore + diversityScore // 0–100 baseline

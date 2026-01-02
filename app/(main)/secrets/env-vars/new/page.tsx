@@ -114,26 +114,25 @@ export default function NewEnvVarsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2b2d42]">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
-      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+      <nav className="border-b border-border bg-card/50 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
               <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Back
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Logout
           </button>
@@ -141,63 +140,80 @@ export default function NewEnvVarsPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <h1 className="text-2xl font-bold text-white mb-6">Add Environment Variables</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/85">Title</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="e.g. Production Database, Development Config"
-            />
+      <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Add Environment Variables</h1>
+          <p className="text-muted-foreground">Store environment configuration securely</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Environment Details Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Environment Details</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. Production Database, Development Config"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Description</label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Brief description of what these variables are for"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="Brief description of what these variables are for"
-            />
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-3">
-              <label className="block text-sm font-medium text-white/85">Environment Variables</label>
+          {/* Environment Variables Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Variables</h2>
               <button
                 type="button"
                 onClick={addVariable}
-                className="text-sm text-[#8d99ae] hover:text-[#8d99ae]/80"
+                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
-                + Add Variable
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Variable
               </button>
             </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
               {variables.map((variable, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Key (e.g. DATABASE_URL)"
-                    value={variable.key}
-                    onChange={(e) => updateVariable(index, "key", e.target.value)}
-                    className="flex-1 rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
-                  />
+                <div key={index} className="flex gap-3 items-start">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="KEY_NAME"
+                      value={variable.key}
+                      onChange={(e) => updateVariable(index, "key", e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                  </div>
                   <div className="flex-1 relative">
                     <input
                       type={showValues.has(index) ? "text" : "password"}
-                      placeholder="Value"
+                      placeholder="value"
                       value={variable.value}
                       onChange={(e) => updateVariable(index, "value", e.target.value)}
-                      className="w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-sm"
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
                     />
                     <button
                       type="button"
@@ -210,7 +226,7 @@ export default function NewEnvVarsPage() {
                         }
                         setShowValues(newShowValues);
                       }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       title={showValues.has(index) ? "Hide value" : "Show value"}
                     >
                       {showValues.has(index) ? (
@@ -230,9 +246,12 @@ export default function NewEnvVarsPage() {
                     <button
                       type="button"
                       onClick={() => removeVariable(index)}
-                      className="px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded dark:hover:bg-red-900/20"
+                      className="h-[42px] px-3 rounded-lg border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
                     >
-                      Remove
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -240,37 +259,42 @@ export default function NewEnvVarsPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Notes</label>
+          {/* Notes Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="Add any additional notes..."
+              rows={4}
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              placeholder="Add any additional notes about these environment variables..."
             />
           </div>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
 
-          <div className="flex justify-end space-x-3 pt-4">
+          {/* Action Buttons */}
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
+              className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Saving..." : "Save Environment Variables"}
             </button>
           </div>
         </form>
-      </div>
       </div>
     </div>
   );

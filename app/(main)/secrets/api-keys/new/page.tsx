@@ -94,26 +94,25 @@ export default function NewApiKeyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2b2d42]">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
-      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+      <nav className="border-b border-border bg-card/50 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
               <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Back
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Logout
           </button>
@@ -121,112 +120,132 @@ export default function NewApiKeyPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <h1 className="text-2xl font-bold text-white mb-6">Add New API Key</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/85">Title</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="e.g. GitHub API, Stripe API"
-            />
-          </div>
+      <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Add API Key</h1>
+          <p className="text-muted-foreground">Store a new API credential in your vault</p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Service Name</label>
-            <input
-              type="text"
-              required
-              value={serviceName}
-              onChange={(e) => setServiceName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="e.g. GitHub, Stripe, SendGrid"
-            />
-          </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* API Key Details Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">API Key Details</h2>
+            
+            <div className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g., GitHub API, Stripe API"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">API Key</label>
-            <div className="relative">
-              <input
-                type={showApiKey ? "text" : "password"}
-                required
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-                placeholder="Paste your API key here"
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
-                title={showApiKey ? "Hide API key" : "Show API key"}
-              >
-                {showApiKey ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                )}
-              </button>
+              {/* Service Name */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Service Name</label>
+                <input
+                  type="text"
+                  required
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g., GitHub, Stripe, SendGrid"
+                />
+              </div>
+
+              {/* API Key */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">API Key</label>
+                <div className="relative">
+                  <input
+                    type={showApiKey ? "text" : "password"}
+                    required
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                    placeholder="Paste your API key here"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    title={showApiKey ? "Hide API key" : "Show API key"}
+                  >
+                    {showApiKey ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Environment */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Environment</label>
+                <select
+                  value={environment}
+                  onChange={(e) => setEnvironment(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="production">Production</option>
+                  <option value="staging">Staging</option>
+                  <option value="development">Development</option>
+                  <option value="testing">Testing</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Environment</label>
-            <select
-              value={environment}
-              onChange={(e) => setEnvironment(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-            >
-              <option value="production">Production</option>
-              <option value="staging">Staging</option>
-              <option value="development">Development</option>
-              <option value="testing">Testing</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/85">Notes</label>
+          {/* Notes Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white"
-              placeholder="Add any additional notes..."
+              rows={4}
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              placeholder="Add any additional notes about this API key..."
             />
           </div>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
 
-          <div className="flex justify-end space-x-3 pt-4">
+          {/* Action Buttons */}
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
+              className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Saving..." : "Save API Key"}
             </button>
           </div>
         </form>
-      </div>
       </div>
     </div>
   );

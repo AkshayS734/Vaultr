@@ -110,7 +110,7 @@ export async function sendVerificationEmail(
           <h2>Verify Your Email Address</h2>
           <p>Thank you for signing up for Vaultr! To complete your registration and secure your account, please verify your email address.</p>
           
-          <a href="${verificationLink}" class="button">Verify Email Address</a>
+          <a href="${verificationLink}" class="button" style="color: #ffffff !important;">Verify Email Address</a>
           
           <p>Or copy and paste this link into your browser:</p>
           <p style="word-break: break-all; color: #0070f3;">${verificationLink}</p>
@@ -246,7 +246,7 @@ export async function sendPasswordResetEmail(
           <h2>Reset Your Password</h2>
           <p>We received a request to reset your password. Click the link below to create a new password.</p>
           
-          <a href="${resetLink}" class="button">Reset Password</a>
+          <a href="${resetLink}" class="button" style="color: #ffffff !important;">Reset Password</a>
           
           <p>Or copy and paste this link into your browser:</p>
           <p style="word-break: break-all; color: #0070f3;">${resetLink}</p>

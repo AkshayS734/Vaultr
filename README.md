@@ -43,10 +43,14 @@ Tip: Breach checks are off by default. To enable optional breach checks via the 
 
 ## Environment Variables
 - Required
-	- `DATABASE_URL`: PostgreSQL connection string
-	- `JWT_SECRET`: Secret for signing auth tokens
+	- `DATABASE_URL`: PostgreSQL connection string with optional pooling params
+		- **For production:** Add connection pooling: `?connection_limit=10&pool_timeout=20`
+		- Example: `postgresql://user:pass@host/db?connection_limit=10&pool_timeout=20&sslmode=require`
+		- Recommendation: Set `connection_limit = (database_max_connections / number_of_app_instances)`
+	- `JWT_SECRET`: Secret for signing auth tokens (minimum 32 bytes, auto-validated)
+		- Generate with: `openssl rand -base64 32`
 - Optional
-	- `REDIS_URL`: Enables Redis-backed caching/session flows
+	- `REDIS_URL`: Enables Redis-backed caching/rate-limiting (with automatic in-memory fallback if Redis down)
 	- `NEXT_PUBLIC_BASE_URL`: Used for absolute links in emails
 	- `BREACH_UPSTREAM_URL`: Server-side URL for the breach-proxy upstream (e.g., `https://api.pwnedpasswords.com/range`). The internal route `/api/breach` forwards only a 5-hex-character SHA-1 prefix to this upstream and returns raw text response. If unset, breach checks are disabled and the app fails open.
 	- `NEXT_PUBLIC_BREACH_ENDPOINT`: Not used directly by the client (all lookups must go through `/api/breach`). Exposed only for documentation/testing; do not call third-party services from the browser.

@@ -153,26 +153,25 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className="min-h-screen bg-[#2b2d42]">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
-      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
+      <nav className="border-b border-border bg-card/50 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
               <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Back
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Logout
           </button>
@@ -180,130 +179,196 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit API Key" : title}
-          </h1>
-          {!isEditing && (
-            <div className="space-x-2">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="rounded-md border border-[rgba(141,153,174,0.3)] px-3 py-1 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
-              >
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                className="rounded-md border border-[rgba(220,53,69,0.3)] px-3 py-1 text-sm font-medium text-[rgba(220,53,69,0.8)] transition-all duration-200 hover:bg-[rgba(220,53,69,0.1)] hover:text-[#dc3545] focus:outline-none focus:ring-2 focus:ring-[rgba(220,53,69,0.4)]"
-              >
-                Delete
-              </button>
-            </div>
-          )}
+      <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+          <p className="text-muted-foreground">{serviceName || "API Key"}</p>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/85">Title</label>
-            <input
-              type="text"
-              required
-              disabled={!isEditing}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            />
-          </div>
+        {!isEditing ? (
+          // Display Mode
+          <>
+            {/* API Key Details Card */}
+            <div className="bg-card border border-border rounded-xl p-6 mb-6">
+              {/* Edit Button */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-foreground">API Key Details</h2>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit
+                </button>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Service Name</label>
-            <input
-              type="text"
-              required
-              disabled={!isEditing}
-              value={serviceName}
-              onChange={(e) => setServiceName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            />
-          </div>
+              {/* Details Grid */}
+              <div className="space-y-4">
+                {/* Service Name */}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Service</p>
+                  <p className="text-foreground font-medium">{serviceName}</p>
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">API Key</label>
-            <div className="flex">
-              <input
-                type={isEditing ? "text" : "password"}
-                required
-                disabled={!isEditing}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-              />
-              {!isEditing && (
+                {/* API Key */}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">API Key</p>
+                  <div className="flex items-center gap-3">
+                    <code className="font-mono text-foreground">{"•".repeat(32)}</code>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(apiKey)}
+                      className="text-muted-foreground hover:text-foreground transition-colors p-2"
+                      title="Copy API key"
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Environment */}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Environment</p>
+                  <p className="text-foreground font-medium capitalize">{environment}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {notes && (
+              <div className="mb-6 bg-card border border-border rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+                <p className="text-muted-foreground text-sm whitespace-pre-wrap">{notes}</p>
+              </div>
+            )}
+
+          {/* Danger Zone */}
+            <div className="bg-card rounded-lg shadow-lg border border-destructive/30">
+              <div className="border-b border-destructive/20 p-4">
+                <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Delete this API key</p>
+                    <p className="text-sm text-muted-foreground">This action cannot be undone</p>
+                  </div>
+                  <button
+                    onClick={handleDelete}
+                    className="rounded-md bg-destructive/20 border border-destructive/40 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors"
+                  >
+                    <svg className="mr-2 inline h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          // Edit Mode
+          <>
+            <form onSubmit={handleSave} className="space-y-6">
+              {/* API Key Details Card */}
+              <div className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">API Key Details</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Service Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={serviceName}
+                      onChange={(e) => setServiceName(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">API Key</label>
+                    <input
+                      type="text"
+                      required
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Environment</label>
+                    <select
+                      value={environment}
+                      onChange={(e) => setEnvironment(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="production">Production</option>
+                      <option value="staging">Staging</option>
+                      <option value="development">Development</option>
+                      <option value="testing">Testing</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Card */}
+              <div className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  placeholder="Add any additional notes about this API key..."
+                />
+              </div>
+
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => navigator.clipboard.writeText(apiKey)}
-                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
+                  onClick={() => setIsEditing(false)}
+                  className="px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-muted transition-colors"
                 >
-                  Copy
+                  Cancel
                 </button>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/85">Environment</label>
-            <select
-              disabled={!isEditing}
-              value={environment}
-              onChange={(e) => setEnvironment(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            >
-              <option value="production">Production</option>
-              <option value="staging">Staging</option>
-              <option value="development">Development</option>
-              <option value="testing">Testing</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/85">Notes</label>
-            <textarea
-              disabled={!isEditing}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            />
-          </div>
-
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          {isEditing && (
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          )}
-
-          {!isEditing && (
-            <></>
-          )}
-        </form>
-      </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

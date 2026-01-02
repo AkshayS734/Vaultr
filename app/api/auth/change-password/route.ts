@@ -7,6 +7,7 @@ import { checkPasswordReuse, storePasswordInHistory } from '@/app/lib/password-r
 import { checkPasswordStrength } from '@/app/lib/password-strength'
 import { z } from 'zod'
 import { getClientIp } from '@/app/lib/utils'
+import { validateCsrf } from '@/app/lib/csrf'
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
@@ -15,6 +16,9 @@ const changePasswordSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
+
     // Verify authentication and email verification
     const auth = await requireAuth(req, true)
     if (!auth.success) {
@@ -125,7 +129,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(responseData)
   } catch (err) {
-    console.error('Password change error:', err)
+    console.error('[ERR_PASSWORD_CHANGE]', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'An error occurred. Please try again.' },
       { status: 500 }

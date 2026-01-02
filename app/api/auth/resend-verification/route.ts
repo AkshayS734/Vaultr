@@ -104,7 +104,7 @@ export async function POST(req: Request) {
         resend: 'true',
       })
     } else {
-      console.error('Failed to send verification email to', user.email)
+      console.error('[ERR_EMAIL_SEND]')
     }
 
     return NextResponse.json(
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       { status: 200 }
     )
   } catch (err) {
-    console.error('Resend verification error:', err)
+    console.error('[ERR_RESEND_VERIFICATION]', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'Failed to resend verification email. Please try again.' },
       { status: 500 }

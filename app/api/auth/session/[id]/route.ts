@@ -2,9 +2,14 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import cookie from 'cookie'
 import { logAuditEvent } from '../../../../lib/audit'
+import { requireAuth } from '@/app/lib/auth-utils'
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Verify user is authenticated
+    const auth = await requireAuth(req, false)
+    if (!auth.success) return auth.response
+
     const { id } = await params
     const cookieHeader = req.headers.get('cookie') || ''
     const cookies = cookie.parse(cookieHeader || '')
@@ -27,8 +32,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     // If deleting current session, clear cookies
     if (id === sessionId) {
-      const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
-      const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0 })
+      const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 0 })
+      const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 0 })
       const response = NextResponse.json({ ok: true }, { status: 200 })
       response.headers.append('Set-Cookie', clearRefresh)
       response.headers.append('Set-Cookie', clearSession)
@@ -37,7 +42,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ ok: true }, { status: 200 })
   } catch (err) {
-    console.error('session delete error', err)
+    console.error('[ERR_SESSION_DELETE]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

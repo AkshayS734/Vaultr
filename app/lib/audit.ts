@@ -1,6 +1,7 @@
 import { prisma } from './prisma'
 import { truncate } from './utils'
 import { AuditEvent, Prisma } from '@prisma/client'
+import crypto from 'crypto'
 
 export type AuditEventType = AuditEvent
 
@@ -15,8 +16,36 @@ export interface AuditLogMeta {
 }
 
 /**
- * Log an audit event
+ * Item 4.7: Generate HMAC-SHA256 signature for audit log immutability
+ * Signature is computed over: eventType + userId + meta + createdAt
+ * Uses JWT_SECRET as the HMAC key (must be >= 32 bytes)
+ */
+function generateAuditSignature(
+  eventType: string,
+  userId: string | null,
+  meta: Prisma.JsonObject | undefined,
+  createdAt: Date
+): string {
+  const secret = process.env.JWT_SECRET || ''
+  if (!secret || secret.length < 32) {
+    console.warn('[AUDIT_SECURITY] JWT_SECRET too weak for audit signatures')
+    return ''
+  }
+
+  const payload = JSON.stringify({
+    eventType,
+    userId,
+    meta,
+    createdAt: createdAt.toISOString(),
+  })
+
+  return crypto.createHmac('sha256', secret).update(payload).digest('hex')
+}
+
+/**
+ * Log an audit event with immutability signature
  * Non-blocking - errors are logged but don't affect operation
+ * Item 4.7: Includes HMAC signature to detect tampering
  */
 export async function logAuditEvent(
   eventType: AuditEventType,
@@ -35,12 +64,17 @@ export async function logAuditEvent(
           ...(ip ? { ip } : {}),
         } as Prisma.JsonObject
       })()
+
+      // Item 4.7: Generate signature before storing
+      const createdAt = new Date()
+      const signature = generateAuditSignature(eventType, userId, safeMeta, createdAt)
     
     await prisma.auditLog.create({
       data: {
         userId,
         eventType,
-          meta: safeMeta,
+        meta: safeMeta,
+        signature, // Store signature with audit log
       },
     })
   } catch (error) {
@@ -87,4 +121,43 @@ export async function getRecentLoginFailures(email: string, minutes: number = 30
     console.error('Failed to fetch login failures:', error)
     return []
   }
+}
+/**
+ * Item 4.7: Verify audit log integrity using stored signature
+ * Detects if an audit entry has been tampered with
+ * @returns true if signature is valid (not tampered), false if tampered or signature missing
+ */
+export function verifyAuditLogSignature(
+  auditLog: {
+    id: string
+    eventType: AuditEvent
+    userId: string | null
+    meta: Prisma.JsonObject | null
+    createdAt: Date
+    signature: string | null
+  }
+): boolean {
+  // If no signature stored, can't verify (warn)
+  if (!auditLog.signature) {
+    console.warn('[AUDIT_SECURITY] No signature on audit log', auditLog.id)
+    return false
+  }
+
+  const expectedSignature = generateAuditSignature(
+    auditLog.eventType,
+    auditLog.userId,
+    auditLog.meta ?? undefined,
+    auditLog.createdAt
+  )
+
+  const matches = crypto.timingSafeEqual(
+    Buffer.from(auditLog.signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex')
+  )
+
+  if (!matches) {
+    console.warn('[AUDIT_SECURITY] Audit log signature mismatch (tampering detected)', auditLog.id)
+  }
+
+  return matches
 }
