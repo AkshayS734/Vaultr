@@ -1,177 +1,386 @@
+'use client';
+
 import Link from 'next/link';
+import { Lock, Shield, Key, Zap, Code, ArrowRight, Check, Cloud, FileText, Lightbulb} from 'lucide-react';
+import { Card, CardContent } from '@/components/vaultr-ui/card';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#2b2d42] text-white">
-      {/* Header */}
-      <header className="px-6 lg:px-12 h-20 flex items-center border-b border-white/10">
-        <Link href="/" className="flex items-center">
-          <span className="text-2xl font-bold tracking-tight text-white">
-            Vaultr
-          </span>
-        </Link>
-        <nav className="ml-auto flex gap-6 items-center">
-          <Link 
-            href="/login" 
-            className="text-sm font-medium text-white/85 transition-opacity hover:opacity-80"
-          >
-            Login
-          </Link>
-          <Link 
-            href="/signup" 
-            className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-          >
-            Sign Up
-          </Link>
-        </nav>
-      </header>
-
-      {/* Hero Section - Full Viewport */}
-      <main className="flex-1">
-        <section className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-6">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="space-y-6">
-              <h1 
-                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight text-white"
-              >
-                Security-First Password Management
-              </h1>
-              <p 
-                className="text-lg md:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed text-white/75"
-              >
-                Enterprise-grade encryption meets intuitive design. Protect what matters with Vaultr.
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link 
-                href="/signup" 
-                className="px-8 py-4 rounded-lg text-base font-semibold transition-all hover:shadow-xl hover:opacity-90 w-full sm:w-auto bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Get Started Free
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <Lock className="h-6 w-6 text-primary" />
+              <span className="text-xl font-semibold">Vaultr</span>
+            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                Log In
               </Link>
-              <Link 
-                href="/login" 
-                className="text-base font-medium transition-opacity hover:opacity-80 w-full sm:w-auto py-4 text-[#8d99ae]"
-              >
-                View Demo →
+              <Link href="/signup" className="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2">
+                Get Started
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
-        </section>
+        </div>
+      </nav>
 
-        {/* Features Section */}
-        <section className="py-24 px-6 border-t border-white/10">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center space-y-4 mb-20">
-              <div 
-                className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-2 bg-[#8d99ae] text-[#2b2d42] opacity-90"
-              >
-                Features
-              </div>
-              <h2 
-                className="text-4xl md:text-5xl font-bold tracking-tight text-white"
-              >
-                Built for Modern Security
-              </h2>
-              <p 
-                className="text-lg max-w-2xl mx-auto text-white/70"
-              >
-                Everything you need to manage passwords, API keys, and sensitive data securely.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              <div className="space-y-4 p-8 rounded-xl transition-all bg-white/[0.02] hover:bg-white/5">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8d99ae]">
-                  <svg className="w-6 h-6 text-[#2b2d42]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h3 
-                  className="text-xl font-bold text-white"
-                >
-                  Zero-Knowledge Encryption
-                </h3>
-                <p 
-                  className="leading-relaxed text-white/70"
-                >
-                  AES-256 encryption with client-side hashing. Your master password never leaves your device.
-                </p>
-              </div>
-
-              <div className="space-y-4 p-8 rounded-xl transition-all bg-white/[0.02] hover:bg-white/5">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8d99ae]">
-                  <svg className="w-6 h-6 text-[#2b2d42]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </div>
-                <h3 
-                  className="text-xl font-bold text-white"
-                >
-                  Seamless Sync
-                </h3>
-                <p 
-                  className="leading-relaxed text-white/70"
-                >
-                  Access your vault from anywhere. Real-time synchronization across all your devices.
-                </p>
-              </div>
-
-              <div className="space-y-4 p-8 rounded-xl transition-all bg-white/[0.02] hover:bg-white/5">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8d99ae]">
-                  <svg className="w-6 h-6 text-[#2b2d42]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <h3 
-                  className="text-xl font-bold text-white"
-                >
-                  Advanced Security
-                </h3>
-                <p 
-                  className="leading-relaxed text-white/70"
-                >
-                  Multi-factor authentication, session management, and comprehensive audit logs.
-                </p>
-              </div>
-            </div>
+      {/* Hero Section */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
+            <Shield className="h-10 w-10 text-primary" />
           </div>
-        </section>
+          <h1 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-bold">
+            Your Secrets,
+            <br />
+            <span className="text-primary">Truly Secure</span>
+          </h1>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+            Vaultr is a zero-knowledge password manager that puts you in complete
+            control. Store passwords, API keys, and environment variables with
+            client-side encryption.
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <Link href="/signup" className="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-primary text-primary-foreground hover:bg-primary/90 h-10 rounded-md px-6 text-base">
+              Get Started Free
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-10 rounded-md px-6 text-base">
+              Sign In
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            No credit card required • Open source • Self-hostable
+          </p>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section className="py-24 px-6 border-t border-white/10">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 
-              className="text-4xl md:text-5xl font-bold tracking-tight text-white"
-            >
-              Ready to secure your digital life?
-            </h2>
-            <p 
-              className="text-lg md:text-xl text-white/75"
-            >
-              Join thousands who trust Vaultr to protect their most sensitive information.
+      {/* Two Password System */}
+      <section className="border-t border-border bg-card/30 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl sm:text-4xl font-bold">The Two-Password System</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Vaultr uses two separate passwords for maximum security and flexibility
             </p>
-            <div className="pt-4">
-              <Link 
-                href="/signup" 
-                className="inline-block px-10 py-4 rounded-lg text-base font-semibold transition-all hover:shadow-xl hover:opacity-90 bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Start Free Trial
-              </Link>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Login Password */}
+            <Card className="border-2">
+              <CardContent className="p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                  <Lock className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="mb-3 text-xl font-semibold">Login Password</h3>
+                <p className="mb-6 text-muted-foreground">
+                  Used to sign in to your Vaultr account. This password can be reset
+                  via email if forgotten.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-green-600 mt-0.5" />
+                    <span className="text-sm">Account authentication</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-green-600 mt-0.5" />
+                    <span className="text-sm">Resettable via email</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-green-600 mt-0.5" />
+                    <span className="text-sm">Standard security requirements</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Master Password */}
+            <Card className="border-2 border-amber-200/30 bg-amber-50/5">
+              <CardContent className="p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-amber-100/20">
+                  <Key className="h-7 w-7 text-amber-600" />
+                </div>
+                <h3 className="mb-3 text-xl font-semibold">Master Password</h3>
+                <p className="mb-6 text-muted-foreground">
+                  Encrypts and decrypts your vault. Never stored or transmitted.
+                  Cannot be recovered if lost.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-amber-600 mt-0.5" />
+                    <span className="text-sm">Client-side encryption key</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-amber-600 mt-0.5" />
+                    <span className="text-sm">Never leaves your device</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 flex-shrink-0 text-amber-600 mt-0.5" />
+                    <span className="text-sm">Cannot be reset or recovered</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-8 rounded-xl bg-primary/5 border border-primary/20 p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              <Lightbulb className="inline-block mr-1 h-5 w-5 text-yellow-500" />
+              <strong>Why two passwords?</strong> This separation ensures that
+              even if someone gains access to your account, they cannot decrypt your
+              vault without your Master Password—which we never see.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl sm:text-4xl font-bold">Built for Security-Conscious Users</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Everything you need to manage your digital security
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {/* Feature 1 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">Zero-Knowledge Encryption</h3>
+                <p className="text-sm text-muted-foreground">
+                  All data is encrypted on your device before it reaches our
+                  servers. We can&apos;t see your passwords—ever.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 2 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Key className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">Password Management</h3>
+                <p className="text-sm text-muted-foreground">
+                  Store unlimited passwords with auto-fill support, secure
+                  sharing, and breach monitoring.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 3 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">Password Generator</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create strong, unique passwords with customizable length and
+                  character requirements.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 4 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Code className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">API Key Storage</h3>
+                <p className="text-sm text-muted-foreground">
+                  Securely store API keys, tokens, and other developer
+                  credentials with one-click copying.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 5 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">Environment Variables</h3>
+                <p className="text-sm text-muted-foreground">
+                  Securely store and manage environment variables and secrets with client-side encryption.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 6 */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Cloud className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">Self-Hostable</h3>
+                <p className="text-sm text-muted-foreground">
+                  Run Vaultr on your own infrastructure for full control over your data and security.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Indicators */}
+      <section className="border-t border-border bg-card/30 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl sm:text-4xl font-bold">Security You Can Trust</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Built with industry-standard security practices
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-card p-6 text-center">
+              <p className="mb-2 text-2xl font-bold text-primary">AES-256</p>
+              <p className="text-sm text-muted-foreground">Encryption Standard</p>
+            </div>
+            <div className="rounded-lg bg-card p-6 text-center">
+              <p className="mb-2 text-2xl font-bold text-primary">100%</p>
+              <p className="text-sm text-muted-foreground">Open Source</p>
+            </div>
+            <div className="rounded-lg bg-card p-6 text-center">
+              <p className="mb-2 text-2xl font-bold text-primary">Zero</p>
+              <p className="text-sm text-muted-foreground">Knowledge Architecture</p>
+            </div>
+            <div className="rounded-lg bg-card p-6 text-center">
+              <p className="mb-2 text-2xl font-bold text-primary">Auditable</p>
+              <p className="text-sm text-muted-foreground">Security-first architecture</p>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <Card className="border-2 border-primary/20 bg-primary/5">
+            <CardContent className="p-12 text-center">
+              <h2 className="mb-4 text-3xl sm:text-4xl font-bold">Ready to Secure Your Digital Life?</h2>
+              <p className="mb-8 text-lg text-muted-foreground">
+                Built for developers and security-conscious users who want full control.
+              </p>
+              <Link href="/signup" className="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-primary text-primary-foreground hover:bg-primary/90 h-10 rounded-md px-6 text-base">
+                Create Your Free Account
+                <ArrowRight className=" h-5 w-5" />
+              </Link>
+              <p className="mt-4 text-sm text-muted-foreground">
+                No credit card required • Free to use • Open source
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-white/10">
-        <div className="max-w-6xl mx-auto text-center">
-          <p 
-            className="text-sm text-white/50"
-          >
-            © 2025 Vaultr. All rights reserved.
-          </p>
+      <footer className="border-t border-border bg-card/50 py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <Lock className="h-5 w-5 text-primary" />
+                <span className="font-semibold">Vaultr</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Zero-knowledge password manager for security-conscious users.
+              </p>
+            </div>
+            <div>
+              <h4 className="mb-4 font-semibold">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#features" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Security
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Roadmap
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 font-semibold">Company</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 font-semibold">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Security Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    GDPR
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div> */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>© 2025 Akshay Shukla. All rights reserved.</p>
+            <p className="mt-2">
+              Built with zero-knowledge encryption. Your data is yours alone.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

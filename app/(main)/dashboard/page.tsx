@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Key, FileText, Code, Plus, Clock, RefreshCw } from "lucide-react";
+import { Key, FileText, Code, Plus, Clock, RefreshCw, Lock } from "lucide-react";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { decryptItem } from "@/app/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/app/lib/secret-utils";
@@ -137,8 +137,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b bg-card/60 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-          <Link href="/dashboard" className="text-lg font-semibold tracking-tight whitespace-nowrap">
-            Vaultr
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Lock className="h-6 w-6 text-primary" />
+            <span className="text-xl font-semibold">Vaultr</span>
           </Link>
           <div className="flex-1 max-w-3xl">
             <Input
