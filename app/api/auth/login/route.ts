@@ -190,9 +190,6 @@ export async function POST(req: Request) {
     return response
   } catch (err) {
     console.error('[ERR_LOGIN]', err instanceof Error ? err.message : String(err))
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : String(err) }, 
-      { status: 500 } // Return 500 so you know it crashed
-    )
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' } })
   }
 }
