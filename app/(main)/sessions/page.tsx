@@ -70,7 +70,7 @@ type SessionItem = (typeof sessions)[number]
           document.querySelectorAll('.revoke-session').forEach(btn => {
             btn.addEventListener('click', async (e) => {
               const id = btn.getAttribute('data-session-id')
-              const res = await fetch('/api/auth/session/' + id, { method: 'DELETE' })
+              const res = await fetch('/api/auth/session/' + id, { method: 'DELETE', credentials: 'include'})
               if (res.ok) {
                 location.reload()
               } else {

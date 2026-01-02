@@ -1,3 +1,5 @@
+"use client";
+
 import { VaultProvider } from "@/app/components/providers/VaultProvider";
 import { RouteGuard } from "@/app/components/providers/RouteGuard";
 
