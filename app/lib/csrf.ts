@@ -12,7 +12,7 @@ export function serializeCsrfCookie(token: string) {
   return cookie.serialize(CSRF_COOKIE, token, {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     maxAge: isClearing ? 0 : 30 * 24 * 60 * 60,
   })

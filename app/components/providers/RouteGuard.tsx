@@ -21,15 +21,19 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" || input instanceof URL ? new URL(input, window.location.origin) : new URL((input as Request).url);
       const method = (init?.method || (input as Request)?.method || "GET").toUpperCase();
-      const isSameOrigin = url.origin === window.location.origin;
+      if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+        const headers = new Headers(
+          init?.headers || (input instanceof Request ? input.headers : undefined)
+        );
 
-      if (isSameOrigin && method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
-        const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
         if (!headers.has("x-csrf-token")) {
-          const match = document.cookie.split('; ').find((c) => c.startsWith('csrfToken='));
+          const match = document.cookie
+            .split("; ")
+            .find((c) => c.startsWith("csrfToken="));
+
           if (match) {
-            const token = match.split('=')[1];
-            if (token) headers.set('x-csrf-token', decodeURIComponent(token));
+            const token = match.split("=")[1];
+            if (token) headers.set("x-csrf-token", decodeURIComponent(token));
           }
         }
         return originalFetch(input, { ...init, headers });

@@ -32,8 +32,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     // If deleting current session, clear cookies
     if (id === sessionId) {
-      const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, path: '/', maxAge: 0 })
-      const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, path: '/', maxAge: 0 })
+      const clearRefresh = cookie.serialize('refreshToken', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 0 })
+      const clearSession = cookie.serialize('sessionId', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 0 })
       const response = NextResponse.json({ ok: true }, { status: 200 })
       response.headers.append('Set-Cookie', clearRefresh)
       response.headers.append('Set-Cookie', clearSession)

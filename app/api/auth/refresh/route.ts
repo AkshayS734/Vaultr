@@ -157,7 +157,7 @@ export async function POST(req: Request) {
     const refreshCookie = cookie.serialize('refreshToken', newRefresh, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
@@ -165,7 +165,7 @@ export async function POST(req: Request) {
     const sessionCookie = cookie.serialize('sessionId', newSessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
