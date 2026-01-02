@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { encryptItem, decryptItem } from "@/app/lib/crypto";
+import { generatePassword } from "@/app/lib/password-generator";
 import { 
   SecretType, 
   buildEncryptedPayload, 
@@ -233,27 +234,202 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
+  // Display Mode JSX
+  if (!isEditing) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Top Navigation Bar */}
+        <nav className="border-b border-border bg-card/50 backdrop-blur">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+            {/* Back Button */}
+            <button
+              onClick={() => router.back()}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+              </svg>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <div className="mx-auto max-w-4xl px-6 py-12">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+            <p className="text-muted-foreground">{username || website || "Password"}</p>
+          </div>
+
+          {/* Password Details Card */}
+          <div className="bg-card border border-border rounded-xl p-6 mb-6">
+            {/* Edit Button */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-foreground">Password Details</h2>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm font-medium"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+              </button>
+            </div>
+
+            {/* Details Grid */}
+            <div className="space-y-4">
+              {/* Website */}
+              {website && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Website</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-foreground font-medium truncate">{website}</p>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(website)}
+                      className="text-muted-foreground hover:text-foreground transition-colors p-2 flex-shrink-0"
+                      title="Copy website"
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            {/* Username */}
+            {username && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Username</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-foreground font-medium">{username}</p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(username)}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-2 flex-shrink-0"
+                    title="Copy username"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Password */}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Password</p>
+              <div className="flex items-center gap-3">
+                <p className={`text-foreground font-mono ${showPassword ? "" : "text-muted-foreground"}`}>
+                  {showPassword ? password : "●".repeat(Math.min(password.length, 32))}
+                </p>
+                <button
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-2 flex-shrink-0"
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+                <button
+                  onClick={() => navigator.clipboard.writeText(password)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-2 flex-shrink-0"
+                  title="Copy password"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          {notes && (
+            <div className="bg-card border border-border rounded-xl p-6 mb-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">{notes}</p>
+            </div>
+          )}
+
+          {/* Metadata */}
+          {lastChangedAt && (
+            <div className="mb-6 bg-card rounded-lg shadow-lg border border-border p-4">
+              <div className="flex items-center gap-3 text-sm">
+                <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span className="text-muted-foreground">
+                  Last modified: {new Date(lastChangedAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Danger Zone */}
+          <div className="bg-card border border-destructive/30 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-destructive mb-4">Danger Zone</h2>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-foreground mb-1">Delete this password</p>
+                <p className="text-sm text-muted-foreground">This action cannot be undone</p>
+              </div>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Edit Mode JSX
   return (
-    <div className="min-h-screen bg-[#2b2d42]">
+    <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
-      <nav className="border-b border-[rgba(141,153,174,0.1)] bg-[rgba(0,0,0,0.2)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-6">
-          {/* Back Button */}
+      <nav className="border-b border-border bg-card/50 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#8d99ae] hover:text-white transition-colors"
+            onClick={() => setIsEditing(false)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="19" y1="12" x2="5" y2="12"/>
               <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Back
           </button>
-
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-md border border-[rgba(141,153,174,0.3)] px-4 py-2 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Logout
           </button>
@@ -261,129 +437,116 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="bg-black/20 rounded-lg shadow-lg p-6 border border-[#8d99ae]/20">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit Password" : title}
-          </h1>
-          {!isEditing && (
-            <div className="space-x-2">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="rounded-md border border-[rgba(141,153,174,0.3)] px-3 py-1 text-sm font-medium text-[rgba(141,153,174,0.8)] transition-all duration-200 hover:bg-[rgba(141,153,174,0.1)] hover:text-[#8d99ae] focus:outline-none focus:ring-2 focus:ring-[rgba(141,153,174,0.4)]"
-              >
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                className="rounded-md border border-[rgba(220,53,69,0.3)] px-3 py-1 text-sm font-medium text-[rgba(220,53,69,0.8)] transition-all duration-200 hover:bg-[rgba(220,53,69,0.1)] hover:text-[#dc3545] focus:outline-none focus:ring-2 focus:ring-[rgba(220,53,69,0.4)]"
-              >
-                Delete
-              </button>
-            </div>
-          )}
+      <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Edit Password</h1>
+          <p className="text-muted-foreground">Update your stored credential</p>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/85">Title</label>
-            <input
-              type="text"
-              required
-              disabled={!isEditing}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-            />
-          </div>
+        {/* Form */}
+        <form onSubmit={handleSave} className="space-y-6">
+          {/* Credential Details */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Credential Details</h2>
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">Name *</label>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="e.g., GitHub, Gmail, Work Email"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Username</label>
-            <div className="flex">
-              <input
-                type="text"
-                disabled={!isEditing}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-              />
-              {!isEditing && username && (
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(username)}
-                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
-                >
-                  Copy
-                </button>
-              )}
-            </div>
-          </div>
+              {/* Website */}
+              <div>
+                <label htmlFor="website" className="block text-sm font-medium text-foreground mb-1">Website</label>
+                <input
+                  id="website"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
 
-          <div>
-            {!isEditing ? (
-              <>
-                <label className="block text-sm font-medium text-white/85">Password</label>
-                <div className="flex">
+              {/* Username */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">Username / Email *</label>
+                <input
+                  id="username"
+                  type="text"
+                  placeholder="username or email@example.com"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">Password *</label>
+                <div className="relative">
                   <input
-                    type="password"
-                    required
-                    disabled={true}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter or generate a password"
                     value={password}
-                    className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pr-20 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   <button
                     type="button"
-                    onClick={() => navigator.clipboard.writeText(password)}
-                    className="ml-2 px-3 py-2 text-sm text-[#8d99ae]/70 hover:text-[#8d99ae]"
+                    onClick={() => {
+                      const newPassword = generatePassword({ length: 16 })
+                      setPassword(newPassword)
+                      setShowPassword(true)
+                    }}
+                    className="absolute right-11 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                    title="Generate password"
                   >
-                    Copy
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22l-.394-1.433a2.25 2.25 0 00-1.423-1.423L13.25 19l1.433-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.433a2.25 2.25 0 001.423 1.423L19.75 19l-1.433.394a2.25 2.25 0 00-1.423 1.423z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    )}
                   </button>
                 </div>
-              </>
-            ) : (
-              <>
-                {/* Password Input Field (Edit Mode) */}
-                <div>
-                  <label className="block text-sm font-medium text-white/85 mb-2">Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2.5 pr-10 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 text-white text-base"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d99ae]/70 hover:text-[#8d99ae] transition-colors"
-                      title={showPassword ? "Hide password" : "Show password"}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                          <line x1="1" y1="1" x2="23" y2="23" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                {/* Password Health Display Card (Edit Mode) */}
 
                 {/* Password Health Display Card (Edit Mode) */}
                 {password && health && (
-                <div className="bg-[#1f2233]/50 rounded-lg border border-[#8d99ae]/20 p-5 space-y-4">
-                  <div className="space-y-3">
+                  <div className="bg-muted/30 rounded-lg border border-border p-5 space-y-4 mt-3">
+                    <div className="space-y-3">
                       {/* Strength Meter Section */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-white/70 uppercase tracking-wide">Strength</span>
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
                           <span className={`text-sm font-semibold ${
                             health.score >= 90 ? 'text-green-400' :
                             health.score >= 70 ? 'text-green-400' :
@@ -396,7 +559,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-[#2b2d42] rounded-full overflow-hidden border border-[#8d99ae]/10">
+                          <div className="flex-1 h-2 bg-background rounded-full overflow-hidden border border-border">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
                                 health.score >= 90 ? 'bg-green-500/90' :
@@ -440,126 +603,121 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
 
                       {/* Warnings List - If any */}
                       {health.warnings.length > 0 && (
-                        <div className="pt-1 space-y-1 text-xs text-[#ffd6a0]">
+                        <div className="pt-1 space-y-1 text-xs text-warning">
                           {health.warnings.map((w, i) => (
                             <div key={i} className="flex gap-2">
-                              <span className="text-[#8d99ae] flex-shrink-0">•</span>
+                              <span className="text-muted-foreground flex-shrink-0">•</span>
                               <span>{w}</span>
                             </div>
                           ))}
                         </div>
                       )}
-                  </div>
-
-                  {/* Optional Breach Detection Section */}
-                  <div className="pt-2 border-t border-[#8d99ae]/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <label htmlFor="breach-check" className="block text-xs font-medium text-white/70 uppercase tracking-wide cursor-pointer">
-                          Breach Detection <span className="text-[#8d99ae]/60">(optional)</span>
-                        </label>
-                        <p className="text-xs text-white/50">Check if this password appeared in known data breaches</p>
-                      </div>
-                      <input
-                        id="breach-check"
-                        type="checkbox"
-                        className="h-5 w-5 rounded border-[#8d99ae]/30 bg-[#2b2d42] accent-[#8d99ae] cursor-pointer"
-                        checked={breachCheckEnabled}
-                        onChange={(e) => setBreachCheckEnabled(e.target.checked)}
-                      />
                     </div>
 
-                    {/* Breach Status Message - Only shown when breach check enabled */}
-                    {breachCheckEnabled && health && password && (
-                      <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
-                        health.flags.breached
-                          ? 'bg-red-500/10 border border-red-600/40 text-red-300'
-                          : 'bg-green-500/10 border border-green-600/40 text-green-300'
-                      }`}>
-                        <span className="text-lg mt-0.5 flex-shrink-0">
-                          {health.flags.breached ? '⚠️' : '✅'}
-                        </span>
-                        <span className="flex-1">
-                          {health.flags.breached 
-                            ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
-                            : 'No known breaches found. This password has not appeared in known data breach databases.'}
-                        </span>
+                    {/* Optional Breach Detection Section */}
+                    <div className="pt-2 border-t border-border space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <label htmlFor="breach-check" className="block text-xs font-medium text-muted-foreground uppercase tracking-wide cursor-pointer">
+                            Breach Detection <span className="text-muted-foreground/60">(optional)</span>
+                          </label>
+                          <p className="text-xs text-muted-foreground/70">Check if this password appeared in known data breaches</p>
+                        </div>
+                        <input
+                          id="breach-check"
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-border bg-background accent-primary cursor-pointer"
+                          checked={breachCheckEnabled}
+                          onChange={(e) => setBreachCheckEnabled(e.target.checked)}
+                        />
                       </div>
-                    )}
 
-                    {/* Breach Disabled Hint - When toggle is OFF */}
-                    {!breachCheckEnabled && health && password && (
-                      <div className="text-xs text-white/40 italic">
-                        Enable above to check if this password has appeared in known data breaches.
-                      </div>
-                    )}
+                      {/* Breach Status Message - Only shown when breach check enabled */}
+                      {breachCheckEnabled && health && password && (
+                        <div className={`flex items-start gap-2 p-3 rounded-md text-xs ${
+                          health.flags.breached
+                            ? 'bg-red-500/10 border border-red-600/40 text-red-300'
+                            : 'bg-green-500/10 border border-green-600/40 text-green-300'
+                        }`}>
+                          <span className="text-lg mt-0.5 flex-shrink-0">
+                            {health.flags.breached ? '⚠️' : '✅'}
+                          </span>
+                          <span className="flex-1">
+                            {health.flags.breached 
+                              ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
+                              : 'No known breaches found. This password has not appeared in known data breach databases.'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Breach Disabled Hint - When toggle is OFF */}
+                      {!breachCheckEnabled && health && password && (
+                        <div className="text-xs text-muted-foreground/50 italic">
+                          Enable above to check if this password has appeared in known data breaches.
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                 )}
-              </>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/85">Website</label>
-            <div className="flex">
-              <input
-                type="url"
-                disabled={!isEditing}
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
-              />
-              {!isEditing && website && (
-                <a
-                  href={website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 px-3 py-2 text-sm text-[#8d99ae] hover:underline flex items-center"
-                >
-                  Open
-                </a>
-              )}
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/85">Notes</label>
+          {/* Notes */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Notes (Optional)</h2>
             <textarea
-              disabled={!isEditing}
+              id="notes"
+              placeholder="Add any additional notes about this credential..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border border-[#8d99ae]/30 bg-[#2b2d42]/50 px-3 py-2 shadow-sm focus:border-[#8d99ae]/60 focus:ring-[#8d99ae]/20 disabled:bg-[#2b2d42]/30 disabled:cursor-not-allowed text-white"
+              rows={4}
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             />
           </div>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          {isEditing && (
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] border border-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-[#2b2d42] bg-[#8d99ae] rounded-md hover:bg-[#8d99ae]/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </button>
+          {/* Security Warning */}
+          {password && password.length < 12 && (
+            <div className="flex items-start gap-3 rounded-lg bg-warning/10 border border-warning/20 p-4">
+              <svg className="h-5 w-5 flex-shrink-0 text-warning mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <p className="font-medium text-warning">Weak Password Detected</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Consider using a longer password (12+ characters) with a mix of
+                  letters, numbers, and symbols.
+                </p>
+              </div>
             </div>
           )}
 
-          {!isEditing && (
-            <></>
+          {error && (
+            <div className="flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+              <p className="text-sm text-red-300">{error}</p>
+            </div>
           )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? "Updating..." : "Update Password"}
+            </button>
+          </div>
         </form>
-      </div>
       </div>
     </div>
   );

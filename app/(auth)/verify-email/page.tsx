@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent } from "@/components/vaultr-ui/card";
+import { CheckCircle, XCircle, Clock, AlertCircle, Loader2 } from "lucide-react";
 
 type VerificationStatus = 
   | "loading" 
@@ -81,278 +83,151 @@ function VerifyEmailContent() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-[#2b2d42] text-white">
-      {/* Back to home link */}
-      <Link 
-        href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/60 transition-opacity hover:opacity-80"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to home
-      </Link>
-      
-      <div 
-        className="w-full max-w-[440px] rounded-xl p-8 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-      >
-        {status === "loading" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="animate-spin rounded-full h-12 w-12 border-[3px] border-[#8d99ae]/20 border-t-[#8d99ae]"
-              ></div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Verifying Email
-            </h1>
-            <p className="text-sm text-white/70">
-              Please wait while we verify your email address...
-            </p>
-          </div>
-        )}
-
-        {status === "success" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardContent className="pt-6">
+            {status === "loading" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Verifying Email</h1>
+                <p className="text-sm text-muted-foreground">
+                  Please wait while we verify your email address...
+                </p>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Email Verified!
-            </h1>
-            <p className="text-sm mb-6 text-white/70">
-              {message}
-            </p>
-            <Link
-              href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-            >
-              Go to Sign In
-            </Link>
-          </div>
-        )}
+            )}
 
-        {status === "already-verified" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/20"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {status === "success" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                  <CheckCircle className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Email Verified!</h1>
+                <p className="mb-6 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                  Go to Sign In
+                </Link>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Already Verified
-            </h1>
-            <p className="text-sm mb-6 text-white/70">
-              {message}
-            </p>
-            <Link
-              href="/login"
-              className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-            >
-              Go to Sign In
-            </Link>
-          </div>
-        )}
+            )}
 
-        {status === "expired-token" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae] opacity-80"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {status === "already-verified" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                  <CheckCircle className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Already Verified</h1>
+                <p className="mb-6 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                  Go to Sign In
+                </Link>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Link Expired
-            </h1>
-            <p className="text-sm mb-6 text-white/70">
-              {message}
-            </p>
-            <div className="space-y-3">
-              <Link
-                href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Go to Sign In
-              </Link>
-              <p className="text-xs text-white/50">
-                You can request a new verification email on the login page.
-              </p>
-            </div>
-          </div>
-        )}
+            )}
 
-        {status === "invalid-token" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae] opacity-80"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {status === "expired-token" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                  <Clock className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Link Expired</h1>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <p className="mb-6 text-xs text-muted-foreground">
+                  You can request a new verification email on the login page.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                  Go to Sign In
+                </Link>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Invalid Link
-            </h1>
-            <p className="text-sm mb-4 text-white/70">
-              {message}
-            </p>
-            <div className="space-y-3">
-              <p className="text-xs mb-4 text-white/50">
-                Make sure you clicked the correct link from your email.
-              </p>
-              <Link
-                href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Go to Sign In
-              </Link>
-            </div>
-          </div>
-        )}
+            )}
 
-        {status === "server-error" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae] opacity-80"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {status === "invalid-token" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                  <XCircle className="h-8 w-8 text-destructive" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Invalid Link</h1>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <p className="mb-6 text-xs text-muted-foreground">
+                  Make sure you clicked the correct link from your email.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                  Go to Sign In
+                </Link>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Verification Failed
-            </h1>
-            <p className="text-sm mb-4 text-white/70">
-              {message}
-            </p>
-            <div className="space-y-3">
-              <p className="text-xs mb-4 text-white/50">
-                Please try again or contact support if the problem persists.
-              </p>
-              <Link
-                href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Go to Sign In
-              </Link>
-            </div>
-          </div>
-        )}
+            )}
 
-        {status === "no-token" && (
-          <div className="text-center">
-            <div className="inline-block mb-4">
-              <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-[#8d99ae]/15"
-              >
-                <svg
-                  className="w-8 h-8 text-[#8d99ae] opacity-80"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {status === "server-error" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                  <AlertCircle className="h-8 w-8 text-destructive" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Verification Failed</h1>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <p className="mb-6 text-xs text-muted-foreground">
+                  Please try again or contact support if the problem persists.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                  Go to Sign In
+                </Link>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2 text-white">
-              Invalid Request
-            </h1>
-            <p className="text-sm mb-4 text-white/70">
-              {message}
-            </p>
-            <div className="space-y-3">
-              <p className="text-xs mb-4 text-white/50">
-                Please click the verification link from your email or sign up again.
-              </p>
-              <Link
-                href="/signup"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg bg-[#8d99ae] text-[#2b2d42]"
-              >
-                Sign Up
-              </Link>
-              <Link
-                href="/login"
-                className="inline-block w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:opacity-90 bg-[#8d99ae]/20 border border-[#8d99ae]/30 text-[#8d99ae]"
-              >
-                Go to Sign In
-              </Link>
-            </div>
-          </div>
-        )}
+            )}
+
+            {status === "no-token" && (
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                  <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold">Invalid Request</h1>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {message}
+                </p>
+                <p className="mb-6 text-xs text-muted-foreground">
+                  Please click the verification link from your email or sign up again.
+                </p>
+                <div className="space-y-3">
+                  <Link
+                    href="/signup"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+                  >
+                    Create Account
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground w-full"
+                  >
+                    Go to Sign In
+                  </Link>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -360,7 +235,11 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">Loading...</div>}>
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
       <VerifyEmailContent />
     </Suspense>
   );

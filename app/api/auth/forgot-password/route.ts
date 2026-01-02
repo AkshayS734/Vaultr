@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
     // Send email (don't block)
     sendPasswordResetEmail(user.email, resetToken).catch((err) => {
-      console.error('Failed to send password reset email:', err)
+      console.error('[ERR_RESET_EMAIL]', err instanceof Error ? err.message : String(err))
     })
 
     await logAuditEvent('PASSWORD_RESET_REQUESTED', user.id, {
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
       { status: 200 }
     )
   } catch (err) {
-    console.error('Forgot password error:', err)
+    console.error('[ERR_FORGOT]', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'An error occurred. Please try again.' },
       { status: 500 }

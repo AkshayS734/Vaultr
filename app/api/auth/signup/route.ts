@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
+import { serializeCsrfCookie, generateCsrfToken } from '@/app/lib/csrf'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../../../lib/prisma'
 import { rateLimit } from '../../../lib/redis'
@@ -17,6 +18,15 @@ import { checkPasswordStrength } from '../../../lib/password-strength'
 const SIGNUP_MAX = 50
 const SIGNUP_WINDOW_MS = 60 * 60 * 1000
 
+// Argon2 configuration: OWASP 2023 recommendations for password hashing
+// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+const ARGON2_CONFIG = {
+  type: argon2.argon2id, // Argon2id: balanced against side-channel + GPU attacks
+  memoryCost: 48 * 1024, // 48 MiB (OWASP minimum)
+  timeCost: 3, // 3 iterations (memory-hard approach preferred)
+  parallelism: 1, // 1 thread (conservative, optimized for memory)
+  hashLength: 32, // 32 bytes output
+}
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req)
@@ -74,12 +84,17 @@ export async function POST(req: Request) {
     const normalized = String(email).trim().toLowerCase()
     const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })
     if (existing) {
+      // Enumeration hardening: perform expensive hash to equalize timing with successful signup
+      await argon2.hash(password, ARGON2_CONFIG)
       await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Signup: Account exists' })
-      return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'Unable to process signup request' },
+        { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' } }
+      )
     }
 
-    // Hash password with argon2
-    const hash = await argon2.hash(password)
+    // Hash password with argon2 (OWASP-compliant parameters)
+    const hash = await argon2.hash(password, ARGON2_CONFIG)
 
     const user = await prisma.user.create({
       data: {
@@ -99,7 +114,7 @@ export async function POST(req: Request) {
 
     // Create refresh token + session
     const refreshToken = crypto.randomBytes(48).toString('hex')
-    const refreshTokenHash = await argon2.hash(refreshToken)
+    const refreshTokenHash = await argon2.hash(refreshToken, ARGON2_CONFIG)
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
     const userAgent = truncate(req.headers.get('user-agent'), 256)
@@ -119,7 +134,7 @@ export async function POST(req: Request) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
-      console.error('JWT_SECRET not configured')
+      console.error('[ERR_JWT_CONFIG]')
       return NextResponse.json({ error: 'Server not configured' }, { status: 500 })
     }
 
@@ -128,7 +143,7 @@ export async function POST(req: Request) {
     const refreshCookie = cookie.serialize('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
@@ -136,10 +151,13 @@ export async function POST(req: Request) {
     const sessionCookie = cookie.serialize('sessionId', createdSession.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60,
     })
+
+    const csrfToken = generateCsrfToken()
+    const csrfCookie = serializeCsrfCookie(csrfToken)
 
     // Log successful signup
     await logAuditEvent('SIGNUP_SUCCESS', user.id, { email: normalized, ip, sessionId: createdSession.id })
@@ -170,23 +188,25 @@ export async function POST(req: Request) {
           if (sent) {
             logAuditEvent('EMAIL_VERIFICATION_SENT', user.id, { email: normalized })
           } else {
-            console.error('Failed to send verification email to', user.email)
+            console.error('[ERR_EMAIL] Failed to send verification email')
           }
         })
         .catch((err) => {
-          console.error('Error sending verification email:', err)
+          console.error('[ERR_EMAIL]', err instanceof Error ? err.message : String(err))
         })
     } catch (emailError) {
       // Don't fail signup if email fails
-      console.error('Email verification setup failed:', emailError)
+      console.error('[ERR_EMAIL_SETUP]', emailError instanceof Error ? emailError.message : String(emailError))
     }
 
     const response = NextResponse.json({ accessToken }, { status: 201 })
     response.headers.append('Set-Cookie', refreshCookie)
     response.headers.append('Set-Cookie', sessionCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
+    response.headers.set('X-CSRF-Token', csrfToken)
     return response
   } catch (err) {
-    console.error('signup error', err)
+    console.error('[ERR_SIGNUP]', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }

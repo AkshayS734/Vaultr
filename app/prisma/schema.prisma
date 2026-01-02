@@ -127,15 +127,17 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@index([refreshTokenHash])
+  @@index([expiresAt, userId]) // Item 4.8: Compound index for session cleanup queries
 }
 
 model AuditLog {
-  id        String     @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String?
-  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventType AuditEvent
   meta      Json?
-  createdAt DateTime   @default(now())
+  signature String?  // Item 4.7: HMAC-SHA256 signature for immutability verification
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([eventType])

@@ -49,10 +49,36 @@ export function getTokenFromRequest(req: Request): JWTPayload | null {
 }
 
 /**
- * Get session from cookie and verify it's valid
- * Returns userId if valid, null otherwise
+ * Get client IP from request headers
+ * Supports X-Forwarded-For (proxies), X-Real-IP, and direct connection
  */
-export async function getSessionFromCookie(req: Request): Promise<string | null> {
+function getClientIp(req: Request): string | null {
+  const xForwardedFor = req.headers.get('x-forwarded-for')
+  if (xForwardedFor) {
+    return xForwardedFor.split(',')[0].trim()
+  }
+  const xRealIp = req.headers.get('x-real-ip')
+  if (xRealIp) {
+    return xRealIp
+  }
+  // Note: req.socket.remoteAddress not available in Next.js Request API
+  // For now, we rely on proxy headers
+  return null
+}
+
+/**
+ * Get user agent from request headers
+ */
+function getUserAgent(req: Request): string | null {
+  return req.headers.get('user-agent')
+}
+
+/**
+ * Get session from cookie and verify it's valid
+ * Returns { userId, sessionId } if valid, null otherwise
+ * Validates IP and User-Agent binding for session hijacking prevention
+ */
+export async function getSessionFromCookie(req: Request): Promise<{ userId: string; sessionId: string } | null> {
   try {
     const cookieHeader = req.headers.get('cookie') || ''
     const cookies = cookie.parse(cookieHeader)
@@ -64,14 +90,34 @@ export async function getSessionFromCookie(req: Request): Promise<string | null>
 
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
-      select: { userId: true, expiresAt: true },
+      select: { userId: true, expiresAt: true, ip: true, userAgent: true },
     })
 
     if (!session || session.expiresAt < new Date()) {
       return null
     }
 
-    return session.userId
+    // Session binding validation: verify IP and User-Agent match
+    const currentIp = getClientIp(req)
+    const currentUserAgent = getUserAgent(req)
+
+    // IP binding check: if session has a bound IP, current IP must match
+    if (session.ip && currentIp && session.ip !== currentIp) {
+      // IP mismatch: possible session hijacking attempt
+      // Delete the session to prevent further use
+      await prisma.session.delete({ where: { id: sessionId } }).catch(() => {})
+      return null
+    }
+
+    // User-Agent binding check: if session has a bound UA, current UA must match
+    if (session.userAgent && currentUserAgent && session.userAgent !== currentUserAgent) {
+      // User-Agent mismatch: possible session hijacking attempt
+      // Delete the session to prevent further use
+      await prisma.session.delete({ where: { id: sessionId } }).catch(() => {})
+      return null
+    }
+
+    return { userId: session.userId, sessionId }
   } catch (err) {
     console.error('Session verification failed:', err)
     return null
@@ -117,6 +163,7 @@ export async function checkEmailVerification(userId: string): Promise<{
  * Middleware-like utility to verify authentication and email verification
  * Use this at the start of protected API routes
  * Supports both JWT (Bearer token) and cookie-based sessions
+ * Validates session IP and User-Agent binding on every request (prevents hijacking)
  * 
  * @param req - Request object
  * @param requireVerification - Whether to require email verification (default: true)
@@ -136,8 +183,11 @@ export async function requireAuth(
   if (tokenPayload) {
     userId = tokenPayload.sub
   } else {
-    // Fall back to session cookie
-    userId = await getSessionFromCookie(req)
+    // Fall back to session cookie (now includes IP/UA binding validation)
+    const sessionResult = await getSessionFromCookie(req)
+    if (sessionResult) {
+      userId = sessionResult.userId
+    }
   }
 
   if (!userId) {

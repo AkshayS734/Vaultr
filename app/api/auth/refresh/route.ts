@@ -4,6 +4,7 @@ import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../../lib/prisma'
+import { serializeCsrfCookie, generateCsrfToken, validateCsrf } from '@/app/lib/csrf'
 import { rateLimit } from '../../../lib/redis'
 import { truncate, getClientIp } from '@/app/lib/utils'
 
@@ -27,6 +28,9 @@ export async function POST(req: Request) {
     const refresh = cookies.refreshToken
     const ip = getClientIp(req)
     const userAgent = truncate(req.headers.get('user-agent'), 256)
+
+    const csrfCheck = validateCsrf(req)
+    if (!csrfCheck.ok) return csrfCheck.response!
 
     if (!sessionId || !refresh) {
       return NextResponse.json({ error: 'Missing session or refresh token' }, { status: 401 })
@@ -108,14 +112,30 @@ export async function POST(req: Request) {
     if (!jwtSecret) return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
 
     // Rotate refresh token and session ID (single use, prevents fixation)
+    // Strategy: Delete old session FIRST within transaction, then create new one
+    // This ensures no window where both tokens are valid
     const newRefresh = crypto.randomBytes(48).toString('hex')
     const newHash = await argon2.hash(newRefresh)
 
     const relativeExpiry = new Date(Date.now() + DEFAULT_REFRESH_DAYS * 24 * 60 * 60 * 1000)
     const newExpires = new Date(Math.min(relativeExpiry.getTime(), absoluteExpiry.getTime()))
 
-    // Atomic rotation: create new session then delete old one
-    await prisma.$transaction(async (tx) => {
+    // Atomic rotation: delete old session THEN create new one (prevents reuse window)
+    const newSessionId = await prisma.$transaction(async (tx) => {
+      // Delete old session first to invalidate any intercepted token
+      const deleted = await tx.session.deleteMany({
+        where: { 
+          id: sessionId,
+          userId: session.userId // extra safety: ensure we only delete own session
+        },
+      })
+      
+      // Verify deletion occurred (prevents use-after-free bugs)
+      if (deleted.count === 0) {
+        throw new Error('Session already invalidated - possible concurrent refresh or token theft')
+      }
+      
+      // Now create new session (old token completely invalid by this point)
       const created = await tx.session.create({
         data: {
           userId: session.userId,
@@ -128,9 +148,8 @@ export async function POST(req: Request) {
         },
         select: { id: true },
       })
-
-      await tx.session.delete({ where: { id: sessionId } })
-      return created
+      
+      return created.id
     })
 
     const accessToken = jwt.sign({ sub: session.userId }, jwtSecret as string, { expiresIn: '15m' })
@@ -138,25 +157,34 @@ export async function POST(req: Request) {
     const refreshCookie = cookie.serialize('refreshToken', newRefresh, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
 
-    const sessionCookie = cookie.serialize('sessionId', sessionId, {
+    const sessionCookie = cookie.serialize('sessionId', newSessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: Math.floor((newExpires.getTime() - Date.now()) / 1000),
     })
+
+    const csrfToken = generateCsrfToken()
+    const csrfCookie = serializeCsrfCookie(csrfToken)
 
     const response = NextResponse.json({ accessToken }, { status: 200 })
     response.headers.append('Set-Cookie', refreshCookie)
     response.headers.append('Set-Cookie', sessionCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
+    response.headers.set('X-CSRF-Token', csrfToken)
+    
     return response
   } catch (err) {
-    console.error('refresh error', err)
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+      console.error('[ERR_REFRESH]', err instanceof Error ? err.message : err)
+      return NextResponse.json(
+        { error: 'Token refresh failed. Please log in again.' },
+        { status: 500 }
+      )
   }
 }

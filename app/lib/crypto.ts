@@ -60,6 +60,9 @@
   const wasmTextEncoder = new TextEncoder();
   const wasmTextDecoder = new TextDecoder();
 
+  // Integrity hash for scrypt WASM (SHA-384). Update if the WASM artifact changes.
+  const SCRYPT_WASM_SHA384 = "a2fcbd81a92c922c7093a25e91119b3843819d0215e98a8c5db79286dd9d8f96ba594fa5eab3c1c735ed05e70390ce24";
+
   let cacheUint8: Uint8Array | null = null;
   let cacheUint32: Uint32Array | null = null;
   let cachedGlobalArgumentPtr: number | null = null;
@@ -78,12 +81,25 @@
     return result;
   }
 
+  async function verifyWasmIntegrity(buffer: ArrayBuffer): Promise<void> {
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) {
+      throw new Error('WebCrypto subtle API unavailable for WASM integrity verification');
+    }
+    const digest = await subtle.digest('SHA-384', buffer);
+    const hex = toHex(new Uint8Array(digest));
+    if (hex !== SCRYPT_WASM_SHA384) {
+      throw new Error('WASM integrity check failed');
+    }
+  }
+
   async function initScryptWasm(): Promise<void> {
     if (scryptWasmExports) return;
     if (!scryptWasmInitPromise) {
       scryptWasmInitPromise = (async () => {
         const response = await fetch("/scrypt_wasm_bg.wasm");
         const buffer = await response.arrayBuffer();
+        await verifyWasmIntegrity(buffer);
         
         // Provide required imports for WASM module
         const imports = {

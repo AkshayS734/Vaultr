@@ -37,6 +37,7 @@ export const PasswordEncryptedPayloadSchema = z.object({
  * Only non-reversible derived information (length, counts, flags)
  */
 export const PasswordMetadataSchema = z.object({
+  metadataVersion: z.number().int().min(1).default(1),
   type: z.literal('PASSWORD'),
   title: z.string().min(1),
   username: z.string().optional().default(''),
@@ -67,6 +68,7 @@ export const ApiKeyEncryptedPayloadSchema = z.object({
  * Only non-reversible derived information (length, counts, flags)
  */
 export const ApiKeyMetadataSchema = z.object({
+  metadataVersion: z.number().int().min(1).default(1),
   type: z.literal('API_KEY'),
   title: z.string().min(1),
   serviceName: z.string().min(1),
@@ -113,6 +115,7 @@ export const EnvVarsEncryptedPayloadSchema = z.object({
  * SECURITY: No variable values allowed, only keys
  */
 export const EnvVarsMetadataSchema = z.object({
+  metadataVersion: z.number().int().min(1).default(1),
   type: z.literal('ENV_VARS'),
   title: z.string().min(1),
   description: z.string().optional().default(''),

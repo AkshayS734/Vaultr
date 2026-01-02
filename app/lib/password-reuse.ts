@@ -143,7 +143,7 @@ export async function storePasswordInHistory(
     // Clean up old entries to maintain limit
     await cleanupPasswordHistory(userId)
   } catch (error) {
-    console.error('Failed to store password in history:', error)
+    console.error('[ERR_PASSWORD_HISTORY]', error instanceof Error ? error.message : String(error))
     // Don't fail the password change if history storage fails
   }
 }
