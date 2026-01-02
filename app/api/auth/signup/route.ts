@@ -22,8 +22,8 @@ const SIGNUP_WINDOW_MS = 60 * 60 * 1000
 // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 const ARGON2_CONFIG = {
   type: argon2.argon2id, // Argon2id: balanced against side-channel + GPU attacks
-  memoryCost: 47 * 1024, // 47 MiB (OWASP minimum)
-  timeCost: 1, // 1 iteration (memory-hard approach preferred)
+  memoryCost: 48 * 1024, // 48 MiB (OWASP minimum)
+  timeCost: 3, // 3 iterations (memory-hard approach preferred)
   parallelism: 1, // 1 thread (conservative, optimized for memory)
   hashLength: 32, // 32 bytes output
 }
@@ -84,8 +84,13 @@ export async function POST(req: Request) {
     const normalized = String(email).trim().toLowerCase()
     const existing = await prisma.user.findUnique({ where: { emailNormalized: normalized }, select: { id: true } })
     if (existing) {
+      // Enumeration hardening: perform expensive hash to equalize timing with successful signup
+      await argon2.hash(password, ARGON2_CONFIG)
       await logAuditEvent('LOGIN_FAILED', null, { email: normalized, ip, userAgent: truncate(req.headers.get('user-agent'), 256), reason: 'Signup: Account exists' })
-      return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'Unable to process signup request' },
+        { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' } }
+      )
     }
 
     // Hash password with argon2 (OWASP-compliant parameters)

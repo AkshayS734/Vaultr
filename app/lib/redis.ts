@@ -194,3 +194,25 @@
       return { allowed: entry.count <= limit, remaining, resetAt: entry.expiresAt }
     }
 
+    /**
+    * Health check helper: returns 'ok' if Redis is configured and reachable, otherwise 'degraded' or 'not_configured'
+    */
+    export async function checkRedisHealth(): Promise<'ok' | 'degraded' | 'not_configured'> {
+      const redisUrl = process.env.REDIS_URL
+      if (!redisUrl) return 'not_configured'
+      const redis = getRedisClient()
+      if (!redis) return 'degraded'
+      if (redis.status !== 'ready') return 'degraded'
+      try {
+        const pong = await redis.ping()
+        return pong ? 'ok' : 'degraded'
+      } catch (err) {
+        const now = Date.now()
+        if (now - lastOutageLogAt > OUTAGE_LOG_INTERVAL_MS) {
+          console.warn('[redis] ping failed:', err instanceof Error ? err.message : String(err))
+          lastOutageLogAt = now
+        }
+        return 'degraded'
+      }
+    }
+

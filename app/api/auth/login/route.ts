@@ -18,8 +18,8 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000
 // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 const ARGON2_CONFIG = {
   type: argon2.argon2id, // Argon2id: balanced against side-channel + GPU attacks
-  memoryCost: 47 * 1024, // 47 MiB (OWASP minimum)
-  timeCost: 1, // 1 iteration (memory-hard approach preferred)
+  memoryCost: 48 * 1024, // 48 MiB (OWASP minimum)
+  timeCost: 3, // 3 iterations (memory-hard approach preferred)
   parallelism: 1, // 1 thread (conservative, optimized for memory)
   hashLength: 32, // 32 bytes output
 }

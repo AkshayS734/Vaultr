@@ -21,7 +21,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -58,11 +57,7 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  // Load remembered email once on mount (from localStorage is OK for non-sensitive UI hint)
-  useEffect(() => {
-    // Don't load from localStorage - it's a security risk
-    // Let users type their email each time
-  }, []);
+
 
   // Load rate limiting data for the current email from cookies
   useEffect(() => {
@@ -212,13 +207,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Handle remember me - removed for security
-      // Email "remember me" creates metadata leakage risk
-      // Users should enter their email each time for zero-knowledge security
-
-
-      // Success — redirect to dashboard
-      router.replace('/dashboard');
+      // Success — redirect to unlock page
+      router.replace('/unlock');
     } catch {
       setGeneralError('Unable to sign in. Please try again.');
     } finally {
@@ -321,17 +311,8 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <label className="inline-flex items-center text-sm cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="mr-2 rounded accent-primary"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  /> 
-                  Remember email
-                </label>
+              {/* Forgot Password */}
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => router.push('/forgot-password')}

@@ -62,6 +62,9 @@ export enum SecretType {
   ENV_VARS = 'ENV_VARS',
 }
 
+// Metadata schema version for forward/backward compatibility
+export const METADATA_VERSION = 1;
+
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -126,6 +129,7 @@ export type EncryptedPayload = PasswordEncryptedPayload | ApiKeyEncryptedPayload
 // Metadata types
 // SECURITY: Metadata must contain ONLY non-sensitive information
 export interface PasswordMetadata {
+  metadataVersion: number;
   type: SecretType.PASSWORD;
   title: string;
   username: string;
@@ -135,6 +139,7 @@ export interface PasswordMetadata {
 }
 
 export interface ApiKeyMetadata {
+  metadataVersion: number;
   type: SecretType.API_KEY;
   title: string;
   serviceName: string;
@@ -144,6 +149,7 @@ export interface ApiKeyMetadata {
 }
 
 export interface EnvVarsMetadata {
+  metadataVersion: number;
   type: SecretType.ENV_VARS;
   title: string;
   description: string;
@@ -311,6 +317,7 @@ export function getSecretLength(value: string): number {
  */
 export function buildPasswordMetadata(input: PasswordInput): PasswordMetadata {
   return {
+    metadataVersion: METADATA_VERSION,
     type: SecretType.PASSWORD,
     title: input.title,
     username: input.username || '',
@@ -327,6 +334,7 @@ export function buildPasswordMetadata(input: PasswordInput): PasswordMetadata {
  */
 export function buildApiKeyMetadata(input: ApiKeyInput): ApiKeyMetadata {
   return {
+    metadataVersion: METADATA_VERSION,
     type: SecretType.API_KEY,
     title: input.title,
     serviceName: input.serviceName,
@@ -343,6 +351,7 @@ export function buildApiKeyMetadata(input: ApiKeyInput): ApiKeyMetadata {
  */
 export function buildEnvVarsMetadata(input: EnvVarsInput): EnvVarsMetadata {
   return {
+    metadataVersion: METADATA_VERSION,
     type: SecretType.ENV_VARS,
     title: input.title,
     description: input.description || '',
@@ -404,6 +413,7 @@ export function validateMetadataSafety(metadata: Record<string, unknown>): void 
   
   // ALLOWED: Safe fields that are explicitly permitted
   const allowedKeys = new Set([
+    'metadataVersion',
     'type',
     'title',
     'username',
@@ -581,6 +591,7 @@ export function buildMetadataFromDecrypted(
   switch (type) {
     case SecretType.PASSWORD:
       return {
+        metadataVersion: METADATA_VERSION,
         type: SecretType.PASSWORD,
         title: String(decryptedData.title || ''),
         username: String(decryptedData.username || ''),
@@ -591,6 +602,7 @@ export function buildMetadataFromDecrypted(
       
     case SecretType.API_KEY:
       return {
+        metadataVersion: METADATA_VERSION,
         type: SecretType.API_KEY,
         title: String(decryptedData.title || ''),
         serviceName: String(decryptedData.serviceName || ''),
@@ -602,6 +614,7 @@ export function buildMetadataFromDecrypted(
     case SecretType.ENV_VARS: {
       const variables = Array.isArray(decryptedData.variables) ? decryptedData.variables : [];
       return {
+        metadataVersion: METADATA_VERSION,
         type: SecretType.ENV_VARS,
         title: String(decryptedData.title || ''),
         description: String(decryptedData.description || ''),

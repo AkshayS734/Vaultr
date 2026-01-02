@@ -182,5 +182,9 @@ export async function POST(req: Request) {
     return response
   } catch (err) {
       console.error('[ERR_REFRESH]', err instanceof Error ? err.message : err)
+      return NextResponse.json(
+        { error: 'Token refresh failed. Please log in again.' },
+        { status: 500 }
+      )
   }
 }
