@@ -22,7 +22,13 @@ export async function POST(req: Request) {
     let email: string
 
     try {
-      const raw = await readLimitedJson(req, 64 * 1024)
+      const contentLength = req.headers.get('content-length')
+
+      if (contentLength && Number(contentLength) > 64 * 1024) {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+      }
+      
+      const raw = await req.json()
       const parsed = resendSchema.safeParse(raw)
       if (!parsed.success) {
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
