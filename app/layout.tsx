@@ -4,7 +4,9 @@ import "./globals.css";
 import { validateEnvironment } from "./lib/env";
 
 // Validate environment at startup
-validateEnvironment()
+if (typeof window === 'undefined') {
+  validateEnvironment()
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
