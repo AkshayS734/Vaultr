@@ -339,7 +339,7 @@ If migrating from Figma-generated `components/ui`:
    import { Button } from '@/app/components/ui';
    
    // After
-   import { Button } from '@app/components/ui';
+   import { Button } from '@/app/components/ui';
    ```
 
 2. **API is compatible** - Most props work the same way
