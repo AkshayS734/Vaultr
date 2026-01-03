@@ -119,4 +119,4 @@ to users of the service, as required by the AGPL.
 
 ## Disclaimer
 - Educational and experimental; no external security audit completed
-- Do not store real secrets in development or before an audit and hardening pass`
+- Do not store real secrets in development or before an audit and hardening pass
