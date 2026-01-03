@@ -235,14 +235,14 @@ The following actions would **violate zero-knowledge** and must **NEVER** be imp
 ## 📊 Code Metrics
 
 **Files Audited:**
- ✅ [app/api/passwords/route.ts](../../app/api/passwords/route.ts) (108 lines)
- ✅ [app/api/passwords/[id]/route.ts](../../app/api/passwords/[id]/route.ts) (181 lines)
- ✅ [app/lib/crypto.ts](../../app/lib/crypto.ts) (619 lines)
- ✅ [app/lib/password-reuse.ts](../../app/lib/password-reuse.ts) (166 lines)
- ✅ [app/lib/secret-utils.ts](../../app/lib/secret-utils.ts) (623 lines)
- ✅ [app/components/providers/VaultProvider.tsx](../../app/components/providers/VaultProvider.tsx) (68 lines)
- ✅ [app/api/auth/change-password/route.ts](../../app/api/auth/change-password/route.ts) (141 lines)
- ✅ [app/api/auth/reset-password/route.ts](../../app/api/auth/reset-password/route.ts) (170 lines)
+- ✅ [app/api/passwords/route.ts](../../app/api/passwords/route.ts) (108 lines)
+- ✅ [app/api/passwords/[id]/route.ts](../../app/api/passwords/[id]/route.ts) (181 lines)
+- ✅ [app/lib/crypto.ts](../../app/lib/crypto.ts) (619 lines)
+- ✅ [app/lib/password-reuse.ts](../../app/lib/password-reuse.ts) (166 lines)
+- ✅ [app/lib/secret-utils.ts](../../app/lib/secret-utils.ts) (623 lines)
+- ✅ [app/components/providers/VaultProvider.tsx](../../app/components/providers/VaultProvider.tsx) (68 lines)
+- ✅ [app/api/auth/change-password/route.ts](../../app/api/auth/change-password/route.ts) (141 lines)
+- ✅ [app/api/auth/reset-password/route.ts](../../app/api/auth/reset-password/route.ts) (170 lines)
 
 **Total Lines Reviewed:** ~2,000+ lines of security-critical code
 
