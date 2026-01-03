@@ -1,4 +1,4 @@
-`# Vaultr™
+# Vaultr
 
 Security-first password and secrets manager built on Next.js. Vaultr keeps encryption on the client and stores only encrypted blobs and hashed tokens server-side.
 
