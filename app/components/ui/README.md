@@ -233,7 +233,7 @@ Subcomponents: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `Car
 
 ### Toast
 ```tsx
-import { ToastProvider, useToast } from '@app/components/ui';
+import { ToastProvider, useToast } from '@/app/components/ui';
 
 function App() {
   return (
