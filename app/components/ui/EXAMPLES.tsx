@@ -28,7 +28,7 @@ import {
   RadioGroup,
   Radio,
   Switch,
-} from '@/components/vaultr-ui';
+} from '@/app/components/ui';
 
 export function FormExample() {
   const [formData, setFormData] = useState({
@@ -185,7 +185,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/vaultr-ui';
+} from '@/app/components/ui';
 
 export function DialogExample() {
   const [isOpen, setIsOpen] = useState(false);
@@ -219,7 +219,7 @@ export function DialogExample() {
 // TABS EXAMPLE
 // ============================================================================
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/vaultr-ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/app/components/ui';
 
 export function TabsExample() {
   const [activeTab, setActiveTab] = useState('account');
@@ -280,7 +280,7 @@ import {
   DropdownContent,
   DropdownItem,
   DropdownSeparator,
-} from '@/components/vaultr-ui';
+} from '@/app/components/ui';
 
 export function DropdownExample() {
   return (
@@ -301,7 +301,7 @@ export function DropdownExample() {
 // TOAST NOTIFICATIONS EXAMPLE
 // ============================================================================
 
-import { ToastProvider, useToast } from '@/components/vaultr-ui';
+import { ToastProvider, useToast } from '@/app/components/ui';
 
 export function ToastExample() {
   return (
@@ -363,7 +363,7 @@ import {
   VStack,
   Separator,
   Badge,
-} from '@/components/vaultr-ui';
+} from '@/app/components/ui';
 
 export function LayoutExample() {
   return (
@@ -413,7 +413,7 @@ export function LayoutExample() {
 // ALERT & PROGRESS EXAMPLE
 // ============================================================================
 
-import { Alert, AlertTitle, AlertDescription, Progress } from '@/components/vaultr-ui';
+import { Alert, AlertTitle, AlertDescription, Progress } from '@/app/components/ui';
 
 export function AlertProgressExample() {
   const [progress] = useState(33);
@@ -447,7 +447,7 @@ export function AlertProgressExample() {
 // POPOVER EXAMPLE
 // ============================================================================
 
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/vaultr-ui';
+import { Popover, PopoverTrigger, PopoverContent } from '@/app/components/ui';
 
 export function PopoverExample() {
   return (

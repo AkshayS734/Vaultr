@@ -176,7 +176,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
@@ -187,7 +187,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             Logout
           </button>
@@ -195,9 +195,9 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-4xl px-6 py-12">
+      <div className="mx-auto max-w-4xl px-6 py-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
           <p className="text-muted-foreground">{description || "Environment Variables"}</p>
         </div>
@@ -242,7 +242,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   type="button"
                   onClick={addVariable}
-                  className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="12" y1="5" x2="12" y2="19"/>
@@ -277,7 +277,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                       <button
                         type="button"
                         onClick={() => removeVariable(index)}
-                        className="h-[42px] px-3 rounded-lg border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
+                        className="h-[42px] px-3 rounded-lg border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="18" y1="6" x2="6" y2="18"/>
@@ -313,14 +313,14 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-muted transition-colors"
+                className="px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-muted transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
@@ -335,7 +335,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
                 <h2 className="text-lg font-semibold text-foreground">Environment Details</h2>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors cursor-pointer"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -409,7 +409,7 @@ export default function EnvVarsDetailPage({ params }: { params: Promise<{ id: st
               </p>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 transition-colors"
+                className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 transition-colors cursor-pointer"
               >
                 Delete Environment Variables
               </button>

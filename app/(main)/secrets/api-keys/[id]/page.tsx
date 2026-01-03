@@ -160,7 +160,7 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
@@ -171,7 +171,7 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             Logout
           </button>
@@ -179,9 +179,9 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-4xl px-6 py-12">
+      <div className="mx-auto max-w-4xl px-6 py-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
           <p className="text-muted-foreground">{serviceName || "API Key"}</p>
         </div>
@@ -261,7 +261,7 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
                   </div>
                   <button
                     onClick={handleDelete}
-                    className="rounded-md bg-destructive/20 border border-destructive/40 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors"
+                    className="rounded-md bg-destructive/20 border border-destructive/40 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors cursor-pointer"
                   >
                     <svg className="mr-2 inline h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="3 6 5 6 21 6"/>
@@ -354,14 +354,14 @@ export default function ApiKeyDetailPage({ params }: { params: Promise<{ id: str
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-muted transition-colors"
+                  className="px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-muted transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>

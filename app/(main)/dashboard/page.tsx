@@ -7,7 +7,6 @@ import { Key, FileText, Code, Plus, Clock, RefreshCw, Lock } from "lucide-react"
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { decryptItem } from "@/app/lib/crypto";
 import { buildMetadataFromDecrypted } from "@/app/lib/secret-utils";
-import { AddItemOverlay } from "@/app/components/ui/AddItemOverlay";
 import {
   Button,
   Card,
@@ -16,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
-} from "../../../components/vaultr-ui";
+} from "../../components/ui";
 
 import type { Metadata } from "@/app/lib/secret-utils";
 
@@ -34,8 +33,6 @@ export default function DashboardPage() {
   const [items, setItems] = useState<PasswordItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddMenu, setShowAddMenu] = useState(false);
-  const addMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'ALL' | 'PASSWORD' | 'API_KEY' | 'ENV_VARS'>('ALL');
   const fetchInProgressRef = useRef(false);
@@ -112,13 +109,6 @@ export default function DashboardPage() {
     fetchItems();
   }, [isUnlocked, vaultKey]);
 
-  // Retain focus on trigger when closing overlay
-  useEffect(() => {
-    if (!showAddMenu) {
-      addMenuTriggerRef.current?.focus();
-    }
-  }, [showAddMenu]);
-
   // Filter items based on search query
   const filteredItems = items.filter(item => {
     const query = searchQuery.toLowerCase();
@@ -157,27 +147,20 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 cursor-pointer"
               onClick={() => router.push('/generator')}
             >
               <RefreshCw className="h-4 w-4" />
               Generate password
             </Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleLogout}>
+            <Button variant="outline" size="sm" className="gap-2 cursor-pointer" onClick={handleLogout}>
               Logout
             </Button>
           </div>
         </div>
       </header>
 
-      <AddItemOverlay
-        open={showAddMenu}
-        onClose={() => setShowAddMenu(false)}
-        onNavigate={() => setShowAddMenu(false)}
-        anchorRef={addMenuTriggerRef}
-      />
-
-      <main className="mx-auto max-w-6xl px-6 py-10 space-y-8">
+      <main className="mx-auto max-w-6xl px-6 py-6 space-y-8">
         <section className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
           <p className="text-sm text-muted-foreground">
@@ -202,7 +185,7 @@ export default function DashboardPage() {
             </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Passwords</CardTitle>
-              <Key className="h-4 w-4 text-primary" />
+              <Key className="h-6 w-6 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{passwordCount}</div>
@@ -226,7 +209,7 @@ export default function DashboardPage() {
             </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">API Keys</CardTitle>
-              <Code className="h-4 w-4 text-primary" />
+              <Code className="h-6 w-6 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{apiKeyCount}</div>
@@ -250,7 +233,7 @@ export default function DashboardPage() {
             </button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Env Vars</CardTitle>
-              <FileText className="h-4 w-4 text-primary" />
+              <FileText className="h-6 w-6 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{envVarCount}</div>

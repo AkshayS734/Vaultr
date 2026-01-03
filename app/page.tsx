@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Lock, Shield, Key, Zap, Code, ArrowRight, Check, Cloud, FileText, Lightbulb} from 'lucide-react';
-import { Card, CardContent } from '@/components/vaultr-ui/card';
+import { Card, CardContent } from '@/app/components/ui/card';
 
 export default function HomePage() {
   return (

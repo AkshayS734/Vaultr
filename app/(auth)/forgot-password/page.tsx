@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/vaultr-ui/button";
-import { Input } from "@/components/vaultr-ui/input";
-import { Label } from "@/components/vaultr-ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 
 function isValidEmail(email: string) {

@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Valutr - Secure Password Manager",
+  title: "Vaultr - Secure Password Manager",
   description: "Manage your passwords securely with Vaultr, the AES-256 encrypted password manager.",
 };
 
