@@ -1,0 +1,26 @@
+# Default owner (fallback)
+* @AkshayS734
+
+# ─────────────────────────────
+# 🔒 Security-critical core
+# ─────────────────────────────
+
+/app/lib/                   @AkshayS734
+/app/api/auth/              @AkshayS734
+/app/api/vault/             @AkshayS734
+/app/api/passwords/         @AkshayS734
+/app/api/breach/            @AkshayS734
+/middleware.ts              @AkshayS734
+
+# Database & persistence
+/app/prisma/schema.prisma   @AkshayS734
+/app/prisma/migrations/     @AkshayS734
+
+# Security documentation
+/docs/security/             @AkshayS734
+/docs/security-model.md     @AkshayS734
+/docs/threat-model.md       @AkshayS734
+
+# Providers / guards
+/app/components/providers/RouteGuard.tsx   @AkshayS734
+/app/components/providers/VaultProvider.tsx @AkshayS734

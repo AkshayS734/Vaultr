@@ -48,7 +48,7 @@ Violating any rule above is a **critical security failure**.
 - **Item Encryption**: Vault key encrypts all secrets using AES-GCM
 - **Backend Storage**: Only encrypted ciphertext + hashed tokens (no plaintext)
 
-See [app/lib/crypto.ts](app/lib/crypto.ts) for KDF versioning and encryption details.
+See [app/lib/crypto.ts](../app/lib/crypto.ts) for KDF versioning and encryption details.
 
 ### Data Flow: Secrets
 ```
@@ -58,7 +58,7 @@ metadata → Contains ONLY non-sensitive UI info (title, username, counts, keys-
 
 **Critical Rule**: A database leak of `metadata` alone must reveal ZERO usable secret information.
 
-See [app/lib/secret-utils.ts](app/lib/secret-utils.ts) for enforcement and validation patterns.
+See [app/lib/secret-utils.ts](../app/lib/secret-utils.ts) for enforcement and validation patterns.
 
 ### Authentication & Sessions
 - **JWT Access Token** (15 min expiry) + **Refresh Token** (30 days, httpOnly cookie)
@@ -67,44 +67,44 @@ See [app/lib/secret-utils.ts](app/lib/secret-utils.ts) for enforcement and valid
 - **Rate Limiting**: Redis-backed per IP/sessionId (login: 5 attempts/15min, signup: 50/hour, refresh: 6/min)
 - **Vault Lock**: 5-minute inactivity timeout (client-side in VaultProvider)
 
-See [app/api/auth/](app/api/auth/) routes and [app/lib/auth-utils.ts](app/lib/auth-utils.ts).
+See [app/api/auth/](../app/api/auth/) routes and [app/lib/auth-utils.ts](../app/lib/auth-utils.ts).
 
 ## Key Files & Patterns
 
 ### Encryption & Crypto
 | File | Purpose |
 |------|---------|
-| [app/lib/crypto.ts](app/lib/crypto.ts) (619 lines) | KDF, encryption/decryption, token generation; handles scrypt WASM |
-| [app/lib/secret-utils.ts](app/lib/secret-utils.ts) (623 lines) | Metadata builders, validation, encryption boundaries |
+| [app/lib/crypto.ts](../app/lib/crypto.ts) (619 lines) | KDF, encryption/decryption, token generation; handles scrypt WASM |
+| [app/lib/secret-utils.ts](../app/lib/secret-utils.ts) (623 lines) | Metadata builders, validation, encryption boundaries |
 
 ### Authentication & API Security
 | File | Purpose |
 |------|---------|
-| [app/lib/auth-utils.ts](app/lib/auth-utils.ts) (222 lines) | `requireAuth()` middleware, JWT/session verification, email checks |
-| [app/api/auth/login/route.ts](app/api/auth/login/route.ts) | Login with argon2 password hash, session/refresh token creation |
-| [app/api/auth/signup/route.ts](app/api/auth/signup/route.ts) | Signup with encrypted vault key, email verification initiation |
-| [app/api/auth/refresh/route.ts](app/api/auth/refresh/route.ts) | Refresh token rotation with security checks |
-| [app/api/auth/logout/route.ts](app/api/auth/logout/route.ts) | Session cleanup, cookie clearing |
+| [app/lib/auth-utils.ts](../app/lib/auth-utils.ts) (222 lines) | `requireAuth()` middleware, JWT/session verification, email checks |
+| [app/api/auth/login/route.ts](../app/api/auth/login/route.ts) | Login with argon2 password hash, session/refresh token creation |
+| [app/api/auth/signup/route.ts](../app/api/auth/signup/route.ts) | Signup with encrypted vault key, email verification initiation |
+| [app/api/auth/refresh/route.ts](../app/api/auth/refresh/route.ts) | Refresh token rotation with security checks |
+| [app/api/auth/logout/route.ts](../app/api/auth/logout/route.ts) | Session cleanup, cookie clearing |
 
 ### Validation & Schemas
 | File | Purpose |
 |------|---------|
-| [app/schemas/auth.ts](app/schemas/auth.ts) | Zod schemas for login/signup/refresh inputs |
-| [app/schemas/secrets.ts](app/schemas/secrets.ts) | Metadata & encrypted payload schemas with security comments |
+| [app/schemas/auth.ts](../app/schemas/auth.ts) | Zod schemas for login/signup/refresh inputs |
+| [app/schemas/secrets.ts](../app/schemas/secrets.ts) | Metadata & encrypted payload schemas with security comments |
 
 ### Client State & UI
 | File | Purpose |
 |------|---------|
-| [app/components/providers/VaultProvider.tsx](app/components/providers/VaultProvider.tsx) | Context for `vaultKey`, unlock state, 5-min inactivity timer |
+| [app/components/providers/VaultProvider.tsx](../app/components/providers/VaultProvider.tsx) | Context for `vaultKey`, unlock state, 5-min inactivity timer |
 
 ### Utilities & Infrastructure
 | File | Purpose |
 |------|---------|
-| [app/lib/audit.ts](app/lib/audit.ts) | Audit logging for security events (truncates IP/UA) |
-| [app/lib/email.ts](app/lib/email.ts) | Nodemailer integration for verification/reset emails |
-| [app/lib/redis.ts](app/lib/redis.ts) | Redis rate limiting (graceful fallback if unavailable) |
-| [app/lib/prisma.ts](app/lib/prisma.ts) | Prisma client singleton |
-| [app/lib/utils.ts](app/lib/utils.ts) | `getClientIp()`, `truncate()`, `readLimitedJson()` |
+| [app/lib/audit.ts](../app/lib/audit.ts) | Audit logging for security events (truncates IP/UA) |
+| [app/lib/email.ts](../app/lib/email.ts) | Nodemailer integration for verification/reset emails |
+| [app/lib/redis.ts](../app/lib/redis.ts) | Redis rate limiting (graceful fallback if unavailable) |
+| [app/lib/prisma.ts](../app/lib/prisma.ts) | Prisma client singleton |
+| [app/lib/utils.ts](../app/lib/utils.ts) | `getClientIp()`, `truncate()`, `readLimitedJson()` |
 
 ## Common Patterns & Conventions
 
@@ -173,7 +173,7 @@ npm run dev
 ## Testing
 
 ### Metadata Validation Tests
-See [tests/metadata-validation.test.ts](tests/metadata-validation.test.ts):
+See [tests/metadata-validation.test.ts](../tests/metadata-validation.test.ts):
 - **Accept**: passwordLength, apiKeyLength, variableKeys, hasNotes, boolean flags
 - **Reject**: old passwordMask fields, partial secrets, real values
 
@@ -198,7 +198,7 @@ When implementing features:
 - [ ] Session IDs tracked with IP/user agent for anomaly detection
 
 ## Project Status
-**MVP under active development** — not production-hardened or externally audited yet. See [README.md](README.md) for roadmap and disclaimer.
+**MVP under active development** — not production-hardened or externally audited yet. See [README.md](../README.md) for roadmap and disclaimer.
 
 ## UI Refactor Scope (Presentation-Only Changes)
 

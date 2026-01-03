@@ -97,7 +97,7 @@ User's browser:
   3. Metadata built (title, passwordLength, etc.)
   4. Payload = { encryptedData, metadata, hmac }
 
-  ↓ HTTPS POST /api/vault/password
+  ↓ HTTPS POST /api/passwords
 
 Server receives:
   5. Validate HMAC (detect tampering)

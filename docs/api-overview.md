@@ -191,11 +191,11 @@ GET /api/auth/csrf-token
 
 ---
 
-## Vault Endpoints
+## Secret Management Endpoints
 
-### GET /api/vault/passwords
+### GET /api/passwords
 
-List all passwords for authenticated user.
+List all secrets (passwords, API keys, env vars) for authenticated user.
 
 **Request**:
 ```
@@ -226,10 +226,12 @@ Authorization: Bearer <access_token>
 }
 ```
 
+**Response Structure**: Returns array of items with encryptedData, iv, metadata, secretType.
+
 **Query Params**:
-- `skip=0` — Pagination offset
-- `take=20` — Limit (max 100)
-- `search=bank` — Filter by title/username (metadata search)
+- `skip=0` — Pagination offset (not implemented in current version)
+- `take=20` — Limit (not implemented in current version)
+- `search=bank` — Filter by title/username (not implemented; client-side filtering required)
 
 **Errors**:
 - `401` — Invalid or missing token
@@ -237,9 +239,9 @@ Authorization: Bearer <access_token>
 
 ---
 
-### POST /api/vault/password
+### POST /api/passwords
 
-Create new password.
+Create new secret (password, API key, or env vars).
 
 **Request**:
 ```
@@ -286,9 +288,9 @@ Content-Type: application/json
 
 ---
 
-### PUT /api/vault/password/:id
+### PUT /api/passwords/:id
 
-Update existing password.
+Update existing secret.
 
 **Request**:
 ```
@@ -296,7 +298,7 @@ Authorization: Bearer <access_token>
 X-CSRF-Token: <token_from_cookie>
 ```
 
-Same body as POST `/api/vault/password`.
+Same body as POST `/api/passwords`.
 
 **Response** (200):
 ```json
@@ -314,9 +316,9 @@ Same body as POST `/api/vault/password`.
 
 ---
 
-### DELETE /api/vault/password/:id
+### DELETE /api/passwords/:id
 
-Delete password.
+Delete secret.
 
 **Request**:
 ```
@@ -338,9 +340,9 @@ X-CSRF-Token: <token_from_cookie>
 
 ---
 
-### GET /api/vault/password/:id
+### GET /api/passwords/:id
 
-Get single password.
+Get single secret.
 
 **Request**:
 ```

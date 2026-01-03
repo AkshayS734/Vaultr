@@ -14,7 +14,7 @@ CSRF attacks trick authenticated users into making unintended requests. Vaultr u
 
 ```
 Attacker's site (attacker.com):
-  <img src="https://vaultr.app/api/vault/password/delete?id=123" />
+  <img src="https://vaultr.app/api/passwords/:id" />
 
 User is logged into Vaultr, visits attacker.com:
   1. Browser sends GET with user's Vaultr cookies
@@ -25,7 +25,7 @@ User is logged into Vaultr, visits attacker.com:
 ### With CSRF Protection
 
 ```
-POST /api/vault/password/delete
+POST /api/passwords/:id
 
 Request headers:
   Cookie: csrfToken=abc123xyz
@@ -354,6 +354,6 @@ response.headers.append(
 ---
 
 See also:
-- [Middleware Security](./middleware-bypass.test.ts) — CSRF middleware tests
+- [Middleware Security](../tests/middleware-bypass.test.ts) — CSRF middleware tests
 - [Security Model](./security-model.md) — Threat model
 - [Authentication](./authentication.md) — Session security

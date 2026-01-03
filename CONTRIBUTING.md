@@ -2,12 +2,29 @@
 
 How to contribute to Vaultr securely and effectively.
 
+
+## TL;DR for Contributors
+
+- UI, docs, tests, and refactors are welcome
+- Security-critical code requires prior discussion and explicit approval
+- Run `npm run ci` before opening a PR
+- Never log, store, or transmit secrets
+- If in doubt, ask before implementing
+
+By submitting a contribution, you agree that your contribution will be
+licensed under the same license as the project (**AGPL-3.0**).
+
+---
+
 ## Code of Conduct
 
 - Treat everyone with respect
 - Focus on code quality and security
 - Constructive feedback only
-- Report security issues privately (security@vaultr.app)
+- Report security issues privately (akshaysbuilds@gmail.com)
+
+This project follows the **Contributor Covenant Code of Conduct (v2.1)**.
+By participating, you agree to uphold this standard.
 
 ---
 
@@ -50,6 +67,19 @@ Describe what you changed and why.
 
 ---
 
+## Restricted Areas
+
+Changes to the following areas require prior discussion and explicit approval
+from the project owner:
+
+- Cryptography and key derivation logic
+- Authentication and session handling
+- Vault encryption/decryption flows
+- Authorization and access-control checks
+- Any code that touches plaintext secrets
+
+---
+
 ## Code Style
 
 ### TypeScript
@@ -74,7 +104,7 @@ const getUser = (id: any) => {  // any type
 
 ### Naming
 
-- CamelCase for variables/functions
+- camelCase for variables/functions
 - PascalCase for classes/types
 - UPPER_SNAKE_CASE for constants
 - Descriptive names (not `x`, `tmp`, `data`)
@@ -108,31 +138,8 @@ npm run lint -- --fix  # Auto-format
 
 ### When Submitting PRs
 
-- [ ] **No secrets logged** (passwords, tokens, encryption keys)
-- [ ] **Metadata validated** (no plaintext secrets in DB)
-- [ ] **Encryption boundaries preserved** (server can't decrypt)
-- [ ] **Inputs validated** (Zod schemas used)
-- [ ] **Rate limits applied** (auth endpoints protected)
-- [ ] **CSRF tokens checked** (state-changing routes)
-- [ ] **Tests added** (especially for security features)
-- [ ] **Errors don't leak info** (no stack traces to client)
+Before submitting or merging this PR, I verified that:
 
-### Critical Security Rules
-
-❌ **NEVER DO**:
-1. Log plaintext secrets
-2. Store partial secrets (masks, hints, prefixes)
-3. Include secrets in metadata
-4. Skip CSRF validation
-5. Bypass email verification for sensitive operations
-6. Weaken KDF/hashing parameters
-7. Transmit master password to server
-8. Store vault key unencrypted
-
-### Security Review Checklist
-
-```
-Before I merge this PR, I verified that:
 - [ ] Secrets never logged or indexed
 - [ ] Metadata safe (validateMetadataSafety used)
 - [ ] User inputs validated (Zod schema)
@@ -141,9 +148,21 @@ Before I merge this PR, I verified that:
 - [ ] Email verification enforced (if sensitive)
 - [ ] Encryption boundaries preserved (server can't decrypt)
 - [ ] Audit logs created (if security event)
-- [ ] Tests added (>80% coverage)
+- [ ] Tests added for new and changed logic
 - [ ] No security regressions
-```
+
+### Critical Security Rules
+
+❌ **NEVER DO**:
+
+1. Log plaintext secrets
+2. Store partial secrets (masks, hints, prefixes)
+3. Include secrets in metadata
+4. Skip CSRF validation
+5. Bypass email verification for sensitive operations
+6. Weaken KDF/hashing parameters
+7. Transmit master password to server
+8. Store vault key unencrypted
 
 ---
 
@@ -217,12 +236,12 @@ Update relevant docs:
 
 | Change | Update |
 |--------|--------|
-| New API endpoint | [API Overview](./api-overview.md) |
-| New auth flow | [Authentication](./authentication.md) |
-| New crypto algorithm | [Cryptography](./cryptography.md) |
-| New environment variable | [Environment Variables](./environment-variables.md) |
-| New test pattern | [Testing Strategy](./testing-strategy.md) |
-| Security feature | [Threat Model](./threat-model.md) |
+| New API endpoint | [API Overview](docs/api-overview.md) |
+| New auth flow | [Authentication](docs/authentication.md) |
+| New crypto algorithm | [Cryptography](docs/cryptography.md) |
+| New environment variable | [Environment Variables](docs/environment-variables.md) |
+| New test pattern | [Testing Strategy](docs/testing-strategy.md) |
+| Security feature | [Threat Model](docs/threat-model.md) |
 
 ### Documentation Style
 
@@ -230,7 +249,7 @@ Update relevant docs:
 - Include code examples
 - Explain the "why" not just "how"
 - Link to related sections
-- Add to [README.md](../docs/README.md) navigation
+- Add to [README.md](./README.md) navigation
 
 ---
 
@@ -299,7 +318,7 @@ refactor/extract-crypto
 
 ## Testing
 - [ ] Tests pass (npm run ci)
-- [ ] >80% coverage
+- [ ] Tests added for new and changed logic
 - [ ] Edge cases tested
 - [ ] Security tests included
 
@@ -356,7 +375,7 @@ refactor/extract-crypto
    })
    ```
 
-4. **Document** ([docs/api-overview.md](./api-overview.md))
+4. **Document** ([docs/api-overview.md](docs/api-overview.md))
    ```markdown
    ### POST /api/my-endpoint
    
@@ -367,7 +386,7 @@ refactor/extract-crypto
    ```
 
 5. **Update README**
-   - Add to [docs/README.md](./README.md) navigation
+   - Add to [README.md](./README.md) navigation
    - Add to this file if new pattern
 
 ### Fixing a Bug
@@ -383,8 +402,8 @@ refactor/extract-crypto
 1. Document the threat being addressed
 2. Implement fix
 3. Add comprehensive tests (positive + negative)
-4. Update [Threat Model](./threat-model.md)
-5. Update [Security Model](./security-model.md) if needed
+4. Update [Threat Model](docs/threat-model.md)
+5. Update [Security Model](docs/security-model.md) if needed
 
 ### Adding Tests
 
@@ -460,7 +479,7 @@ v0.1.0 (major.minor.patch)
 
 - **Questions?** Open a discussion or email
 - **Found a bug?** Open an issue with reproduction steps
-- **Security issue?** Email security@vaultr.app (don't open public issue)
+- **Security issue?** Email akshaysbuilds@gmail.com (don't open public issue)
 - **Feature idea?** Open an issue to discuss before implementing
 
 ---
@@ -477,6 +496,6 @@ v0.1.0 (major.minor.patch)
 ---
 
 See also:
-- [Testing Strategy](./testing-strategy.md) — How to test effectively
-- [Security Model](./security-model.md) — Security principles
-- [API Overview](./api-overview.md) — Endpoint patterns
+- [Testing Strategy](docs/testing-strategy.md) — How to test effectively
+- [Security Model](docs/security-model.md) — Security principles
+- [API Overview](docs/api-overview.md) — Endpoint patterns

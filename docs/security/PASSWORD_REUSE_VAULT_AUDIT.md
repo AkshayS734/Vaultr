@@ -26,17 +26,17 @@ After comprehensive code audit, **Vaultr correctly maintains zero-knowledge prin
 - Server NEVER sees plaintext passwords
 
 **Evidence:**
-- [app/lib/crypto.ts](../app/lib/crypto.ts#L540-L565): `encryptItem()` - client-side encryption only
-- [app/(main)/secrets/passwords/new/page.tsx](../app/(main)/secrets/passwords/new/page.tsx#L47-L61): Encryption happens before API call
-- [app/api/passwords/route.ts](../app/api/passwords/route.ts#L64-L66): Server receives only ciphertext
-- [app/components/providers/VaultProvider.tsx](../app/components/providers/VaultProvider.tsx): Vault key stored only in client memory
+- [app/lib/crypto.ts](../../app/lib/crypto.ts#L540-L565): `encryptItem()` - client-side encryption only
+- [app/(main)/secrets/passwords/new/page.tsx](../../app/(main)/secrets/passwords/new/page.tsx#L47-L61): Encryption happens before API call
+- [app/api/passwords/route.ts](../../app/api/passwords/route.ts#L64-L66): Server receives only ciphertext
+- [app/components/providers/VaultProvider.tsx](../../app/components/providers/VaultProvider.tsx): Vault key stored only in client memory
 
 ### 2. **Password Reuse Detection (ACCOUNT PASSWORDS ONLY ✓)**
 
 **Current Implementation:**
-- `checkPasswordReuse()` in [app/lib/password-reuse.ts](../app/lib/password-reuse.ts) is used ONLY for:
-  - Account authentication password changes ([change-password/route.ts](../app/api/auth/change-password/route.ts#L82))
-  - Account password resets ([reset-password/route.ts](../app/api/auth/reset-password/route.ts#L106))
+- `checkPasswordReuse()` in [app/lib/password-reuse.ts](../../app/lib/password-reuse.ts) is used ONLY for:
+  - Account authentication password changes ([change-password/route.ts](../../app/api/auth/change-password/route.ts#L82))
+  - Account password resets ([reset-password/route.ts](../../app/api/auth/reset-password/route.ts#L106))
 - Checks against `user.authHash` (argon2) and `passwordHistory` table
 - Compares plaintext input against hashed account passwords using `argon2.verify()`
 
@@ -52,14 +52,14 @@ After comprehensive code audit, **Vaultr correctly maintains zero-knowledge prin
 ### 3. **Metadata Safety Validation (SECURE ✓)**
 
 **Protection Against Leakage:**
-- `validateMetadataSafety()` in [app/lib/secret-utils.ts](../app/lib/secret-utils.ts#L405-L475)
+- `validateMetadataSafety()` in [app/lib/secret-utils.ts](../../app/lib/secret-utils.ts#L405-L475)
 - Forbids fields: `password`, `apiKey`, `secret`, `token`, `mask`, `value`
 - Rejects partial masks like `"***word"` that expose real characters
 - Allows only: `passwordLength` (non-reversible), `title`, `username`, `hasNotes` (boolean)
 
 **Server-Side Enforcement:**
-- [app/api/passwords/route.ts](../app/api/passwords/route.ts#L75-L90): POST validates metadata before storage
-- [app/api/passwords/[id]/route.ts](../app/api/passwords/[id]/route.ts#L123-L138): PUT validates metadata before update
+- [app/api/passwords/route.ts](../../app/api/passwords/route.ts#L75-L90): POST validates metadata before storage
+- [app/api/passwords/[id]/route.ts](../../app/api/passwords/[id]/route.ts#L123-L138): PUT validates metadata before update
 - Validation errors return 400 and block save
 
 **Evidence of Safety:**
@@ -99,7 +99,7 @@ grep -r "plaintext.*vault" app/
 
 ### 5. **Database Schema Verification (SECURE ✓)**
 
-**`Item` table ([app/prisma/schema.prisma](../app/prisma/schema.prisma#L82-L116)):**
+**`Item` table ([app/prisma/schema.prisma](../../app/prisma/schema.prisma#L82-L116)):**
 ```prisma
 model Item {
   encryptedData String  // Base64 AES-GCM ciphertext (ALL sensitive data)
@@ -148,7 +148,7 @@ model PasswordHistory {
 - [x] `metadata` contains ONLY non-sensitive UI info
 - [x] Runtime validation prevents metadata leakage
 - [x] API routes reject unsafe metadata
-- [x] Tests validate metadata safety ([tests/metadata-validation.test.ts](../tests/metadata-validation.test.ts))
+- [x] Tests validate metadata safety ([tests/metadata-validation.test.ts](../../tests/metadata-validation.test.ts))
 
 ### ✅ No Violation Patterns Found
 - [x] No server-side vault password decryption

@@ -64,7 +64,7 @@ Shows line/branch coverage per file.
 
 ### 1. Metadata Safety Tests
 
-**File**: [tests/metadata-validation.test.ts](tests/metadata-validation.test.ts)
+**File**: [tests/metadata-validation.test.ts](../tests/metadata-validation.test.ts)
 
 **Goal**: Ensure plaintext secrets never leak into metadata.
 
@@ -113,7 +113,7 @@ test('rejects password mask revealing partial secret', () => {
 
 ### 2. Cryptography Tests
 
-**File**: [tests/vault-zero-knowledge.test.ts](tests/vault-zero-knowledge.test.ts)
+**File**: [tests/vault-zero-knowledge.test.ts](../tests/vault-zero-knowledge.test.ts)
 
 **Goal**: Verify encryption/decryption works correctly; master password stays encrypted.
 
@@ -176,7 +176,7 @@ test('scrypt derivation is expensive', async () => {
 
 ### 3. Authentication Tests
 
-**File**: [tests/security-validation.test.ts](tests/security-validation.test.ts)
+**File**: [tests/security-validation.test.ts](../tests/security-validation.test.ts)
 
 **Goal**: Verify login, refresh, session, and token workflows.
 
@@ -251,7 +251,7 @@ test('device binding rejects stolen token from different IP', async () => {
 
 ### 4. Password Strength Tests
 
-**File**: [tests/password-strength.test.ts](tests/password-strength.test.ts)
+**File**: [tests/password-strength.test.ts](../tests/password-strength.test.ts)
 
 **Goal**: Verify password strength scoring is accurate and useful.
 
@@ -294,7 +294,7 @@ test('detects common patterns', () => {
 
 ### 5. Password Breach Tests
 
-**File**: [tests/breach-route.test.ts](tests/breach-route.test.ts)
+**File**: [tests/breach-route.test.ts](../tests/breach-route.test.ts)
 
 **Goal**: Verify HaveIBeenPwned integration without exposing full password hashes.
 
@@ -390,14 +390,14 @@ test('rate limit resets after window', async () => {
 
 ### 7. Middleware Security Tests
 
-**File**: [tests/middleware-bypass.test.ts](tests/middleware-bypass.test.ts)
+**File**: [tests/middleware-bypass.test.ts](../tests/middleware-bypass.test.ts)
 
 **Goal**: Prevent auth/CSRF middleware bypasses.
 
 **Examples**:
 ```typescript
 test('rejects requests without auth token', async () => {
-  const response = await fetch('/api/vault/passwords')
+  const response = await fetch('/api/passwords')
   
   expect(response.status).toBe(401)
 })
@@ -405,7 +405,7 @@ test('rejects requests without auth token', async () => {
 test('rejects expired access tokens', async () => {
   const expiredToken = generateAccessToken(userId, { expiresIn: '-1s' })
   
-  const response = await fetch('/api/vault/passwords', {
+  const response = await fetch('/api/passwords', {
     headers: { 'authorization': `Bearer ${expiredToken}` }
   })
   
@@ -639,7 +639,7 @@ Before shipping a feature:
 
 ### Test Helpers
 
-From [tests/helpers](tests/):
+From [tests/helpers](../tests/):
 
 ```typescript
 // Create test user with plain password
@@ -674,5 +674,5 @@ async function createTestSession(userId: string) {
 ---
 
 See also:
-- [Contributing](./contributing.md) — Code review checklist
+- [Contributing](../CONTRIBUTING.md) — Code review checklist
 - [API Overview](./api-overview.md) — Endpoint testing

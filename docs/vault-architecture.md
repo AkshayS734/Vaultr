@@ -8,32 +8,60 @@ How Vaultr stores, encrypts, and retrieves secrets while maintaining zero-knowle
 
 #### `users`
 ```sql
-id             UUID PRIMARY KEY
-email          VARCHAR UNIQUE
-passwordHash   VARCHAR (Argon2)
-scryptSalt     BYTEA (32 bytes, random)
-kdfVersion     INT (1 = PBKDF2 legacy, 2 = scrypt v2)
-encryptedVaultKey BYTEA (AES-GCM ciphertext + IV + tag)
-createdAt      TIMESTAMP
-emailVerified  BOOLEAN
+id              UUID PRIMARY KEY
+email           VARCHAR UNIQUE
+emailNormalized VARCHAR UNIQUE  -- lowercase for uniqueness checks
+authHash        VARCHAR (Argon2)
+isEmailVerified BOOLEAN
+createdAt       TIMESTAMP
+updatedAt       TIMESTAMP
+lastLoginAt     TIMESTAMP
+deletedAt       TIMESTAMP  -- soft-delete marker
 ```
 
-**Security**: `passwordHash` is one-way (Argon2); master password never stored.
+**Security**: `authHash` is one-way (Argon2); login password never stored plaintext.
+**Relations**: Has one Vault (stores encrypted vault key and KDF params).
 
-#### `secrets` (encrypted passwords, API keys, env vars)
+#### `vaults`
 ```sql
-id             UUID PRIMARY KEY
-userId         UUID FOREIGN KEY
-encryptedData  BYTEA (AES-GCM ciphertext)
-metadata       JSONB {
-                 title, username, category, etc.
-               }
-hmac           BYTEA (SHA256 of encrypted content)
-createdAt      TIMESTAMP
-updatedAt      TIMESTAMP
+id                UUID PRIMARY KEY
+userId            UUID FOREIGN KEY UNIQUE
+encryptedVaultKey STRING (Base64 encoded, AES-GCM encrypted)
+salt              STRING (Base64 encoded, 16 bytes)
+kdfParams         JSONB {
+                    version: 1 or 2,
+                    algorithm: "PBKDF2" or "scrypt-browser-v1",
+                    iterations/N/r/p: params
+                  }
+createdAt         TIMESTAMP
+updatedAt         TIMESTAMP
+deletedAt         TIMESTAMP  -- soft-delete marker
 ```
 
-**Security**: `encryptedData` opaque to server; `metadata` validated for safety.
+**Security**: Vault key encrypted with KEK (derived from master password on client).
+**KDF Versioning**: v1 = PBKDF2 (legacy), v2 = scrypt (current default).
+
+#### `items` (encrypted passwords, API keys, env vars)
+```sql
+id            UUID PRIMARY KEY
+vaultId       UUID FOREIGN KEY  -- references vaults(id)
+secretType    ENUM (PASSWORD, API_KEY, ENV_VARS)
+encryptedData STRING (Base64 encoded, AES-GCM ciphertext)
+iv            STRING (Base64 encoded, 12 bytes)
+metadata      JSONB {
+                title, username, passwordLength,
+                apiKeyLength, variableKeys, hasNotes, etc.
+              }
+createdAt     TIMESTAMP
+updatedAt     TIMESTAMP
+deletedAt     TIMESTAMP  -- soft-delete marker
+```
+
+**Security**: 
+- `encryptedData` contains ALL sensitive values (passwords, API keys, env var values)
+- `metadata` contains ONLY non-sensitive UI info (NO secrets, NO partial secrets, NO masks)
+- Database leak of metadata alone MUST reveal ZERO usable secrets
+- Validated with `validateMetadataSafety()` before storage
 
 #### `sessions`
 ```sql
@@ -123,7 +151,7 @@ const hmac = sha256(
 )
 ```
 
-### Step 4: HTTP POST to /api/vault/password
+### Step 4: HTTP POST to /api/passwords
 
 Browser sends:
 
@@ -181,10 +209,10 @@ await db.secrets.create({
 
 ### Step 1: Client Requests Secrets
 
-Browser authenticated with JWT; calls `/api/vault/passwords`:
+Browser authenticated with JWT; calls `/api/passwords`:
 
 ```
-GET /api/vault/passwords
+GET /api/passwords
 Authorization: Bearer <jwt_token>
 ```
 
