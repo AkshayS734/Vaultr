@@ -162,4 +162,4 @@ npx prisma generate  # Regenerate Prisma client
 
 ---
 
-Need help? See [FAQ](./faq.md) or check [Contributing](./contributing.md) to report issues.
+Need help? See [FAQ](./faq.md) or check [Contributing](../CONTRIBUTING.md) to report issues.

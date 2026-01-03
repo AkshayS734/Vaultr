@@ -13,10 +13,10 @@ A lightweight, dependency-free collection of reusable UI components for the Vaul
 
 ## Installation
 
-The library is pre-installed. Import components from `components/vaultr-ui`:
+The library is pre-installed. Import components from `app/components/ui`:
 
 ```tsx
-import { Button, Card, CardHeader, CardTitle } from '@/components/vaultr-ui';
+import { Button, Card, CardHeader, CardTitle } from '@/app/components/ui';
 ```
 
 ## Core Components
@@ -233,7 +233,7 @@ Subcomponents: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `Car
 
 ### Toast
 ```tsx
-import { ToastProvider, useToast } from '@/components/vaultr-ui';
+import { ToastProvider, useToast } from '@app/components/ui';
 
 function App() {
   return (
@@ -336,10 +336,10 @@ If migrating from Figma-generated `components/ui`:
 1. **Import from new location:**
    ```tsx
    // Before
-   import { Button } from '@/components/ui';
+   import { Button } from '@/app/components/ui';
    
    // After
-   import { Button } from '@/components/vaultr-ui';
+   import { Button } from '@app/components/ui';
    ```
 
 2. **API is compatible** - Most props work the same way

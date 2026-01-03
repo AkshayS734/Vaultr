@@ -376,6 +376,6 @@ The following are **not** covered by security design:
 ---
 
 See also:
-- [Security Model](./security-model.md) — Core security concepts
-- [Cryptography](./cryptography.md) — Algorithm analysis
-- [Authentication](./authentication.md) — Session and token security
+- [Security Model](docs/security-model.md) — Core security concepts
+- [Cryptography](docs/cryptography.md) — Algorithm analysis
+- [Authentication](docs/authentication.md) — Session and token security

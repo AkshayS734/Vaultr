@@ -200,7 +200,7 @@ See [Security Model](./security-model.md) for details.
 
 ### Q: Where are the source files?
 
-**A:** [app/](app/) directory contains all application code.
+**A:** [app/](../app/) directory contains all application code.
 
 ### Q: How do I add a new endpoint?
 

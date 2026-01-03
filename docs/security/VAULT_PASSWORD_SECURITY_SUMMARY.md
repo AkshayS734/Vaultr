@@ -33,10 +33,6 @@ Password    AES-256-GCM          encryptedData              Server cannot
 ### 2. Password Reuse Detection Scope
 
 **Correctly Applied To:**
-- ✅ Account authentication passwords ([change-password](app/api/auth/change-password/route.ts), [reset-password](app/api/auth/reset-password/route.ts))
-- ✅ Uses argon2 hashes for comparison
-- ✅ Checks against `User.authHash` and `PasswordHistory` table
-
 **Correctly NOT Applied To:**
 - ✅ Vault item passwords (encrypted, server-blind)
 - ✅ API keys stored in vault
@@ -96,7 +92,7 @@ model PasswordHistory {
 ## 🧪 Test Coverage
 
 ### New Tests Added
-File: [tests/vault-zero-knowledge.test.ts](tests/vault-zero-knowledge.test.ts)
+File: [tests/vault-zero-knowledge.test.ts](../../tests/vault-zero-knowledge.test.ts)
 
 **Test Categories:**
 1. ✅ Encryption boundary validation (13 tests)
@@ -117,11 +113,11 @@ Tests:       81 passed, 81 total (13 new tests added)
 
 | Requirement | Status | Evidence |
 |------------|---------|----------|
-| Vault passwords encrypted client-side | ✅ | [crypto.ts](app/lib/crypto.ts#L540-L565) `encryptItem()` |
-| Server never receives plaintext | ✅ | [passwords/route.ts](app/api/passwords/route.ts#L64-L66) |
+| Vault passwords encrypted client-side | ✅ | [crypto.ts](../../app/lib/crypto.ts#L540-L565) `encryptItem()` |
+| Server never receives plaintext | ✅ | [passwords/route.ts](../../app/api/passwords/route.ts#L64-L66) |
 | Server cannot decrypt vault items | ✅ | No vault key on server |
-| Metadata contains zero secrets | ✅ | [secret-utils.ts](app/lib/secret-utils.ts#L405-L475) validation |
-| Reuse detection account-only | ✅ | [password-reuse.ts](app/lib/password-reuse.ts) usage |
+| Metadata contains zero secrets | ✅ | [secret-utils.ts](../../app/lib/secret-utils.ts#L405-L475) validation |
+| Reuse detection account-only | ✅ | [password-reuse.ts](../../app/lib/password-reuse.ts) usage |
 | No vault password logging | ✅ | Code audit - no violations found |
 
 ---
@@ -239,14 +235,14 @@ The following actions would **violate zero-knowledge** and must **NEVER** be imp
 ## 📊 Code Metrics
 
 **Files Audited:**
-- ✅ [app/api/passwords/route.ts](app/api/passwords/route.ts) (108 lines)
-- ✅ [app/api/passwords/[id]/route.ts](app/api/passwords/[id]/route.ts) (181 lines)
-- ✅ [app/lib/crypto.ts](app/lib/crypto.ts) (619 lines)
-- ✅ [app/lib/password-reuse.ts](app/lib/password-reuse.ts) (166 lines)
-- ✅ [app/lib/secret-utils.ts](app/lib/secret-utils.ts) (623 lines)
-- ✅ [app/components/providers/VaultProvider.tsx](app/components/providers/VaultProvider.tsx) (68 lines)
-- ✅ [app/api/auth/change-password/route.ts](app/api/auth/change-password/route.ts) (141 lines)
-- ✅ [app/api/auth/reset-password/route.ts](app/api/auth/reset-password/route.ts) (170 lines)
+ ✅ [app/api/passwords/route.ts](../../app/api/passwords/route.ts) (108 lines)
+ ✅ [app/api/passwords/[id]/route.ts](../../app/api/passwords/[id]/route.ts) (181 lines)
+ ✅ [app/lib/crypto.ts](../../app/lib/crypto.ts) (619 lines)
+ ✅ [app/lib/password-reuse.ts](../../app/lib/password-reuse.ts) (166 lines)
+ ✅ [app/lib/secret-utils.ts](../../app/lib/secret-utils.ts) (623 lines)
+ ✅ [app/components/providers/VaultProvider.tsx](../../app/components/providers/VaultProvider.tsx) (68 lines)
+ ✅ [app/api/auth/change-password/route.ts](../../app/api/auth/change-password/route.ts) (141 lines)
+ ✅ [app/api/auth/reset-password/route.ts](../../app/api/auth/reset-password/route.ts) (170 lines)
 
 **Total Lines Reviewed:** ~2,000+ lines of security-critical code
 

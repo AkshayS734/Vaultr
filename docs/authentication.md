@@ -46,17 +46,18 @@ export async function POST(req: Request) {
   }
   
   // Hash login password with Argon2
-  const passwordHash = await argon2.hash(loginPassword)
+  const authHash = await argon2.hash(loginPassword)
   
-  // Generate random salt for KDF
-  const scryptSalt = crypto.randomBytes(32)
+  // Client must send:
+  // - encryptedVaultKey (already encrypted with KEK on client)
+  // - salt (used for KEK derivation on client)
+  // - kdfParams (KDF algorithm and parameters)
   
-  // Client should have derived KEK and encrypted vault key
-  // But for security, we re-derive KEK server-side to generate vault key
-  // Actually NO: server doesn't have master password!
-  // Client must send already-encrypted vault key
+  // Server NEVER has master password
+  // Server NEVER derives KEK
+  // Server only stores encrypted vault key
   
-  // ... Create user and return
+  // ... Create user and vault, return
 }
 ```
 
@@ -100,16 +101,22 @@ const response = await fetch('/api/auth/signup', {
 })
 ```
 
-### 4. Create User
+### 4. Create User and Vault
 
-Server stores:
+Server stores User record:
 - `email` (unique)
-- `passwordHash` (Argon2 hash of login password)
-- `scryptSalt` (32 bytes, random)
-- `kdfVersion` (2 for scrypt v2)
-- `encryptedVaultKey` (from client)
-- `emailVerified` = false
+- `emailNormalized` (lowercase)
+- `authHash` (Argon2 hash of login password)
+- `isEmailVerified` = false
 - `createdAt` = now
+
+And creates associated Vault record:
+- `userId` (foreign key to User)
+- `encryptedVaultKey` (Base64, from client)
+- `salt` (Base64, from client)
+- `kdfParams` (JSON: { version: 2, algorithm: "scrypt-browser-v1", N, r, p, dkLen })
+
+**Security**: Master password never stored; vault key encrypted with KEK (derived on client).
 
 ### 5. Send Verification Email
 
@@ -186,7 +193,7 @@ if (!user) {
   )
 }
 
-const isValid = await argon2.verify(user.passwordHash, password)
+const isValid = await argon2.verify(user.authHash, password)
 if (!isValid) {
   return NextResponse.json(
     { error: 'Invalid email or password' },

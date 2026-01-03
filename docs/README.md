@@ -30,7 +30,7 @@ Complete reference for Vaultr's architecture, security model, and development pr
 ## Reference
 
 - **[FAQ](./faq.md)** — Common questions and troubleshooting
-- **[Contributing](./contributing.md)** — Code style, security review, PR process
+- **[Contributing](../CONTRIBUTING.md)** — Code style, security review, PR process
 
 ---
 
