@@ -18,7 +18,7 @@ import {
   Switch,
   useToast,
   ToastProvider,
-} from "../../../components/vaultr-ui";
+} from "../../components/ui";
 
 function GeneratorContent() {
   const router = useRouter();
@@ -82,7 +82,7 @@ function GeneratorContent() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 cursor-pointer"
               onClick={() => router.push("/dashboard")}
             >
               Back to dashboard
@@ -90,7 +90,7 @@ function GeneratorContent() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 cursor-pointer"
               onClick={handleLogout}
             >
               Logout
@@ -99,7 +99,7 @@ function GeneratorContent() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 space-y-8">
+      <main className="mx-auto max-w-4xl px-6 py-6 space-y-8">
         <section className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Password Generator</h1>
           <p className="text-sm text-muted-foreground">
@@ -117,10 +117,10 @@ function GeneratorContent() {
               <p className="truncate font-mono text-lg">{password || "Click generate to create a password"}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={handleCopy} aria-label="Copy password">
+              <Button variant="outline" size="icon" onClick={handleCopy} aria-label="Copy password" className="cursor-pointer">
                 <Copy className="h-4 w-4" />
               </Button>
-              <Button size="icon" onClick={handleGenerate} aria-label="Generate password">
+              <Button size="icon" onClick={handleGenerate} aria-label="Generate password" className="cursor-pointer">
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
@@ -182,7 +182,7 @@ function GeneratorContent() {
               </div>
             </div>
 
-            <Button onClick={handleGenerate} size="lg" className="gap-2">
+            <Button onClick={handleGenerate} size="lg" className="cursor-pointer gap-2">
               <RefreshCw className="h-4 w-4" />
               Generate password
             </Button>

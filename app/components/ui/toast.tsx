@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "./utils";
+import { X } from "lucide-react";
 
 /**
  * Toast/Notification container
@@ -85,7 +86,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
           onClick={() => onRemove(toast.id)}
           className="text-xs hover:opacity-70 focus:outline-none"
         >
-          ✕
+          <X className="h-3 w-3" />
         </button>
       </div>
     </div>

@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { generateVaultKey, deriveKeyFromPasswordScrypt, encryptVaultKey, arrayBufferToBase64, generateKdfParamsScrypt } from "@/app/lib/crypto";
 import { generatePassword } from "@/app/lib/password-generator";
 import { checkPasswordStrength, getStrengthLabel, getStrengthColor } from "@/app/lib/password-strength";
-import { Button } from "@/components/vaultr-ui/button";
-import { Input } from "@/components/vaultr-ui/input";
-import { Label } from "@/components/vaultr-ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
-import { Separator } from "@/components/vaultr-ui/separator";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Separator } from "@/app/components/ui/separator";
 import { Lock, Mail } from "lucide-react";
 
 // Match Zod schemas from @/schemas/auth
@@ -672,7 +672,7 @@ export default function SignupPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             {isSubmitting ? "Creating account..." : "Create Account"}
           </Button>

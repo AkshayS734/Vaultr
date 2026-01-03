@@ -15,6 +15,7 @@ import {
 // Reuse detection is handled via PasswordHealthEngine flags; no direct calls here.
 import { evaluatePasswordHealth, type PasswordHealthResult } from "@/app/lib/password-health-engine";
 import { makeBreachChecker } from "@/app/lib/password-breach";
+import { CircleAlert, CheckCircle } from "lucide-react";
 
 interface VaultItem {
   id: string
@@ -244,7 +245,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
             {/* Back Button */}
             <button
               onClick={() => router.back()}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
                 <line x1="19" y1="12" x2="5" y2="12"/>
@@ -255,7 +256,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               Logout
             </button>
@@ -263,9 +264,9 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
         </nav>
 
         {/* Main Content */}
-        <div className="mx-auto max-w-4xl px-6 py-12">
+        <div className="mx-auto max-w-4xl px-6 py-6">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
             <p className="text-muted-foreground">{username || website || "Password"}</p>
           </div>
@@ -277,7 +278,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
               <h2 className="text-lg font-semibold text-foreground">Password Details</h2>
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm font-medium cursor-pointer"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -401,7 +402,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
               </div>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors"
+                className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 text-sm font-medium text-destructive hover:bg-destructive/30 transition-colors cursor-pointer"
               >
                 Delete
               </button>
@@ -420,7 +421,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <button
             onClick={() => setIsEditing(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="19" y1="12" x2="5" y2="12"/>
@@ -429,7 +430,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
           </button>
           <button
             onClick={handleLogout}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             Logout
           </button>
@@ -437,9 +438,9 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-4xl px-6 py-12">
+      <div className="mx-auto max-w-4xl px-6 py-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground mb-2">Edit Password</h1>
           <p className="text-muted-foreground">Update your stored credential</p>
         </div>
@@ -579,7 +580,7 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
                         {/* Reuse Warning - Always visible if detected */}
                         {health.flags.reused && (
                           <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-600/40 text-yellow-300 text-xs">
-                            <span className="text-lg mt-0.5 flex-shrink-0">⚠️</span>
+                            <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
                             <span className="flex-1">This password is already used in other items. Consider a unique password.</span>
                           </div>
                         )}
@@ -639,9 +640,11 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
                             ? 'bg-red-500/10 border border-red-600/40 text-red-300'
                             : 'bg-green-500/10 border border-green-600/40 text-green-300'
                         }`}>
-                          <span className="text-lg mt-0.5 flex-shrink-0">
-                            {health.flags.breached ? '⚠️' : '✅'}
-                          </span>
+                          {health.flags.breached ? (
+                            <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                          )}
                           <span className="flex-1">
                             {health.flags.breached 
                               ? 'This password may have appeared in known data breaches. We recommend choosing a different password.'
@@ -705,14 +708,14 @@ export default function PasswordDetailPage({ params }: { params: Promise<{ id: s
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2.5 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               {isSubmitting ? "Updating..." : "Update Password"}
             </button>

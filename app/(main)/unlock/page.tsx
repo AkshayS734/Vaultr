@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVault } from "@/app/components/providers/VaultProvider";
 import { deriveKeyFromPasswordAuto, decryptVaultKey } from "@/app/lib/crypto";
-import { Button } from "@/components/vaultr-ui/button";
-import { Input } from "@/components/vaultr-ui/input";
-import { Label } from "@/components/vaultr-ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
-import { Lock, ShieldCheck } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { CircleAlert, Lock, ShieldCheck } from "lucide-react";
 
 export default function UnlockPage() {
   const [masterPassword, setMasterPassword] = useState("");
@@ -133,8 +133,8 @@ export default function UnlockPage() {
               )}
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                <ShieldCheck className="mr-2 h-4 w-4" />
+              <Button type="submit" className="w-full cursor-pointer" size="lg" disabled={isLoading}>
+                <ShieldCheck className="h-4 w-4" />
                 {isLoading ? "Unlocking..." : "Unlock Vault"}
               </Button>
             </form>
@@ -142,9 +142,10 @@ export default function UnlockPage() {
         </Card>
 
         {/* Warning */}
-        <div className="mt-6 rounded-lg bg-destructive/5 border border-destructive/20 p-4">
+        <div className="mt-6 rounded-lg bg-destructive/5 border border-destructive/20 p-4 text-center">
           <p className="text-xs text-destructive">
-            ⚠️ Your Master Password cannot be reset or recovered. If you&apos;ve forgotten it,
+            <CircleAlert className="inline-block align-text-bottom mr-1 h-3 w-3" />
+            Your Master Password cannot be reset or recovered. If you&apos;ve forgotten it,
             you will not be able to access your encrypted vault data.
           </p>
         </div>
@@ -153,7 +154,7 @@ export default function UnlockPage() {
         <div className="mt-4 text-center">
           <button
             onClick={handleLogout}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             Logout
           </button>

@@ -121,7 +121,7 @@ export default function NewEnvVarsPage() {
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
               <line x1="19" y1="12" x2="5" y2="12"/>
@@ -132,7 +132,7 @@ export default function NewEnvVarsPage() {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             Logout
           </button>
@@ -140,9 +140,9 @@ export default function NewEnvVarsPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-4xl px-6 py-12">
+      <div className="mx-auto max-w-4xl px-6 py-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground mb-2">Add Environment Variables</h1>
           <p className="text-muted-foreground">Store environment configuration securely</p>
         </div>
@@ -185,7 +185,7 @@ export default function NewEnvVarsPage() {
               <button
                 type="button"
                 onClick={addVariable}
-                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19"/>
@@ -226,7 +226,7 @@ export default function NewEnvVarsPage() {
                         }
                         setShowValues(newShowValues);
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                       title={showValues.has(index) ? "Hide value" : "Show value"}
                     >
                       {showValues.has(index) ? (
@@ -246,7 +246,7 @@ export default function NewEnvVarsPage() {
                     <button
                       type="button"
                       onClick={() => removeVariable(index)}
-                      className="h-[42px] px-3 rounded-lg border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
+                      className="h-[42px] px-3 rounded-lg border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -282,14 +282,14 @@ export default function NewEnvVarsPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               {isSubmitting ? "Saving..." : "Save Environment Variables"}
             </button>

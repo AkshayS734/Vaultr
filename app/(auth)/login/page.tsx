@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/vaultr-ui/button";
-import { Input } from "@/components/vaultr-ui/input";
-import { Label } from "@/components/vaultr-ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Lock, Mail } from "lucide-react";
 
 // Match Zod schemas from @/schemas/auth
@@ -317,7 +317,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/forgot-password')}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline cursor-pointer"
                 >
                   Forgot login password?
                 </button>
@@ -343,7 +343,7 @@ export default function LoginPage() {
                         onClick={handleResendVerification}
                         disabled={isResending || countdown > 0}
                         variant="outline"
-                        className="w-full"
+                        className="w-full cursor-pointer"
                       >
                         {isResending 
                           ? 'Sending...' 
@@ -358,7 +358,7 @@ export default function LoginPage() {
               )}
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
                 {isSubmitting ? "Signing in..." : "Log In"}
               </Button>
             </form>
@@ -369,7 +369,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <button
                   onClick={() => router.push('/signup')}
-                  className="text-primary hover:underline"
+                  className="text-primary hover:underline cursor-pointer"
                 >
                   Create an account
                 </button>
@@ -379,9 +379,10 @@ export default function LoginPage() {
         </Card>
 
         {/* Security Note */}
-        <div className="mt-6 rounded-lg bg-muted/50 p-4">
-          <p className="text-xs text-muted-foreground">
-            🔒 Vaultr uses zero-knowledge encryption. Your vault data is encrypted
+        <div className="mt-6 rounded-lg bg-muted/50 p-4 justify-center text-center">
+          <p className="text-xs text-muted-foreground ">
+            <Lock className="inline mb-1 mr-1 h-3 w-3" />
+            Vaultr uses zero-knowledge encryption. Your vault data is encrypted
             with your Master Password, which we never see or store.
           </p>
         </div>

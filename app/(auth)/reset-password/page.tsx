@@ -5,10 +5,10 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { checkPasswordStrength, getStrengthLabel, getStrengthColor } from "@/app/lib/password-strength";
 import { generatePassword } from "@/app/lib/password-generator";
-import { Button } from "@/components/vaultr-ui/button";
-import { Input } from "@/components/vaultr-ui/input";
-import { Label } from "@/components/vaultr-ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/vaultr-ui/card";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 
 function isValidPassword(password: string) {
