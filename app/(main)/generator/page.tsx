@@ -146,6 +146,9 @@ function GeneratorContent() {
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
               />
+              <p className="text-xs text-muted-foreground">
+                Separators are part of the password, but aren’t counted in the length.
+              </p>
             </div>
 
             <div className="space-y-4">
