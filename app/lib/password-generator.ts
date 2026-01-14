@@ -13,11 +13,15 @@ type PasswordOptions = {
 }
 
 const DEFAULT_LENGTH = 16
+const CHUNK_COUNT = 3
+const MIN_CHUNK_LENGTH = 3
+const MIN_PASSWORD_LENGTH = CHUNK_COUNT * MIN_CHUNK_LENGTH // 9 characters minimum
 // Ambiguous characters removed: O, 0, l, I, 1
 const UPPER = 'ABCDEFGHJKMNPQRSTUVWXYZ'
 const LOWER = 'abcdefghijkmnopqrstuvwxyz'
 const NUMBERS = '23456789'
-const SYMBOLS = '!@#$%^&*()-_=+[]{};:,.<>/?'
+// Note: '-' is removed from symbols since it's used as the chunk separator
+const SYMBOLS = '!@#$%^&*()_=+[]{};:,.<>/?'
 
 function getRandomValues(byteLength: number): Uint8Array {
   if (typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.getRandomValues === 'function') {
@@ -39,12 +43,25 @@ function secureRandomIndex(maxExclusive: number): number {
   return idx % maxExclusive
 }
 
-function shuffle(chars: string[]): string[] {
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = secureRandomIndex(i + 1)
-    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+function distributeLengths(totalLength: number, chunkCount: number, minPerChunk: number): number[] {
+  const chunkLengths = new Array(chunkCount).fill(minPerChunk)
+  let remaining = totalLength - chunkCount * minPerChunk
+
+  // Distribute remaining characters randomly across chunks
+  while (remaining > 0) {
+    const randomChunk = secureRandomIndex(chunkCount)
+    chunkLengths[randomChunk]++
+    remaining--
   }
-  return chars
+
+  return chunkLengths
+}
+
+function containsFromPool(candidate: string, pool: string): boolean {
+  for (const ch of candidate) {
+    if (pool.includes(ch)) return true
+  }
+  return false
 }
 
 export function generatePassword(options: PasswordOptions = {}): string {
@@ -55,6 +72,9 @@ export function generatePassword(options: PasswordOptions = {}): string {
     includeNumbers = true,
     includeSymbols = true,
   } = options
+
+  // Enforce minimum total length (must fit at least 3 chars per chunk)
+  const totalLength = Math.max(length, MIN_PASSWORD_LENGTH)
 
   const pools: Array<{ chars: string; enabled: boolean }> = [
     { chars: UPPER, enabled: includeUpper },
@@ -68,27 +88,56 @@ export function generatePassword(options: PasswordOptions = {}): string {
     throw new Error('At least one character set must be enabled')
   }
 
-  if (length < activePools.length) {
-    throw new Error('Length must be at least the number of enabled character sets')
+  const allowedPool = activePools.map((p) => p.chars).join('')
+
+  if (!allowedPool.length) {
+    throw new Error('No characters available for generation')
   }
 
-  const allChars = activePools.map((p) => p.chars).join('')
-  const passwordChars: string[] = []
+  // Regenerate until all selected categories are present in the final password
+  const maxAttempts = 500
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Distribute totalLength across CHUNK_COUNT chunks
+    const chunkLengths = distributeLengths(totalLength, CHUNK_COUNT, MIN_CHUNK_LENGTH)
+    
+    // Verify distribution sums to totalLength
+    const distributionSum = chunkLengths.reduce((a, b) => a + b, 0)
+    if (distributionSum !== totalLength) {
+      // This should not happen, but skip this attempt if it does
+      console.warn(`distributeLengths mismatch: sum=${distributionSum}, expected=${totalLength}, lengths=${JSON.stringify(chunkLengths)}`)
+      continue
+    }
+    
+    const chunks: string[] = []
 
-  // Ensure at least one from each enabled set
-  for (const pool of activePools) {
-    const idx = secureRandomIndex(pool.chars.length)
-    passwordChars.push(pool.chars[idx])
+    // Generate each chunk using allowed pool
+    for (let i = 0; i < CHUNK_COUNT; i++) {
+      const chunkSize = chunkLengths[i]
+      if (chunkSize < 0) {
+        console.error(`Negative chunk size: chunk ${i} = ${chunkSize}`)
+        continue
+      }
+      const chars: string[] = []
+      for (let j = 0; j < chunkSize; j++) {
+        const idx = secureRandomIndex(allowedPool.length)
+        chars.push(allowedPool[idx])
+      }
+      const chunk = chars.join('')
+      if (chunk.length !== chunkSize) {
+        console.error(`Chunk ${i} length mismatch: expected ${chunkSize}, got ${chunk.length}`)
+      }
+      chunks.push(chunk)
+    }
+
+    const candidate = chunks.join('-')
+
+    // Enforce global constraint: at least one from each selected category
+    const satisfiesCategories = activePools.every((pool) => containsFromPool(candidate, pool.chars))
+
+    if (satisfiesCategories) {
+      return candidate
+    }
   }
 
-  // Fill remaining characters
-  while (passwordChars.length < length) {
-    const idx = secureRandomIndex(allChars.length)
-    passwordChars.push(allChars[idx])
-  }
-
-  // Shuffle to avoid predictable placement
-  shuffle(passwordChars)
-
-  return passwordChars.join('')
+  throw new Error('Failed to generate password after multiple attempts')
 }
