@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import cookie from 'cookie'
-import argon2 from 'argon2'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../../lib/prisma'
@@ -72,7 +71,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 })
     }
 
-    const ok = await argon2.verify(session.refreshTokenHash, refresh).catch(() => false)
+    // Verify refresh token using constant-time comparison (SHA-256 hash)
+    const refreshHash = crypto.createHash('sha256').update(refresh).digest('hex')
+    const ok = crypto.timingSafeEqual(
+      Buffer.from(session.refreshTokenHash, 'hex'),
+      Buffer.from(refreshHash, 'hex')
+    )
     if (!ok) {
       // possible theft — delete session
       try { await prisma.session.delete({ where: { id: sessionId } }) } catch {}
@@ -115,7 +119,8 @@ export async function POST(req: Request) {
     // Strategy: Delete old session FIRST within transaction, then create new one
     // This ensures no window where both tokens are valid
     const newRefresh = crypto.randomBytes(48).toString('hex')
-    const newHash = await argon2.hash(newRefresh)
+    // Use SHA-256 for refresh token hashing (fast, secure for high-entropy random tokens)
+    const newHash = crypto.createHash('sha256').update(newRefresh).digest('hex')
 
     const relativeExpiry = new Date(Date.now() + DEFAULT_REFRESH_DAYS * 24 * 60 * 60 * 1000)
     const newExpires = new Date(Math.min(relativeExpiry.getTime(), absoluteExpiry.getTime()))

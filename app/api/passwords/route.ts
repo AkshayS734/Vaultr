@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { requireAuth } from '@/app/lib/auth-utils'
 import { validateCsrf } from '@/app/lib/csrf'
+import { rateLimit } from '@/app/lib/redis'
+import { VAULT_RATE_LIMITS } from '@/app/lib/vault-rate-limit'
 
 export async function GET(req: Request) {
   try {
@@ -12,6 +14,17 @@ export async function GET(req: Request) {
     }
 
     const { user } = auth
+
+    // Rate limit: 100 password operations per 5 minutes per user
+    const rlKey = `${VAULT_RATE_LIMITS.passwords.keyPrefix}:${user.id}`
+    const rl = await rateLimit(rlKey, VAULT_RATE_LIMITS.passwords.windowMs, VAULT_RATE_LIMITS.passwords.max)
+    if (!rl.allowed) {
+      const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        { error: 'Too many password requests' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      )
+    }
 
     const vault = await prisma.vault.findUnique({
       where: { userId: user.id },
@@ -70,6 +83,17 @@ export async function POST(req: Request) {
     }
 
     const { user } = auth
+
+    // Rate limit: 100 password operations per 5 minutes per user
+    const rlKey = `${VAULT_RATE_LIMITS.passwords.keyPrefix}:${user.id}`
+    const rl = await rateLimit(rlKey, VAULT_RATE_LIMITS.passwords.windowMs, VAULT_RATE_LIMITS.passwords.max)
+    if (!rl.allowed) {
+      const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        { error: 'Too many password requests' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      )
+    }
 
     const vault = await prisma.vault.findUnique({
       where: { userId: user.id },

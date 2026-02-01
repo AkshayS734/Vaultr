@@ -57,17 +57,11 @@ async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     const info = await transporter.sendMail(mailOptions)
     
-    // In development, log the email content
-    if (isConsole) {
-      console.log('📧 Email would be sent in production:')
-      console.log('To:', options.to)
-      console.log('Subject:', options.subject)
-      console.log('Text:', options.text)
-      console.log('---')
-    } else {
-      console.log('Email sent:', info.messageId)
+    // Only log success/failure, not email content (security: prevent token leaks in logs)
+    if (!isConsole && info.messageId) {
+      console.log('[EMAIL_SENT]', info.messageId)
     }
-    console.log("EMAIL_MODE:", process.env.EMAIL_MODE)
+    
     return true
   } catch (error) {
     console.error('Failed to send email:', error)

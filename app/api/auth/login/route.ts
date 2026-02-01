@@ -1,28 +1,18 @@
 import { NextResponse } from 'next/server'
-import argon2 from 'argon2'
+import argon2 from 'argon2' // Still needed for login password verification
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import cookie from 'cookie'
 import { serializeCsrfCookie, generateCsrfToken } from '@/app/lib/csrf'
 import { prisma } from '../../../lib/prisma'
 import { checkRateLimit, consumeRateLimit } from '../../../lib/redis'
-import { getClientIp, truncate, readLimitedJson } from '@/app/lib/utils'
+import { getClientIp, truncate } from '@/app/lib/utils'
 import { loginSchema } from '@/app/schemas/auth'
 import { logAuditEvent } from '../../../lib/audit'
 
 // Rate limit: 5 failed attempts per 15 minutes
 const LOGIN_MAX = 5
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
-
-// Argon2 configuration: OWASP 2023 recommendations for password hashing
-// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-const ARGON2_CONFIG = {
-  type: argon2.argon2id, // Argon2id: balanced against side-channel + GPU attacks
-  memoryCost: 48 * 1024, // 48 MiB (OWASP minimum)
-  timeCost: 3, // 3 iterations (memory-hard approach preferred)
-  parallelism: 1, // 1 thread (conservative, optimized for memory)
-  hashLength: 32, // 32 bytes output
-}
 
 // Dummy hash for timing attack mitigation
 // This is a pre-computed argon2 hash of a random password
@@ -91,8 +81,9 @@ export async function POST(req: Request) {
       verified = false
     }
     
-    // Add random jitter (10-50ms) to further obscure timing
-    const jitterMs = Math.random() * 40 + 10
+    // Add random jitter (100-300ms) to mask Argon2 timing variance and obscure user existence
+    // Increased from 10-50ms to better protect against statistical timing attacks
+    const jitterMs = Math.random() * 200 + 100
     await new Promise(resolve => setTimeout(resolve, jitterMs))
     
     // Now determine what error to return (all paths taken same time to reach here)
@@ -132,7 +123,9 @@ export async function POST(req: Request) {
 
     // Create refresh token + session
     const refreshToken = crypto.randomBytes(48).toString('hex')
-    const refreshTokenHash = await argon2.hash(refreshToken, ARGON2_CONFIG)
+    // Use SHA-256 for refresh token (fast, secure for high-entropy random tokens)
+    // Argon2 is overkill here - refresh tokens are cryptographically random (384 bits)
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
     const userAgent = truncate(req.headers.get('user-agent'), 256)

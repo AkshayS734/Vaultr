@@ -1,4 +1,7 @@
         import { NextResponse } from 'next/server'
+import { rateLimit } from '@/app/lib/redis'
+import { getClientIp } from '@/app/lib/utils'
+import { VAULT_RATE_LIMITS } from '@/app/lib/vault-rate-limit'
 
 /**
  * HIBP k-Anonymity Breach Proxy
@@ -21,6 +24,25 @@
 
 export async function GET(req: Request) {
   try {
+    // Rate limit: 10 breach checks per minute per IP (prevent HIBP API abuse)
+    const ip = getClientIp(req)
+    const rateLimitKey = `${VAULT_RATE_LIMITS.breach.keyPrefix}:${ip || 'unknown'}`
+    
+    try {
+      const rl = await rateLimit(rateLimitKey, VAULT_RATE_LIMITS.breach.windowMs, VAULT_RATE_LIMITS.breach.max)
+      if (!rl.allowed) {
+        const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000)
+        return new NextResponse('', { 
+          status: 429,
+          headers: { 
+            'Content-Type': 'text/plain',
+            'Retry-After': String(retryAfter)
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[BREACH] Rate limit check failed, allowing request', e)
+    }
     const url = new URL(req.url)
     const raw = url.searchParams.get('prefix') || ''
     const prefix = raw.toUpperCase().trim()
