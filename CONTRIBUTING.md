@@ -33,7 +33,7 @@ By participating, you agree to uphold this standard.
 ### 1. Fork & Clone
 
 ```bash
-git clone https://github.com/Akshay/Vaultr.git
+git clone https://github.com/AkshayS734/Vaultr.git
 cd vaultr
 npm install
 ```

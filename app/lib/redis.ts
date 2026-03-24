@@ -22,7 +22,8 @@
     }
 
     // Run cleanup every 60 seconds
-    setInterval(cleanupExpiredRateLimits, 60 * 1000)
+    // eslint-disable-next-line prefer-const
+    export let cleanupInterval: ReturnType<typeof setInterval> | null = setInterval(cleanupExpiredRateLimits, 60 * 1000)
 
     /**
     * Get a shared Redis client. Creates once and reuses.
@@ -213,6 +214,20 @@
           lastOutageLogAt = now
         }
         return 'degraded'
+      }
+    }
+
+    /**
+    * Disconnect the Redis client gracefully. Useful for CI/CD test teardowns.
+    */
+    export async function disconnectRedis() {
+      if (cleanupInterval) {
+        clearInterval(cleanupInterval)
+        cleanupInterval = null
+      }
+      if (redisClient) {
+        await redisClient.quit()
+        redisClient = null
       }
     }
 
