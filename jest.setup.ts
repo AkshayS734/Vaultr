@@ -24,3 +24,17 @@ setupPolyfills().catch((err) => {
   console.error('Failed to setup polyfills:', err)
 })
 
+// Teardown hook to prevent open handles (e.g. Prisma and Redis clients)
+afterAll(async () => {
+  try {
+    const prismaModule = await import('@/app/lib/prisma')
+    if (prismaModule && prismaModule.prisma && typeof prismaModule.prisma.$disconnect === 'function') {
+      await prismaModule.prisma.$disconnect()
+    }
+    
+    const { disconnectRedis } = await import('@/app/lib/redis')
+    await disconnectRedis()
+  } catch (err) {
+    console.error('Failed to disconnect services in test teardown:', err)
+  }
+})

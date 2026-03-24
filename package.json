@@ -10,7 +10,7 @@
     "prisma:generate": "prisma generate --schema=app/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=app/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=app/prisma/schema.prisma",
-    "test": "jest",
+    "test": "jest --forceExit",
     "typecheck": "tsc --noEmit",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build"
   },

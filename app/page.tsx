@@ -289,8 +289,8 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border bg-card/50 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="lg:col-span-3">
               <div className="mb-4 flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" />
                 <span className="font-semibold">Vaultr</span>
@@ -299,84 +299,64 @@ export default function HomePage() {
                 Zero-knowledge password manager for security-conscious users.
               </p>
             </div>
-            <div>
+            <div className="text-right lg:justify-self-end">
               <h4 className="mb-4 font-semibold">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="#features" className="hover:text-foreground transition-colors">
+                  <Link href="/features" className="hover:text-foreground transition-colors">
                     Features
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/security" className="hover:text-foreground transition-colors">
                     Security
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
-                    Roadmap
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
-            <div>
+            <div className="text-right lg:justify-self-end">
               <h4 className="mb-4 font-semibold">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/about" className="hover:text-foreground transition-colors">
                     About
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/blog" className="hover:text-foreground transition-colors">
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/contact" className="hover:text-foreground transition-colors">
                     Contact
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
-            <div>
+            <div className="text-right lg:justify-self-end">
               <h4 className="mb-4 font-semibold">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/privacy" className="hover:text-foreground transition-colors">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/terms" className="hover:text-foreground transition-colors">
                     Terms of Service
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/security-policy" className="hover:text-foreground transition-colors">
                     Security Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
-                    GDPR
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
-          </div> */}
-          <div className="text-center text-sm text-muted-foreground">
-            <p>© 2025 Akshay Shukla. All rights reserved.</p>
+          </div>
+          <div className="text-center text-sm text-muted-foreground mt-8">
+            <p>© 2026 Akshay Shukla. All rights reserved.</p>
             <p className="mt-2">
               Built with zero-knowledge encryption. Your data is yours alone.
             </p>
